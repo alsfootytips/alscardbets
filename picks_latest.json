@@ -2314,5 +2314,40 @@
    2.55
   ],
   "priced_at": "2026-11-09T23:25:11+00:00"
+ },
+ "6571308": {
+  "fotmob_id": 6571308,
+  "league": "Cup (URU)",
+  "game": "Deportivo Maldonado v Nacional",
+  "kickoff": "2026-11-10T00:00:00+00:00",
+  "status": "lineup not confirmed (unavailable)",
+  "cards": [],
+  "ags": [],
+  "notes": [],
+  "lineup": "unavailable",
+  "priced_at": "2026-11-09T23:36:58+00:00"
+ },
+ "1000014224": {
+  "fotmob_id": 1000014224,
+  "league": "Primera A (COL)",
+  "game": "Junior FC v C\u00facuta",
+  "kickoff": "2026-11-10T00:00:00.000Z",
+  "status": "error: 'NoneType' object is not iterable",
+  "cards": [],
+  "ags": [],
+  "notes": [],
+  "priced_at": "2026-11-09T23:36:58+00:00"
+ },
+ "1000022378": {
+  "fotmob_id": 1000022378,
+  "league": "Primera Divisi\u00f3n (BOL)",
+  "game": "Aurora v Universitario de Vinto",
+  "kickoff": "2026-11-10T00:30:00+00:00",
+  "status": "lineup not confirmed (lastStarting11)",
+  "cards": [],
+  "ags": [],
+  "notes": [],
+  "lineup": "lastStarting11",
+  "priced_at": "2026-11-09T23:36:58+00:00"
  }
 }
