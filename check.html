@@ -29,10 +29,13 @@ h3{font-size:14px;margin:16px 0 6px;color:var(--mute);font-weight:600}
 .p i{color:var(--good)}.n i{color:var(--bad)}.z i{color:var(--mute)}
 .angle{display:inline-block;padding:2px 9px;border-radius:99px;font-size:13px;font-weight:600;background:var(--bg)}
 .none{color:var(--mute);margin-top:14px}
+.pitch{width:100%;background:#1f6b3a;border-radius:10px;margin:4px 0}.pitch .ln{stroke:rgba(255,255,255,.55);stroke-width:.35}.pitch .pl{fill:#fff;font-weight:700}
+table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st th{padding:5px 6px;border-top:1px solid var(--line);text-align:right}table.st td:first-child,table.st th:first-child{text-align:left;color:var(--mute)}
+.rec{margin:0;font-size:15px}
 </style></head><body>
 <nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="index.html">P/L record</a></nav>
 <h1>Check a player</h1>
-<p class="meta">Type a player in today's games (priced once lineups are out).</p>
+<p class="meta">Search any player with a card price in today's games (priced once lineups are out).</p>
 <input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
 <ul id="list"></ul>
 <div id="out"></div>
@@ -44,9 +47,9 @@ fetch("picks_latest.json?" + Date.now()).then(r => r.json()).then(d => {
   for (const g of Object.values(d)) {
     if (g.status !== "ok") continue;
     if (g.priced_at > updated) updated = g.priced_at;
-    for (const c of g.cards || []) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}});
+    for (const c of g.cards || []) if (c.best) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || []});
   }
-  document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${updated.slice(11,16)} UTC` : ""));
+  document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${new Date(updated).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}` : ""));
   const p = new URLSearchParams(location.search).get("p");
   if (p) { q.value = p; search(); }
 }).catch(() => { out.innerHTML = '<p class="none">No games priced right now. Check back once lineups are announced.</p>'; });
@@ -59,11 +62,67 @@ function search() {
   const hits = players.filter(p => norm(p.player).includes(t) || norm(p.team).includes(t));
   if (hits.length === 1) { list.innerHTML = ""; show(hits[0]); return; }
   list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)}</small></li>`).join("")
-    || '<li class="none">Not found in today\'s priced games.</li>';
+    || '<li class="none">Not found. Only players with a card price in today\'s priced games are listed.</li>';
 }
 q.addEventListener("input", search);
 list.addEventListener("click", e => { const li = e.target.closest("li[data-i]"); if (li) { list.innerHTML = ""; show(players[+li.dataset.i]); } });
 
+
+// ---------- pitch: lineups + season heatmaps ----------
+const NX = 12, NY = 8, L = 105, W = 68;
+function heatRects(grid, flip, colour) {
+  if (!grid) return "";
+  const mx = Math.max(...grid.flat()) || 1; let s = "";
+  for (let i = 0; i < NX; i++) for (let j = 0; j < NY; j++) {
+    const v = grid[i][j] / mx; if (v < 0.35) continue;
+    const ii = flip ? NX - 1 - i : i, jj = flip ? NY - 1 - j : j;
+    s += `<rect x="${(ii * L / NX).toFixed(2)}" y="${(jj * W / NY).toFixed(2)}" width="${(L / NX).toFixed(2)}" height="${(W / NY).toFixed(2)}" fill="${colour}" fill-opacity="${(0.15 + 0.55 * v).toFixed(2)}"/>`;
+  }
+  return s;
+}
+function pitchSvg(p) {
+  const pl = p.pitch || []; if (!pl.length) return "";
+  const me = pl.find(x => x.pid === p.pid); if (!me) return "";
+  const flipMe = me.side === "A";                         // draw home attacking right
+  const zoneNames = (p.zone_opps || []).map(z => z[0]);
+  const zone = pl.filter(x => x.side !== me.side && zoneNames.includes(x.name));
+  let heat = heatRects(me.heat, flipMe, "#2f80ed");
+  const main = zone.find(x => x.name === zoneNames[0]);
+  if (main) heat = heatRects(main.heat, main.side === "A", "#e5484d") + heat;   // main opponent underneath, player on top
+  const pos = x => {                                       // FotMob layout is each team's own half, x from own goal
+    const X = x.side === "H" ? x.x * 52.5 : L - x.x * 52.5, Y = x.side === "H" ? x.y * W : W - x.y * W; return [X, Y];
+  };
+  const dots = pl.map(x => {
+    const [X, Y] = pos(x), isMe = x.pid === p.pid, isZone = zoneNames.includes(x.name);
+    const fill = isMe ? "#2f80ed" : isZone ? "#e5484d" : (x.side === me.side ? "#8fb8f5" : "#f2a3a5");
+    const r = isMe || isZone ? 2.6 : 1.9;
+    const label = (isMe || isZone) ? `<text x="${X.toFixed(1)}" y="${(Y - 3.4).toFixed(1)}" font-size="3" text-anchor="middle" class="pl">${esc(x.name.split(" ").slice(-1)[0])}</text>` : "";
+    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="${r}" fill="${fill}" stroke="var(--bg)" stroke-width="0.6"/>${label}`;
+  }).join("");
+  const lines = `<rect x="0" y="0" width="${L}" height="${W}" fill="none" class="ln"/><line x1="52.5" y1="0" x2="52.5" y2="${W}" class="ln"/>
+    <circle cx="52.5" cy="34" r="9.15" fill="none" class="ln"/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" class="ln"/>
+    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" class="ln"/><rect x="0" y="24.84" width="5.5" height="18.32" fill="none" class="ln"/>
+    <rect x="99.5" y="24.84" width="5.5" height="18.32" fill="none" class="ln"/>`;
+  const zl = (p.zone_opps || []).map(z => `${esc(z[0])} (${Math.round(z[1] * 100)}%)`).join(", ");
+  return `<h3>Where they'll be (season heatmaps)</h3>
+    <svg viewBox="-2 -2 ${L + 4} ${W + 4}" class="pitch" role="img" aria-label="Lineups and heatmaps">${lines}${heat}${dots}</svg>
+    <p class="sub"><span style="color:#2f80ed">■</span> ${esc(p.player)} &nbsp; <span style="color:#e5484d">■</span> ${esc(zoneNames[0] || "opponent")}, who shares most of the same space. Red dots: the opponents ${esc(p.player.split(" ").slice(-1)[0])} will be around most${zl ? " (" + zl + ")" : ""}.
+    The % is how much of their season heatmaps overlap.${me.side === "A" ? " (Pitch flipped so " + esc(p.team) + " attack left to right.)" : ""}</p>`;
+}
+function statsTable(p) {
+  const a = p.stats90 || {}, b = p.opp_stats90 || {};
+  const keys = Object.keys(a).length ? Object.keys(a) : Object.keys(b); if (!keys.length) return "";
+  const rows = keys.map(k => `<tr><td>${esc(k)}</td><td>${a[k] ?? "–"}</td><td>${b[k] ?? "–"}</td></tr>`).join("");
+  return `<h3>Per 90 this season</h3><table class="st"><tr><th></th><th>${esc(p.player.split(" ").slice(-1)[0])}</th><th>${esc((p.opp || "Opponent").split(" ").slice(-1)[0])}</th></tr>${rows}</table>`;
+}
+function recordBlock(p) {
+  const r = p.ref || {}, bits = [];
+  if (p.season_apps != null) bits.push(`<b>${p.season_yc ?? 0}</b> yellow${p.season_yc === 1 ? "" : "s"}${p.season_rc ? `, <b>${p.season_rc}</b> red` : ""} in ${p.season_apps} league games this season${p.season_league ? " (" + esc(p.season_league) + ")" : ""}`);
+  if (p.recent_n) bits.push(`Booked in <b>${p.booked_recent}</b> of the last ${p.recent_n} games`);
+  if (p.mins) bits.push(`${(p.cards / p.mins * 90).toFixed(2)} cards per 90 over ${p.mins} recent minutes`);
+  const ref = r.name ? `<b>${esc(r.name)}</b>: ${r.ypg != null ? r.ypg.toFixed(1) : "–"} yellows a game (league ${r.league_avg != null ? r.league_avg.toFixed(1) : "–"}), ${r.cards_pg != null ? r.cards_pg.toFixed(1) : "–"} cards a game over ${r.games ?? "?"} games` : "Not announced";
+  return `<h3>Card record</h3><p class="rec">${bits.join("<br>")}</p><h3>Referee</h3><p class="rec">${ref}</p>`;
+}
 function show(p) {
   const v = p.verdict || {};
   const chance = p.fair ? (100 / p.fair).toFixed(0) + "%" : "–";
@@ -72,7 +131,7 @@ function show(p) {
   const angleTxt = {strong: "Strong matchup", good: "Good matchup", neutral: "Neutral matchup", weak: "Weak matchup"}[v.angle] || "";
   out.innerHTML = `<div class="card">
     <div class="name">${esc(p.player)}</div>
-    <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${esc((p.ko || "").slice(11, 16))} UTC</div>
+    <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}</div>
     <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
     <div>${esc(v.text || "")}</div>
     <div class="nums">
@@ -83,7 +142,10 @@ function show(p) {
     <div class="books">${p.super_sub ? "<b>Super Sub</b> at " + esc(p.book) + " · " : ""}Value at ${v.need ?? "–"} or bigger · ${shown}${p.n_books ? ` · ${p.n_books} books` : ""}</div>
     <span class="angle">${angleTxt}</span>
     <h3>For and against (regardless of price)</h3>${fac}
-    <p class="sub" style="margin-top:12px">Fair price comes from his card rate, minutes, referee, his direct opponent and whether his team are big favourites. Value = price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price. Confidence: 8–10 = the separate fitted model agrees and the matchup is good (+27% in the backtest); 6–7 = fitted model agrees; under 6 isn't alerted (those lost money). Super Sub = Sky Bet / Paddy Power price used when within 10% of the best, and the fair price counts the replacement's minutes.</p>
+    ${pitchSvg(p)}
+    ${statsTable(p)}
+    ${recordBlock(p)}
+    <p class="sub" style="margin-top:12px">Fair price comes from the player's card rate, minutes, referee, direct opponent and whether the team are big favourites. Value = price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price. Confidence: 8–10 = the separate fitted model agrees and the matchup is good (+27% in the backtest); 6–7 = fitted model agrees; under 6 isn't alerted (those lost money). Super Sub = Sky Bet / Paddy Power price used when within 10% of the best, and the fair price counts the replacement's minutes.</p>
   </div>`;
   history.replaceState(null, "", "?p=" + encodeURIComponent(p.player));
 }
