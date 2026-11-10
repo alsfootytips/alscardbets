@@ -8,7 +8,7 @@
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font:16px/1.45 -apple-system,system-ui,sans-serif;margin:0 auto;max-width:640px;padding:16px}
 h1{font-size:21px;margin:14px 0 4px}
-nav{display:flex;gap:6px;padding:4px 0 12px;border-bottom:1px solid var(--line)}nav a{padding:8px 14px;border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card);font-weight:600;font-size:14px}nav a.on{background:var(--acc);color:#fff}a{color:var(--acc)}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 12px;border-bottom:1px solid var(--line)}nav a{padding:8px 14px;border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card);font-weight:600;font-size:14px}nav a.on{background:var(--acc);color:#fff}a{color:var(--acc)}
 .meta{color:var(--mute);font-size:13px;margin:2px 0 14px}
 input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
 #list{margin:6px 0 0;padding:0;list-style:none}
@@ -35,7 +35,7 @@ table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st
 .example{background:var(--card);padding:10px 12px;border-radius:10px;color:var(--fg)}
 .predicted{margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--bg);color:var(--warn);font-size:14px}
 </style></head><body>
-<nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="index.html">P/L record</a></nav>
+<nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="referees.html">Referees</a><a href="index.html">P/L record</a></nav>
 <h1>Check a player</h1>
 <p class="meta">Search any player with a card price over the next few days (predicted lineups first, confirmed about an hour before kickoff). <a href="check.html?example">Example</a></p>
 <input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
@@ -52,6 +52,8 @@ fetch((EXAMPLE ? "example.json?" : "picks_latest.json?") + Date.now()).then(r =>
     if (g.status !== "ok") continue;
     if (g.priced_at > updated) updated = g.priced_at;
     for (const c of g.cards || []) if (c.best) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard"});
+    for (const b of g.bench || []) if (b.best) players.push({...b, bench: true, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: [], tcards: g.tcards, predicted: g.lineup !== "standard"});
+    for (const p of players) if (p.game === g.game) p.tcards = g.tcards;
   }
   document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${new Date(updated).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}` : ""));
   const p = new URLSearchParams(location.search).get("p") || (EXAMPLE ? "Granit Xhaka" : "");
@@ -66,7 +68,7 @@ function search() {
   if (t.length < 2) { list.innerHTML = ""; return; }
   const hits = players.filter(p => norm(p.player).includes(t) || norm(p.team).includes(t));
   if (hits.length === 1) { list.innerHTML = ""; show(hits[0]); return; }
-  list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)} · ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}${p.predicted ? " · predicted lineup" : ""}</small></li>`).join("")
+  list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)} · ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}${p.predicted ? " · predicted lineup" : ""}${p.bench ? " · bench" : ""}</small></li>`).join("")
     || '<li class="none">Not found. Only players with a card price in the next few days are listed.</li>';
 }
 q.addEventListener("input", search);
@@ -125,10 +127,33 @@ function recordBlock(p) {
   if (p.season_apps != null) bits.push(`<b>${p.season_yc ?? 0}</b> yellow${p.season_yc === 1 ? "" : "s"}${p.season_rc ? `, <b>${p.season_rc}</b> red` : ""} in ${p.season_apps} league games this season${p.season_league ? " (" + esc(p.season_league) + ")" : ""}`);
   if (p.recent_n) bits.push(`Booked in <b>${p.booked_recent}</b> of the last ${p.recent_n} games`);
   if (p.mins) bits.push(`${(p.cards / p.mins * 90).toFixed(2)} cards per 90 over ${p.mins} recent minutes`);
+  if (p.role && p.role_record) bits.push(`Today as ${esc(p.role)}: booked in ${p.role_record[1]} of ${p.role_record[0]} starts there${p.out_of_position ? " <b>(out of position, usually " + esc(p.usual_role) + ")</b>" : ""}`);
   const ref = r.name ? `<b>${esc(r.name)}</b>: ${r.ypg != null ? r.ypg.toFixed(1) : "–"} yellows a game (league ${r.league_avg != null ? r.league_avg.toFixed(1) : "–"}), ${r.cards_pg != null ? r.cards_pg.toFixed(1) : "–"} cards a game over ${r.games ?? "?"} games` : "Not announced";
   return `<h3>Card record</h3><p class="rec">${bits.join("<br>")}</p><h3>Referee</h3><p class="rec">${ref}</p>`;
 }
+function tcardsBlock(p) {
+  const t = p.tcards; if (!t) return "";
+  const heat = t.heat || 1, mood = heat >= 1.08 ? "hotter than" : heat <= 0.92 ? "cooler than" : "in line with";
+  return `<h3>Total cards in the game</h3><p class="rec">Line <b>${t.line}</b>: Over ${t.over} / Under ${t.under} (median of ${t.n_books} books).<br>
+    Market expects <b>${t.market_exp.toFixed(1)}</b> cards, ${mood} our player model (${t.model_exp.toFixed(1)}).${(t.standouts || []).length ? "<br>Stands out: " + esc(t.standouts.join(", ")) : ""}</p>`;
+}
+function benchView(p) {
+  const s = p.sub || [0, 0, 0], st = p.starts_record || [0, 0];
+  const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
+  out.innerHTML = `<div class="card"><div class="name">${esc(p.player)}</div>
+    <div class="sub">${esc(p.team)} · ${esc(p.game)} · on the bench</div>
+    <div class="verdict check">Bench player</div>
+    <div>Most books void the bet if he doesn't come on. If he does, he usually has 20–30 minutes, often in the hottest part of the game.</div>
+    <div class="nums"><div><b>${p.best}</b><span>best · ${esc(p.book)}</span></div>
+      <div><b>${s[0] ? s[2] + "/" + s[0] : "–"}</b><span>booked in sub apps</span></div>
+      <div><b>${s[1] ? (s[2] / s[1] * 90).toFixed(2) : "–"}</b><span>cards per 90 off the bench</span></div></div>
+    <div class="books">${shown}</div>
+    <h3>Card record</h3><p class="rec">Off the bench: ${s[2]} booking${s[2] === 1 ? "" : "s"} in ${s[0]} appearances (${s[1]} minutes)<br>As a starter: booked in ${st[1]} of ${st[0]} starts${p.usual_role ? " (usually " + esc(p.usual_role) + ")" : ""}</p>
+    ${tcardsBlock(p)}</div>`;
+  history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
+}
 function show(p) {
+  if (p.bench) return benchView(p);
   const v = p.verdict || {};
   const chance = p.fair ? (100 / p.fair).toFixed(0) + "%" : "–";
   const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
@@ -150,6 +175,7 @@ function show(p) {
     ${pitchSvg(p)}
     ${statsTable(p)}
     ${recordBlock(p)}
+    ${tcardsBlock(p)}
     <p class="sub" style="margin-top:12px">Fair price comes from the player's card rate, minutes, referee, direct opponent and whether the team are big favourites. Value = price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price. Confidence: 8–10 = the separate fitted model agrees and the matchup is good (+27% in the backtest); 6–7 = fitted model agrees; under 6 isn't alerted (those lost money). Super Sub = Sky Bet / Paddy Power price used when within 10% of the best, and the fair price counts the replacement's minutes.</p>
   </div>`;
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
