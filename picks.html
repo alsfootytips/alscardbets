@@ -9,12 +9,12 @@ nav a.on{background:var(--acc);color:#fff}
 h1{font-size:20px;margin:16px 0 4px}.meta{color:var(--mute);font-size:13px}
 .rec{background:var(--card);border-radius:12px;padding:12px 14px;margin:10px 0 16px}.rec div+div{margin-top:4px;color:var(--mute);font-size:13px}
 .pos{color:var(--acc)}.neg{color:var(--bad)}
-details{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--bg)}
+details{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--bg)}details.day>summary{font-size:17px}details.day{border-width:2px}details.lg,details.game{margin:8px 12px}details.lg>summary .t{font-weight:600}
 summary{cursor:pointer;padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;list-style:none}
 summary::-webkit-details-marker{display:none}summary:before{content:"▸";color:var(--mute)}details[open] summary:before{content:"▾"}
 .t{font-weight:650}.summary .meta{margin-left:auto}summary .meta{margin-left:auto}
 .badge{font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--card)}
-.badge.hot{background:var(--acc);color:#fff}.badge.warm{color:var(--warm)}.badge.cold{color:var(--mute)}
+.badge.hot{background:var(--acc);color:#fff}.badge.early{background:none;color:var(--acc);border:1px solid var(--acc)}.badge.pred{color:var(--warm)}.badge.warm{color:var(--warm)}.badge.cold{color:var(--mute)}
 .resbits{font-weight:700}
 details>p,details>.tw{padding:0 14px}.tw{overflow-x:auto;padding-bottom:10px}
 table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
@@ -26,12 +26,12 @@ tr.won td{background:var(--won)}tr.won td.res{color:var(--acc)}tr.lost td.res{co
 .none{color:var(--mute);margin:24px 0}
 </style></head><body>
 <nav><a class=on href="picks.html">Picks</a><a href="check.html">Check a player</a><a href="index.html">P/L record</a></nav>
-<h1>Card picks · Tue 10 Nov</h1>
-<p class=meta>Updated 12:03 UK · alerts at +15% value and confidence 6/10+ · 1u singles · excl. Coral, Ladbrokes, 10bet, exchanges</p>
+<h1>Card picks</h1>
+<p class=meta>Updated 12:16 UK · alerts at confirmed lineups, +15% value and confidence 6/10+ · 1u singles · predicted-lineup prices are early and not alerted · excl. Coral, Ladbrokes, 10bet, exchanges</p>
 <div class=rec><div>Today: <b>0</b> picks · 0 won, 0 lost · P/L <b class=pos>+0.00u</b></div></div>
-<p class=none>No fixtures with card markets today.</p>
+<p class=none>No fixtures with card markets in the next few days yet.</p><p class=meta>9 more fixtures still being checked for card markets.</p>
 <script>
 const K="openGames";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
-document.querySelectorAll("details[id]").forEach(d=>{if(o.includes(d.id))d.open=true;d.addEventListener("toggle",()=>{
+const first=!localStorage.getItem(K);document.querySelectorAll("details[id]").forEach(d=>{if(o.includes(d.id)||(first&&d.hasAttribute("data-today")))d.open=true;d.addEventListener("toggle",()=>{
 let s=new Set(o);d.open?s.add(d.id):s.delete(d.id);o=[...s];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}})});
 </script></body></html>

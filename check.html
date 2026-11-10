@@ -32,10 +32,11 @@ h3{font-size:14px;margin:16px 0 6px;color:var(--mute);font-weight:600}
 .pitch{width:100%;background:#1f6b3a;border-radius:10px;margin:4px 0}.pitch .ln{stroke:rgba(255,255,255,.55);stroke-width:.35}.pitch .pl{fill:#fff;font-weight:700}
 table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st th{padding:5px 6px;border-top:1px solid var(--line);text-align:right}table.st td:first-child,table.st th:first-child{text-align:left;color:var(--mute)}
 .rec{margin:0;font-size:15px}
+.predicted{margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--bg);color:var(--warn);font-size:14px}
 </style></head><body>
 <nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="index.html">P/L record</a></nav>
 <h1>Check a player</h1>
-<p class="meta">Search any player with a card price in today's games (priced once lineups are out).</p>
+<p class="meta">Search any player with a card price over the next few days (predicted lineups first, confirmed about an hour before kickoff).</p>
 <input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
 <ul id="list"></ul>
 <div id="out"></div>
@@ -47,7 +48,7 @@ fetch("picks_latest.json?" + Date.now()).then(r => r.json()).then(d => {
   for (const g of Object.values(d)) {
     if (g.status !== "ok") continue;
     if (g.priced_at > updated) updated = g.priced_at;
-    for (const c of g.cards || []) if (c.best) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || []});
+    for (const c of g.cards || []) if (c.best) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard"});
   }
   document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${new Date(updated).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}` : ""));
   const p = new URLSearchParams(location.search).get("p");
@@ -61,8 +62,8 @@ function search() {
   if (t.length < 2) { list.innerHTML = ""; return; }
   const hits = players.filter(p => norm(p.player).includes(t) || norm(p.team).includes(t));
   if (hits.length === 1) { list.innerHTML = ""; show(hits[0]); return; }
-  list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)}</small></li>`).join("")
-    || '<li class="none">Not found. Only players with a card price in today\'s priced games are listed.</li>';
+  list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)} · ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}${p.predicted ? " · predicted lineup" : ""}</small></li>`).join("")
+    || '<li class="none">Not found. Only players with a card price in the next few days are listed.</li>';
 }
 q.addEventListener("input", search);
 list.addEventListener("click", e => { const li = e.target.closest("li[data-i]"); if (li) { list.innerHTML = ""; show(players[+li.dataset.i]); } });
@@ -132,7 +133,7 @@ function show(p) {
   out.innerHTML = `<div class="card">
     <div class="name">${esc(p.player)}</div>
     <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}</div>
-    <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
+    ${p.predicted ? `<p class="predicted">Predicted lineup (FotMob): early price, not alerted. Re-priced when the confirmed lineup is out.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
     <div>${esc(v.text || "")}</div>
     <div class="nums">
       <div><b>${p.best ?? "–"}</b><span>best · ${esc(p.book || "none")}</span></div>
