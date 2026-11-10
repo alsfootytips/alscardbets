@@ -125,3 +125,20 @@ table.st td:first-child,table.st th:first-child{text-align:left;color:var(--mute
 footer.foot{max-width:1000px;margin:30px auto 0;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font:700 14px/1 var(--head);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:3px solid var(--green)}
 footer.foot i{display:inline-block;width:10px;height:14px;border-radius:2px;background:var(--yellow);transform:rotate(10deg)}
 @media (max-width:520px){.top{position:static}h1{font-size:28px}.name{font-size:26px}.top .logo img{height:34px}.top .in{gap:8px;padding:8px 12px 12px}.top nav a{font-size:15px;padding:8px 7px;white-space:nowrap}.nums b{font-size:22px}}
+
+/* simpler game view */
+details.more{border:0;background:transparent;margin:4px 14px 10px}
+details.more>summary{padding:6px 0;font:700 14px/1 var(--head);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+details.more>summary:before{border-left-color:var(--muted)}
+details.more .tw,details.more p{padding:0}
+@media (max-width:520px){
+  details.game{margin-left:4px}
+  details>p,details>.tw{padding:0 8px}
+  table{font-size:14px}
+  td,th{padding:7px 5px}
+  td.pl,th:nth-child(2){min-width:0;width:48%}
+  td.res{width:18px;padding-left:2px;padding-right:2px}
+  small.why{font-size:12px}
+  details.more{margin:4px 8px 10px}
+}
+td.pr{white-space:normal;min-width:70px}td.pr b{font:800 19px/1 var(--head)}td.pr .ss{display:inline-block;margin:3px 0 0}

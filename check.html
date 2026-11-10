@@ -124,7 +124,10 @@ function show(p) {
   const v = p.verdict || {};
   const chance = p.fair ? (100 / p.fair).toFixed(0) + "%" : "–";
   const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
-  const fac = (p.factors || []).map(([s, t]) => `<div class="f ${s > 0 ? "p" : s < 0 ? "n" : "z"}"><i>${s > 0 ? "✓" : s < 0 ? "✗" : "•"}</i><span>${esc(t)}</span></div>`).join("");
+  const facRow = ([s, t]) => `<div class="f ${s > 0 ? "p" : s < 0 ? "n" : "z"}"><i>${s > 0 ? "✓" : s < 0 ? "✗" : "•"}</i><span>${esc(t)}</span></div>`;
+  const ranked = [...(p.factors || [])].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
+  const fac = ranked.slice(0, 3).map(facRow).join("");
+  const facRest = ranked.slice(3).map(facRow).join("");
   const angleTxt = {strong: "Strong matchup", good: "Good matchup", neutral: "Average matchup", weak: "Poor matchup"}[v.angle] || "";
   out.innerHTML = `<div class="card">
     <div class="name">${esc(p.player)}</div>
@@ -132,18 +135,21 @@ function show(p) {
     ${p.predicted ? `<p class="predicted">Predicted lineup. Early price, not sent as a pick. Updated when the teams are announced.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
     <div>${esc(v.text || "")}</div>
     <div class="nums">
-      <div><b>${p.best ?? "–"}</b><span>best · ${esc(p.book || "none")}</span></div>
+      <div><b>${p.best ?? "–"}</b><span>${esc(p.book || "no price")}</span></div>
       <div><b>${p.fair ?? "–"}</b><span>fair price (${chance})</span></div>
       <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
-    <div class="books">${p.super_sub ? "<b>Super Sub</b> at " + esc(p.book) + " · " : ""}Value at ${v.need ?? "–"} or bigger · ${shown}${p.n_books ? ` · ${p.n_books} books` : ""}</div>
+    <div class="books">${p.super_sub ? "<b>Super Sub</b> · " : ""}Value at ${v.need ?? "–"} or bigger</div>
+    <h3>Key points</h3>${fac}
+    <details class="more full"><summary>Full analysis</summary>
     <span class="angle">${angleTxt}</span>
-    <h3>For and against</h3>${fac}
+    ${facRest ? "<h3>More for and against</h3>" + facRest : ""}
     ${pitchSvg(p)}
     ${statsTable(p)}
     ${recordBlock(p)}
     ${tcardsBlock(p)}
     <p class="sub" style="margin-top:14px">Fair price uses the player's card rate, minutes, the referee, the direct opponent and the match odds. A pick needs a price 15% over fair at 3+ bookies, not a one-off outlier and not bet365 alone at the top, plus confidence 6/10 or better (8–10 has been the strongest). Super Sub means the Sky Bet or Paddy Power price, with the replacement counted.</p>
+    </details>
   </div>`;
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
