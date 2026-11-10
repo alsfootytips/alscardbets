@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Check a Player</title>
+<style>
+:root{--bg:#fff;--fg:#14161a;--mute:#666;--line:#e5e5e5;--card:#f6f7f8;--good:#0a7d3c;--warn:#b86e00;--bad:#c0392b;--acc:#0a7d3c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111316;--fg:#eceef1;--mute:#9aa0a6;--line:#2a2d33;--card:#1a1d21;--good:#3ccf7a;--warn:#f0a640;--bad:#ff6b5b;--acc:#3ccf7a}}
+:root[data-theme="dark"]{--bg:#111316;--fg:#eceef1;--mute:#9aa0a6;--line:#2a2d33;--card:#1a1d21;--good:#3ccf7a;--warn:#f0a640;--bad:#ff6b5b;--acc:#3ccf7a}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.45 -apple-system,system-ui,sans-serif;margin:0 auto;max-width:640px;padding:16px}
+h1{font-size:21px;margin:4px 0}a{color:var(--acc)}
+.meta{color:var(--mute);font-size:13px;margin:2px 0 14px}
+input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
+#list{margin:6px 0 0;padding:0;list-style:none}
+#list li{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+#list li:hover{background:var(--card)}
+#list small,.sub{color:var(--mute);font-size:13px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-top:14px}
+.name{font-size:20px;font-weight:650}
+.verdict{font-size:19px;font-weight:700;margin:12px 0 4px}
+.value{color:var(--good)}.fair{color:var(--fg)}.check,.short{color:var(--warn)}.avoid{color:var(--bad)}.noprice{color:var(--mute)}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.nums div{background:var(--bg);border-radius:10px;padding:8px 10px}
+.nums b{display:block;font-size:19px}.nums span{color:var(--mute);font-size:12px}
+.books{font-size:14px;color:var(--mute);margin:4px 0 10px}
+h3{font-size:14px;margin:16px 0 6px;color:var(--mute);font-weight:600}
+.f{display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.f i{font-style:normal;width:18px;flex:none;text-align:center;font-weight:700}
+.p i{color:var(--good)}.n i{color:var(--bad)}.z i{color:var(--mute)}
+.angle{display:inline-block;padding:2px 9px;border-radius:99px;font-size:13px;font-weight:600;background:var(--bg)}
+.none{color:var(--mute);margin-top:14px}
+</style></head><body>
+<h1>Check a player</h1>
+<p class="meta">Type a player in today's games (priced once lineups are out). <a href="picks.html">Today's picks</a> · <a href="index.html">P/L record</a></p>
+<input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
+<ul id="list"></ul>
+<div id="out"></div>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ø/g,"o").toLowerCase();
+let players = [], updated = "";
+fetch("picks_latest.json?" + Date.now()).then(r => r.json()).then(d => {
+  for (const g of Object.values(d)) {
+    if (g.status !== "ok") continue;
+    if (g.priced_at > updated) updated = g.priced_at;
+    for (const c of g.cards || []) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}});
+  }
+  document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${updated.slice(11,16)} UTC` : ""));
+  const p = new URLSearchParams(location.search).get("p");
+  if (p) { q.value = p; search(); }
+}).catch(() => { out.innerHTML = '<p class="none">No games priced right now. Check back once lineups are announced.</p>'; });
+
+const q = document.getElementById("q"), list = document.getElementById("list"), out = document.getElementById("out");
+function search() {
+  const t = norm(q.value.trim());
+  out.innerHTML = "";
+  if (t.length < 2) { list.innerHTML = ""; return; }
+  const hits = players.filter(p => norm(p.player).includes(t) || norm(p.team).includes(t));
+  if (hits.length === 1) { list.innerHTML = ""; show(hits[0]); return; }
+  list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)}</small></li>`).join("")
+    || '<li class="none">Not found in today\'s priced games.</li>';
+}
+q.addEventListener("input", search);
+list.addEventListener("click", e => { const li = e.target.closest("li[data-i]"); if (li) { list.innerHTML = ""; show(players[+li.dataset.i]); } });
+
+function show(p) {
+  const v = p.verdict || {};
+  const chance = p.fair ? (100 / p.fair).toFixed(0) + "%" : "–";
+  const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
+  const fac = (p.factors || []).map(([s, t]) => `<div class="f ${s > 0 ? "p" : s < 0 ? "n" : "z"}"><i>${s > 0 ? "✓" : s < 0 ? "✗" : "•"}</i><span>${esc(t)}</span></div>`).join("");
+  const angleTxt = {strong: "Strong matchup", good: "Good matchup", neutral: "Neutral matchup", weak: "Weak matchup"}[v.angle] || "";
+  out.innerHTML = `<div class="card">
+    <div class="name">${esc(p.player)}</div>
+    <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${esc((p.ko || "").slice(11, 16))} UTC</div>
+    <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
+    <div>${esc(v.text || "")}</div>
+    <div class="nums">
+      <div><b>${p.best ?? "–"}</b><span>best · ${esc(p.book || "none")}</span></div>
+      <div><b>${p.fair ?? "–"}</b><span>fair price (${chance})</span></div>
+      <div><b>${v.need ?? "–"}</b><span>value at or above</span></div>
+    </div>
+    <div class="books">${shown}${p.n_books ? ` · ${p.n_books} books` : ""}</div>
+    <span class="angle">${angleTxt}</span>
+    <h3>For and against (regardless of price)</h3>${fac}
+    <p class="sub" style="margin-top:12px">Fair price comes from his card rate, minutes, referee, his direct opponent and whether his team are big favourites. Value = best price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price (the backtest showed those lose).</p>
+  </div>`;
+  history.replaceState(null, "", "?p=" + encodeURIComponent(p.player));
+}
+</script>
+</body></html>
