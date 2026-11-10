@@ -18,7 +18,7 @@ fetch((EXAMPLE ? "example.json?" : "picks_latest.json?") + Date.now()).then(r =>
   for (const g of Object.values(d)) {
     if (g.status !== "ok") continue;
     if (g.priced_at > updated) updated = g.priced_at;
-    for (const c of g.cards || []) if (c.best) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard"});
+    for (const c of g.cards || []) if (c.best || (g.fair_only && c.fair)) players.push({...c, fair_only: !!g.fair_only, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard", lineup: g.lineup});
     for (const b of g.bench || []) if (b.best) players.push({...b, bench: true, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: [], tcards: g.tcards, predicted: g.lineup !== "standard"});
     for (const p of players) if (p.game === g.game) p.tcards = g.tcards;
   }
@@ -132,7 +132,7 @@ function show(p) {
   out.innerHTML = `<div class="card">
     <div class="name">${esc(p.player)}</div>
     <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}</div>
-    ${p.predicted ? `<p class="predicted">Predicted lineup. Early price, not sent as a pick. Updated when the teams are announced.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
+    ${p.fair_only ? `<p class="predicted">Not in our odds feed yet. Compare the fair price with bet365 yourself.</p>` : ""}${p.predicted ? `<p class="predicted">${p.lineup === "lastXI" ? "Lineup is each team's last XI (no predicted lineup published yet)" : "Predicted lineup"}. Early price, not sent as a pick. Updated when the teams are announced.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
     <div>${esc(v.text || "")}</div>
     <div class="nums">
       <div><b>${p.best ?? "–"}</b><span>${esc(p.book || "no price")}</span></div>
