@@ -32,11 +32,12 @@ h3{font-size:14px;margin:16px 0 6px;color:var(--mute);font-weight:600}
 .pitch{width:100%;background:#1f6b3a;border-radius:10px;margin:4px 0}.pitch .ln{stroke:rgba(255,255,255,.55);stroke-width:.35}.pitch .pl{fill:#fff;font-weight:700}
 table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st th{padding:5px 6px;border-top:1px solid var(--line);text-align:right}table.st td:first-child,table.st th:first-child{text-align:left;color:var(--mute)}
 .rec{margin:0;font-size:15px}
+.example{background:var(--card);padding:10px 12px;border-radius:10px;color:var(--fg)}
 .predicted{margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--bg);color:var(--warn);font-size:14px}
 </style></head><body>
 <nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="index.html">P/L record</a></nav>
 <h1>Check a player</h1>
-<p class="meta">Search any player with a card price over the next few days (predicted lineups first, confirmed about an hour before kickoff).</p>
+<p class="meta">Search any player with a card price over the next few days (predicted lineups first, confirmed about an hour before kickoff). <a href="check.html?example">Example</a></p>
 <input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
 <ul id="list"></ul>
 <div id="out"></div>
@@ -44,15 +45,18 @@ table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ø/g,"o").toLowerCase();
 let players = [], updated = "";
-fetch("picks_latest.json?" + Date.now()).then(r => r.json()).then(d => {
+const EXAMPLE = new URLSearchParams(location.search).has("example");
+if (EXAMPLE) document.querySelector(".meta").outerHTML = '<p class="meta example">Example analysis from a past game: <b>Bournemouth v Sunderland, Sun 18 Oct 2026</b>, priced 10 minutes before kickoff. Search any player in that game. <a href="check.html">Back to live players</a></p>';
+fetch((EXAMPLE ? "example.json?" : "picks_latest.json?") + Date.now()).then(r => r.json()).then(d => {
   for (const g of Object.values(d)) {
     if (g.status !== "ok") continue;
     if (g.priced_at > updated) updated = g.priced_at;
     for (const c of g.cards || []) if (c.best) players.push({...c, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard"});
   }
   document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${new Date(updated).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}` : ""));
-  const p = new URLSearchParams(location.search).get("p");
+  const p = new URLSearchParams(location.search).get("p") || (EXAMPLE ? "Granit Xhaka" : "");
   if (p) { q.value = p; search(); }
+  if (!players.length && !EXAMPLE) out.innerHTML = '<p class="none">No players priced in the next few days yet. <a href="check.html?example">See an example analysis</a>.</p>';
 }).catch(() => { out.innerHTML = '<p class="none">No games priced right now. Check back once lineups are announced.</p>'; });
 
 const q = document.getElementById("q"), list = document.getElementById("list"), out = document.getElementById("out");
@@ -148,7 +152,7 @@ function show(p) {
     ${recordBlock(p)}
     <p class="sub" style="margin-top:12px">Fair price comes from the player's card rate, minutes, referee, direct opponent and whether the team are big favourites. Value = price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price. Confidence: 8–10 = the separate fitted model agrees and the matchup is good (+27% in the backtest); 6–7 = fitted model agrees; under 6 isn't alerted (those lost money). Super Sub = Sky Bet / Paddy Power price used when within 10% of the best, and the fair price counts the replacement's minutes.</p>
   </div>`;
-  history.replaceState(null, "", "?p=" + encodeURIComponent(p.player));
+  history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
 </script>
 </body></html>
