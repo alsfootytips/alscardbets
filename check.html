@@ -1,46 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Check a Player</title>
-<style>
-:root{--bg:#fff;--fg:#14161a;--mute:#666;--line:#e5e5e5;--card:#f6f7f8;--good:#0a7d3c;--warn:#b86e00;--bad:#c0392b;--acc:#0a7d3c}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111316;--fg:#eceef1;--mute:#9aa0a6;--line:#2a2d33;--card:#1a1d21;--good:#3ccf7a;--warn:#f0a640;--bad:#ff6b5b;--acc:#3ccf7a}}
-:root[data-theme="dark"]{--bg:#111316;--fg:#eceef1;--mute:#9aa0a6;--line:#2a2d33;--card:#1a1d21;--good:#3ccf7a;--warn:#f0a640;--bad:#ff6b5b;--acc:#3ccf7a}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font:16px/1.45 -apple-system,system-ui,sans-serif;margin:0 auto;max-width:640px;padding:16px}
-h1{font-size:21px;margin:14px 0 4px}
-nav{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 12px;border-bottom:1px solid var(--line)}nav a{padding:8px 14px;border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card);font-weight:600;font-size:14px}nav a.on{background:var(--acc);color:#fff}a{color:var(--acc)}
-.meta{color:var(--mute);font-size:13px;margin:2px 0 14px}
-input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
-#list{margin:6px 0 0;padding:0;list-style:none}
-#list li{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
-#list li:hover{background:var(--card)}
-#list small,.sub{color:var(--mute);font-size:13px}
-.card{background:var(--card);border-radius:14px;padding:16px;margin-top:14px}
-.name{font-size:20px;font-weight:650}
-.verdict{font-size:19px;font-weight:700;margin:12px 0 4px}
-.value{color:var(--good)}.fair{color:var(--fg)}.check,.short{color:var(--warn)}.avoid{color:var(--bad)}.noprice{color:var(--mute)}
-.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
-.nums div{background:var(--bg);border-radius:10px;padding:8px 10px}
-.nums b{display:block;font-size:19px}.nums span{color:var(--mute);font-size:12px}
-.books{font-size:14px;color:var(--mute);margin:4px 0 10px}
-h3{font-size:14px;margin:16px 0 6px;color:var(--mute);font-weight:600}
-.f{display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
-.f i{font-style:normal;width:18px;flex:none;text-align:center;font-weight:700}
-.p i{color:var(--good)}.n i{color:var(--bad)}.z i{color:var(--mute)}
-.angle{display:inline-block;padding:2px 9px;border-radius:99px;font-size:13px;font-weight:600;background:var(--bg)}
-.none{color:var(--mute);margin-top:14px}
-.pitch{width:100%;background:#1f6b3a;border-radius:10px;margin:4px 0}.pitch .ln{stroke:rgba(255,255,255,.55);stroke-width:.35}.pitch .pl{fill:#fff;font-weight:700}
-table.st{width:100%;border-collapse:collapse;font-size:14px}table.st td,table.st th{padding:5px 6px;border-top:1px solid var(--line);text-align:right}table.st td:first-child,table.st th:first-child{text-align:left;color:var(--mute)}
-.rec{margin:0;font-size:15px}
-.example{background:var(--card);padding:10px 12px;border-radius:10px;color:var(--fg)}
-.predicted{margin:10px 0 0;padding:8px 10px;border-radius:8px;background:var(--bg);color:var(--warn);font-size:14px}
-</style></head><body>
-<nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="referees.html">Referees</a><a href="index.html">P/L record</a></nav>
-<h1>Check a player</h1>
-<p class="meta">Search any player with a card price over the next few days (predicted lineups first, confirmed about an hour before kickoff). <a href="check.html?example">Example</a></p>
-<input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
+<title>Player Check · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a class=on href="check.html">Player check</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
+<h1>Player check</h1>
+<p class="meta">Any player with a card price in the next few days. <a href="check.html?example">Example</a></p>
+<input id="q" placeholder="Search a player" autocomplete="off" autofocus>
 <ul id="list"></ul>
 <div id="out"></div>
+<footer class=foot><i></i>Al's Card Bets</footer></main>
 <script>
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ø/g,"o").toLowerCase();
@@ -93,7 +60,7 @@ function pitchSvg(p) {
   const flipMe = me.side === "A";                         // draw home attacking right
   const zoneNames = (p.zone_opps || []).map(z => z[0]);
   const zone = pl.filter(x => x.side !== me.side && zoneNames.includes(x.name));
-  let heat = heatRects(me.heat, flipMe, "#2f80ed");
+  let heat = heatRects(me.heat, flipMe, "#F2D022");
   const main = zone.find(x => x.name === zoneNames[0]);
   if (main) heat = heatRects(main.heat, main.side === "A", "#e5484d") + heat;   // main opponent underneath, player on top
   const pos = x => {                                       // FotMob layout is each team's own half, x from own goal
@@ -101,20 +68,20 @@ function pitchSvg(p) {
   };
   const dots = pl.map(x => {
     const [X, Y] = pos(x), isMe = x.pid === p.pid, isZone = zoneNames.includes(x.name);
-    const fill = isMe ? "#2f80ed" : isZone ? "#e5484d" : (x.side === me.side ? "#8fb8f5" : "#f2a3a5");
+    const fill = isMe ? "#F2D022" : isZone ? "#e5484d" : (x.side === me.side ? "#ffffff" : "#f2a3a5");
     const r = isMe || isZone ? 2.6 : 1.9;
     const label = (isMe || isZone) ? `<text x="${X.toFixed(1)}" y="${(Y - 3.4).toFixed(1)}" font-size="3" text-anchor="middle" class="pl">${esc(x.name.split(" ").slice(-1)[0])}</text>` : "";
-    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="${r}" fill="${fill}" stroke="var(--bg)" stroke-width="0.6"/>${label}`;
+    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="${r}" fill="${fill}" stroke="#172A3A" stroke-width="0.6"/>${label}`;
   }).join("");
   const lines = `<rect x="0" y="0" width="${L}" height="${W}" fill="none" class="ln"/><line x1="52.5" y1="0" x2="52.5" y2="${W}" class="ln"/>
     <circle cx="52.5" cy="34" r="9.15" fill="none" class="ln"/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" class="ln"/>
     <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" class="ln"/><rect x="0" y="24.84" width="5.5" height="18.32" fill="none" class="ln"/>
     <rect x="99.5" y="24.84" width="5.5" height="18.32" fill="none" class="ln"/>`;
   const zl = (p.zone_opps || []).map(z => `${esc(z[0])} (${Math.round(z[1] * 100)}%)`).join(", ");
-  return `<h3>Where they'll be (season heatmaps)</h3>
+  return `<h3>Who they'll be up against</h3>
     <svg viewBox="-2 -2 ${L + 4} ${W + 4}" class="pitch" role="img" aria-label="Lineups and heatmaps">${lines}${heat}${dots}</svg>
-    <p class="sub"><span style="color:#2f80ed">■</span> ${esc(p.player)} &nbsp; <span style="color:#e5484d">■</span> ${esc(zoneNames[0] || "opponent")}, who shares most of the same space. Red dots: the opponents ${esc(p.player.split(" ").slice(-1)[0])} will be around most${zl ? " (" + zl + ")" : ""}.
-    The % is how much of their season heatmaps overlap.${me.side === "A" ? " (Pitch flipped so " + esc(p.team) + " attack left to right.)" : ""}</p>`;
+    <p class="sub"><span style="color:#F2D022;text-shadow:0 0 1px #172A3A">■</span> ${esc(p.player)} &nbsp; <span style="color:#e5484d">■</span> ${esc(zoneNames[0] || "opponent")}, who shares most of the same space. Red dots: the opponents ${esc(p.player.split(" ").slice(-1)[0])} will be around most${zl ? " (" + zl + ")" : ""}.
+    The % is how much their season heatmaps overlap.${me.side === "A" ? " (Pitch flipped so " + esc(p.team) + " attack left to right.)" : ""}</p>`;
 }
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
@@ -142,8 +109,8 @@ function benchView(p) {
   const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
   out.innerHTML = `<div class="card"><div class="name">${esc(p.player)}</div>
     <div class="sub">${esc(p.team)} · ${esc(p.game)} · on the bench</div>
-    <div class="verdict check">Bench player</div>
-    <div>Most books void the bet if he doesn't come on. If he does, he usually has 20–30 minutes, often in the hottest part of the game.</div>
+    <div class="verdict fair">On the bench</div>
+    <div>Most books void the bet if the player doesn't come on. Subs usually get 20–30 minutes, often when the game is at its most heated.</div>
     <div class="nums"><div><b>${p.best}</b><span>best · ${esc(p.book)}</span></div>
       <div><b>${s[0] ? s[2] + "/" + s[0] : "–"}</b><span>booked in sub apps</span></div>
       <div><b>${s[1] ? (s[2] / s[1] * 90).toFixed(2) : "–"}</b><span>cards per 90 off the bench</span></div></div>
@@ -158,11 +125,11 @@ function show(p) {
   const chance = p.fair ? (100 / p.fair).toFixed(0) + "%" : "–";
   const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
   const fac = (p.factors || []).map(([s, t]) => `<div class="f ${s > 0 ? "p" : s < 0 ? "n" : "z"}"><i>${s > 0 ? "✓" : s < 0 ? "✗" : "•"}</i><span>${esc(t)}</span></div>`).join("");
-  const angleTxt = {strong: "Strong matchup", good: "Good matchup", neutral: "Neutral matchup", weak: "Weak matchup"}[v.angle] || "";
+  const angleTxt = {strong: "Strong matchup", good: "Good matchup", neutral: "Average matchup", weak: "Poor matchup"}[v.angle] || "";
   out.innerHTML = `<div class="card">
     <div class="name">${esc(p.player)}</div>
     <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}</div>
-    ${p.predicted ? `<p class="predicted">Predicted lineup (FotMob): early price, not alerted. Re-priced when the confirmed lineup is out.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
+    ${p.predicted ? `<p class="predicted">Predicted lineup. Early price, not sent as a pick. Updated when the teams are announced.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
     <div>${esc(v.text || "")}</div>
     <div class="nums">
       <div><b>${p.best ?? "–"}</b><span>best · ${esc(p.book || "none")}</span></div>
@@ -171,12 +138,12 @@ function show(p) {
     </div>
     <div class="books">${p.super_sub ? "<b>Super Sub</b> at " + esc(p.book) + " · " : ""}Value at ${v.need ?? "–"} or bigger · ${shown}${p.n_books ? ` · ${p.n_books} books` : ""}</div>
     <span class="angle">${angleTxt}</span>
-    <h3>For and against (regardless of price)</h3>${fac}
+    <h3>For and against</h3>${fac}
     ${pitchSvg(p)}
     ${statsTable(p)}
     ${recordBlock(p)}
     ${tcardsBlock(p)}
-    <p class="sub" style="margin-top:12px">Fair price comes from the player's card rate, minutes, referee, direct opponent and whether the team are big favourites. Value = price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price. Confidence: 8–10 = the separate fitted model agrees and the matchup is good (+27% in the backtest); 6–7 = fitted model agrees; under 6 isn't alerted (those lost money). Super Sub = Sky Bet / Paddy Power price used when within 10% of the best, and the fair price counts the replacement's minutes.</p>
+    <p class="sub" style="margin-top:14px">Fair price uses the player's card rate, minutes, the referee, the direct opponent and the match odds. A pick needs a price 15% over fair at 3+ bookies, not a one-off outlier and not bet365 alone at the top, plus confidence 6/10 or better (8–10 has been the strongest). Super Sub means the Sky Bet or Paddy Power price, with the replacement counted.</p>
   </div>`;
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
