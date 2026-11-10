@@ -3,33 +3,52 @@
 <style>.calc select{width:100%;font:600 16px var(--body);padding:10px;border:2px solid var(--navy);border-radius:8px;background:var(--panel);color:var(--fg);margin:4px 0 10px}
 .calc label{font:700 14px/1 var(--head);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}#out .nums{grid-template-columns:repeat(3,1fr)}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="check.html">Player check</a><a class=on href="combos.html">Combos</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
-<h1>Header combos</h1>
-<p class=meta>Updated 15:03 · Set-piece taker to assist + header threat to score or assist + 1+ headed shot on target. Back only when the bet builder price is above "Back at".</p>
-<h2>Shortlist</h2><p class=meta>The 10 most likely combos in the next few days (Premier League, LaLiga, Serie A, Bundesliga, Champions League, Europa League, Championship).</p>
+<h1>Combos</h1><h2 style="margin-top:14px">Header combo</h2>
+<p class=meta>Updated 16:48 · Set-piece taker to assist + header threat to score or assist + 1+ headed shot on target. Back only when the bet builder price is above "Back at".</p>
+<h3>Shortlist</h3><p class=meta>The 10 most likely combos in the next few days (Premier League, LaLiga, Serie A, Bundesliga, Champions League, Europa League, Championship).</p>
 <p class=none>No games priced in these competitions yet. Combos appear once lineups (predicted or confirmed) are in.</p>
-<h2>Price any combo</h2>
+<h3>Price any header combo</h3>
 <div class="card calc"><label for=g>Game</label><select id=g></select>
 <label for=a>Header threat (to score or assist + headed shot on target)</label><select id=a></select>
 <label for=b>Set-piece taker (to assist)</label><select id=b></select><div id=out></div></div>
 <p class=meta>Backtest over 23,700 games since 2022: these combos land about 3× as often as the legs would on their own, mostly one headed goal from the taker's delivery. Expect long losing runs. Stake small.</p>
+<h2>Shots created + shots</h2>
+<p class=meta>Creator N+ shots created and a teammate M+ shots. The legs are linked: when the creator has a big game, the shooter does too. Back only above "Back at".</p>
+<div class="card calc"><label for=sg>Game</label><select id=sg></select>
+<label for=sc>Creator</label><select id=sc></select><label for=sn>Shots created</label><select id=sn><option>1</option><option selected>2</option><option>3</option></select>
+<label for=ss>Shooter</label><select id=ss></select><label for=sk>Shots</label><select id=sk><option>1</option><option selected>2</option><option>3</option></select><div id=sout></div></div>
+<p class=meta>Backtest over 4,256 team-games in these competitions (Aug 2025 to Nov 2026): at 3+ created and 3+ shots the pair landed 1.4× as often as the legs would on their own; at 2+ and 2+, 1.1×. No Shots Created odds in our feed, so this hasn't been tested against real prices.</p>
 <footer class=foot><i></i>Al's Card Bets</footer></main>
 <script>
-const D={"coef":[-2.584373034155429,0.8294218593038758,0.28715930366813136,0.4280769568450965,-0.052661183440489284,0.32233752870271337],"games":[]};
+const D={"coef":[-2.584373034155429,0.8294218593038758,0.28715930366813136,0.4280769568450965,-0.052661183440489284,0.32233752870271337],"cal":{"1,1":0.997,"1,2":1.074,"1,3":1.172,"2,1":1.011,"2,2":1.111,"2,3":1.248,"3,1":1.078,"3,2":1.231,"3,3":1.379},"games":[]};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const frac=d=>{const v=d-1;return v>=4?Math.round(v)+"/1":v>=1?Math.round(v*2)+"/2":Math.round(v*4)+"/4"};
+const frac=d=>{const v=d-1;if(v>=4)return Math.round(v)+"/1";if(v>=1){const h=Math.round(v*2);return h%2?h+"/2":h/2+"/1"}const q=Math.round(v*4);return q==2?"1/2":q==4?"1/1":q+"/4"};
 function prob(ra,rb){const c=D.coef;const x=[Math.log(ra[0]+.03),Math.log(ra[1]+.03),Math.log(rb[2]+.2),Math.log(rb[3]+.01),Math.log(rb[4]+.02)];
 let e=c[0];x.forEach((v,i)=>e+=c[i+1]*v);return 1-Math.exp(-Math.exp(e))}
 const g=document.getElementById("g"),a=document.getElementById("a"),b=document.getElementById("b"),out=document.getElementById("out");
 if(!D.games.length){g.innerHTML="<option>No games priced yet</option>";}
 g.innerHTML=D.games.map((x,i)=>`<option value=${i}>${esc(x.game)} · ${new Date(x.ko).toLocaleString([],{weekday:"short",hour:"2-digit",minute:"2-digit"})}${x.predicted?" (predicted XI)":""}</option>`).join("")||g.innerHTML;
-function fill(){const G=D.games[+g.value];if(!G)return;const ps=[...G.players];
+function fill(){const G=D.games[+g.value];if(!G)return;const ps=G.players.filter(p=>p.r);
 a.innerHTML=ps.sort((p,q)=>q.r[0]-p.r[0]).map(p=>`<option value=${p.pid}>${esc(p.name)} (${esc(p.team)}) · ${p.r[0].toFixed(2)} headed SoT/90</option>`).join("");
-b.innerHTML=[...G.players].sort((p,q)=>q.r[2]-p.r[2]).map(p=>`<option value=${p.pid}>${esc(p.name)} (${esc(p.team)}) · ${p.r[2].toFixed(1)} corners/90</option>`).join("");
-const A=G.players.find(p=>p.pid===a.value);const Bp=[...b.options].find(o=>G.players.find(p=>p.pid===o.value).team===A.team&&o.value!==A.pid);if(Bp)b.value=Bp.value;calc();}
+b.innerHTML=[...ps].sort((p,q)=>q.r[2]-p.r[2]).map(p=>`<option value=${p.pid}>${esc(p.name)} (${esc(p.team)}) · ${p.r[2].toFixed(1)} corners/90</option>`).join("");
+const A=ps.find(p=>p.pid===a.value);const Bp=A&&[...b.options].find(o=>ps.find(p=>p.pid===o.value).team===A.team&&o.value!==A.pid);if(Bp)b.value=Bp.value;calc();}
 function calc(){const G=D.games[+g.value];if(!G)return;const A=G.players.find(p=>p.pid===a.value),Bq=G.players.find(p=>p.pid===b.value);
 if(!A||!Bq){out.innerHTML="";return}if(A.pid===Bq.pid){out.innerHTML="<p class=meta>Pick two different players.</p>";return}
 const p=prob(A.r,Bq.r);const warn=A.team!==Bq.team?"<p class=meta>These players are on different teams, so the legs aren't linked.</p>":"";
 out.innerHTML=`<div class=nums><div><b>${frac(1/p)}</b><span>fair price</span></div><div><b>${frac(1.15/p)}+</b><span>back at</span></div><div><b>${(p*100).toFixed(1)}%</b><span>chance</span></div></div>${warn}`;}
 g.onchange=fill;a.onchange=()=>{const G=D.games[+g.value];const A=G.players.find(p=>p.pid===a.value);const cur=G.players.find(p=>p.pid===b.value);
 if(cur&&(cur.team!==A.team||cur.pid===A.pid)){const o=[...b.options].find(o=>{const p=G.players.find(q=>q.pid===o.value);return p.team===A.team&&p.pid!==A.pid});if(o)b.value=o.value}calc()};b.onchange=calc;fill();
+const sg=document.getElementById("sg"),sc=document.getElementById("sc"),ss=document.getElementById("ss"),sn=document.getElementById("sn"),sk=document.getElementById("sk"),sout=document.getElementById("sout");
+sg.innerHTML=g.innerHTML;
+const pge=(l,k)=>{let t=0,f=Math.exp(-l);for(let i=0;i<k;i++){t+=f;f*=l/(i+1)}return 1-t};
+function sfill(){const G=D.games[+sg.value];if(!G)return;const ps=G.players.filter(p=>p.sc);
+sc.innerHTML=[...ps].sort((p,q)=>q.sc[0]-p.sc[0]).map(p=>`<option value=${p.pid}>${esc(p.name)} (${esc(p.team)}) · ${p.sc[0].toFixed(1)} created/90</option>`).join("");
+ss.innerHTML=[...ps].sort((p,q)=>q.sc[1]-p.sc[1]).map(p=>`<option value=${p.pid}>${esc(p.name)} (${esc(p.team)}) · ${p.sc[1].toFixed(1)} shots/90</option>`).join("");
+const C=ps.find(p=>p.pid===sc.value);const o=[...ss.options].find(o=>{const p=ps.find(q=>q.pid===o.value);return C&&p.team===C.team&&p.pid!==C.pid});if(o)ss.value=o.value;scalc()}
+function scalc(){const G=D.games[+sg.value];if(!G)return;const C=G.players.find(p=>p.pid===sc.value),S=G.players.find(p=>p.pid===ss.value);
+if(!C||!S){sout.innerHTML="";return}if(C.pid===S.pid){sout.innerHTML="<p class=meta>Pick two different players.</p>";return}
+const n=+sn.value,k=+sk.value,same=C.team===S.team;
+const p=pge(C.sc[0]*Math.min(C.sc[2],90)/90,n)*pge(S.sc[1]*Math.min(S.sc[2],90)/90,k)*(same?(D.cal[n+","+k]||1):1);
+sout.innerHTML=`<div class=nums><div><b>${frac(1/p)}</b><span>fair price</span></div><div><b>${frac(1.15/p)}+</b><span>back at</span></div><div><b>${(p*100).toFixed(1)}%</b><span>chance</span></div></div>${same?"":"<p class=meta>Different teams, so the legs aren't linked.</p>"}`}
+sg.onchange=sfill;sc.onchange=sfill;ss.onchange=scalc;sn.onchange=scalc;sk.onchange=scalc;sfill();
 </script></body></html>
