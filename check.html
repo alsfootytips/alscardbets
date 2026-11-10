@@ -7,7 +7,8 @@
 :root[data-theme="dark"]{--bg:#111316;--fg:#eceef1;--mute:#9aa0a6;--line:#2a2d33;--card:#1a1d21;--good:#3ccf7a;--warn:#f0a640;--bad:#ff6b5b;--acc:#3ccf7a}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font:16px/1.45 -apple-system,system-ui,sans-serif;margin:0 auto;max-width:640px;padding:16px}
-h1{font-size:21px;margin:4px 0}a{color:var(--acc)}
+h1{font-size:21px;margin:14px 0 4px}
+nav{display:flex;gap:6px;padding:4px 0 12px;border-bottom:1px solid var(--line)}nav a{padding:8px 14px;border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card);font-weight:600;font-size:14px}nav a.on{background:var(--acc);color:#fff}a{color:var(--acc)}
 .meta{color:var(--mute);font-size:13px;margin:2px 0 14px}
 input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
 #list{margin:6px 0 0;padding:0;list-style:none}
@@ -29,8 +30,9 @@ h3{font-size:14px;margin:16px 0 6px;color:var(--mute);font-weight:600}
 .angle{display:inline-block;padding:2px 9px;border-radius:99px;font-size:13px;font-weight:600;background:var(--bg)}
 .none{color:var(--mute);margin-top:14px}
 </style></head><body>
+<nav><a href="picks.html">Picks</a><a class="on" href="check.html">Check a player</a><a href="index.html">P/L record</a></nav>
 <h1>Check a player</h1>
-<p class="meta">Type a player in today's games (priced once lineups are out). <a href="picks.html">Today's picks</a> · <a href="index.html">P/L record</a></p>
+<p class="meta">Type a player in today's games (priced once lineups are out).</p>
 <input id="q" placeholder="Player name, e.g. Saka" autocomplete="off" autofocus>
 <ul id="list"></ul>
 <div id="out"></div>
@@ -76,12 +78,12 @@ function show(p) {
     <div class="nums">
       <div><b>${p.best ?? "–"}</b><span>best · ${esc(p.book || "none")}</span></div>
       <div><b>${p.fair ?? "–"}</b><span>fair price (${chance})</span></div>
-      <div><b>${v.need ?? "–"}</b><span>value at or above</span></div>
+      <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
-    <div class="books">${shown}${p.n_books ? ` · ${p.n_books} books` : ""}</div>
+    <div class="books">${p.super_sub ? "<b>Super Sub</b> at " + esc(p.book) + " · " : ""}Value at ${v.need ?? "–"} or bigger · ${shown}${p.n_books ? ` · ${p.n_books} books` : ""}</div>
     <span class="angle">${angleTxt}</span>
     <h3>For and against (regardless of price)</h3>${fac}
-    <p class="sub" style="margin-top:12px">Fair price comes from his card rate, minutes, referee, his direct opponent and whether his team are big favourites. Value = best price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price (the backtest showed those lose).</p>
+    <p class="sub" style="margin-top:12px">Fair price comes from his card rate, minutes, referee, his direct opponent and whether his team are big favourites. Value = price at least 15% over fair, at 3+ books, not a one-book outlier, and bet365 not the top price. Confidence: 8–10 = the separate fitted model agrees and the matchup is good (+27% in the backtest); 6–7 = fitted model agrees; under 6 isn't alerted (those lost money). Super Sub = Sky Bet / Paddy Power price used when within 10% of the best, and the fair price counts the replacement's minutes.</p>
   </div>`;
   history.replaceState(null, "", "?p=" + encodeURIComponent(p.player));
 }
