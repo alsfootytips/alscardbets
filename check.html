@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Player Check · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
-<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a class=on href="check.html">Players</a><a href="combos.html">Combos</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
-<h1>Player check</h1>
-<p class="meta">Any player with a card price in the next few days. <a href="check.html?example">Example</a></p>
-<input id="q" placeholder="Search a player" autocomplete="off" autofocus>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
+<h1>Games</h1>
+<p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
+<input id="q" placeholder="Search a player or team" autocomplete="off">
 <ul id="list"></ul>
 <div id="out"></div>
 <div id="sharebox" hidden><div class="sheet"><div class="img"></div><div class="acts"><button class="send" type="button">Send to group</button><a class="save">Save image</a><button class="close" type="button">Close</button></div></div></div>
@@ -30,7 +30,7 @@ fetch((EXAMPLE ? "example.json?" : "picks_latest.json?") + Date.now()).then(r =>
   const gq = new URLSearchParams(location.search).get("g");
   if (gq && GAMES[gq]) { gameView(GAMES[gq]); return; }
   const p = new URLSearchParams(location.search).get("p") || (EXAMPLE ? "Granit Xhaka" : "");
-  if (p) { q.value = p; search(); }
+  if (p) { q.value = p; search(); } else if (!EXAMPLE) gamesList();
   if (!players.length && !EXAMPLE) out.innerHTML = '<p class="none">No players priced in the next few days yet. <a href="check.html?example">See an example analysis</a>.</p>';
 }).catch(() => { out.innerHTML = '<p class="none">No games priced right now. Check back once lineups are announced.</p>'; });
 
@@ -38,7 +38,7 @@ const q = document.getElementById("q"), list = document.getElementById("list"), 
 function search() {
   const t = norm(q.value.trim());
   out.innerHTML = "";
-  if (t.length < 2) { list.innerHTML = ""; return; }
+  if (t.length < 2) { list.innerHTML = ""; if (!t) gamesList(); return; }
   const hits = players.filter(p => norm(p.player).includes(t) || norm(p.team).includes(t));
   if (hits.length === 1) { list.innerHTML = ""; show(hits[0]); return; }
   list.innerHTML = hits.slice(0, 30).map((p, i) => `<li data-i="${players.indexOf(p)}">${esc(p.player)} <small>${esc(p.team)} · ${esc(p.game)} · ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}${p.predicted ? " · predicted lineup" : ""}${p.bench ? " · bench" : ""}</small></li>`).join("")
@@ -50,7 +50,7 @@ list.addEventListener("click", e => { const li = e.target.closest("li[data-i]");
 
 // ---------- pitch: the player v their direct opponent ----------
 const NX = 12, NY = 8, L = 105, W = 68;
-const DARK = matchMedia("(prefers-color-scheme: dark)").matches;
+const DARK = false;   // site is always white
 // pitch colours: light page = pale pitch with grey lines; dark page and the share image = dark pitch
 const colours = img => (img || DARK)
   ? {line: 'stroke="rgba(255,255,255,.45)" stroke-width=".35"', own: "#ffffff", them: "#f7b3b5", ink: "#ffffff", yel: "#F2D022", red: "#ff5a5f", ora: "#ff9f43"}
@@ -215,45 +215,104 @@ async function shareCard(p) {
 }
 document.addEventListener("click", e => { if (e.target.closest("#sharebox .close") || e.target.id === "sharebox") document.getElementById("sharebox").hidden = true; });
 
-// ---------- game foul map: who wins the most fouls, and who plays around them ----------
-function gameView(g, sel = 0) {
-  const pl = g.pitch || [], fm = g.foul_map || [], cur = fm[sel];
-  const cards = Object.fromEntries((g.cards || []).map(c => [c.player, c]));
-  const magnets = new Set(cur ? [cur.pid] : []), near = new Set(cur ? cur.near.map(n => n.pid) : []);
-  const pos = x => [x.side === "H" ? x.x * 52.5 : L - x.x * 52.5, x.side === "H" ? x.y * W : W - x.y * W];
-  const C = PAGE, LN = C.line;
-  let heat = "";
-  if (cur) { const x = pl.find(q => q.pid === cur.pid); if (x) heat += heatRects(x.heat, x.side === "A", RED, x.est); }
-  for (const n of cur ? cur.near.slice(0, 1) : []) { const x = pl.find(q => q.pid === n.pid); if (x) heat += heatRects(x.heat, x.side === "A", YEL, true); }
-  const tag = (x, col) => { const [X, Y] = pos(x), t = last(x.name), w = t.length * 2.3 + 3, up = Y > 8 ? -6.2 : 3.6;
-    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="2.5" fill="${col}" stroke="#172A3A" stroke-width=".7"/>
-      <rect x="${(X - w / 2).toFixed(1)}" y="${(Y + up).toFixed(1)}" width="${w.toFixed(1)}" height="4.6" rx="1.2" fill="#172A3A" opacity=".85"/>
-      <text x="${X.toFixed(1)}" y="${(Y + up + 3.4).toFixed(1)}" font-size="3.6" text-anchor="middle" fill="#fff" font-weight="600" font-family="Inter,Helvetica,Arial,sans-serif">${t}</text>`; };
-  const dots = pl.filter(x => !magnets.has(x.pid) && !near.has(x.pid)).map(x => { const [X, Y] = pos(x);
-    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="1.6" fill="${x.side === "H" ? C.own : C.them}" opacity=".7"/>`; }).join("");
-  const tags = pl.filter(x => near.has(x.pid) && !magnets.has(x.pid)).map(x => tag(x, YEL)).join("") + pl.filter(x => magnets.has(x.pid)).map(x => tag(x, RED)).join("");
-  const svg = `<svg viewBox="-2 -2 ${L + 4} ${W + 4}" class="pitch" role="img" aria-label="Foul map for ${esc(g.game)}">
-    <defs><filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>
-    <rect x="0" y="0" width="${L}" height="${W}" fill="none" ${LN}/><line x1="52.5" y1="0" x2="52.5" y2="${W}" ${LN}/>
-    <circle cx="52.5" cy="34" r="9.15" fill="none" ${LN}/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>
-    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>${heat}${dots}${tags}</svg>`;
+// ---------- game view: grid heatmap of where fouls happen, both lineups, last-5 fouls under each player ----------
+// Vertical pitch, home team at the bottom attacking up. Heat grids are 12 (length, from own goal) x 8 (width).
+function vpos(x) {               // [left, top] as 0..1; keeper ~4% from the goal line, strikers ~44% (spread rows apart)
+  const d = 0.045 + Math.max(0, x.x - 0.1) / 0.77 * 0.40, l = 0.06 + 0.88 * (x.side === "H" ? x.y : 1 - x.y);
+  return [l, x.side === "H" ? 1 - d : d];
+}
+function cellOf(x, i, j) { return x.side === "H" ? [11 - i, j] : [i, 7 - j]; }                // heat cell -> [row from top, col]
+function foulGrid(players, mode) {
+  // mode 0: home commit / away win; mode 1: away commit / home win. Cell = sqrt(commit x win): where the two meet.
+  const C = Array.from({length: 12}, () => Array(8).fill(0)), Wn = Array.from({length: 12}, () => Array(8).fill(0));
+  for (const x of players) {
+    if (!x.heat || x.pos === "G") continue;
+    const commits = (mode === 0) === (x.side === "H"), w = commits ? (x.f ?? 1.1) : (x.fw ?? 1.2), T = commits ? C : Wn;
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 8; j++) { const [r, c] = cellOf(x, i, j); T[r][c] += x.heat[i][j] * w; }
+  }
+  const G = C.map((row, r) => row.map((v, c) => Math.sqrt(v * Wn[r][c])));
+  const mx = Math.max(...G.flat()) || 1;
+  return G.map(row => row.map(v => v / mx));
+}
+const SHADES = ["transparent", "rgba(229,72,77,.10)", "rgba(229,72,77,.22)", "rgba(229,72,77,.38)", "rgba(229,72,77,.56)", "rgba(229,72,77,.75)"];
+const shade = v => SHADES[Math.min(5, Math.floor(v * 5.999))];
+function boxes(vals) {           // last-5 numbers, most recent first
+  return `<span class="l5">${(vals || []).slice(0, 5).map(v => v == null ? `<i class="na">–</i>` : `<i class="b${Math.min(v, 4)}">${v}</i>`).join("")}</span>`;
+}
+function gridPitch(players, grid, opts) {
+  const {confirmed, cardOf, statOf, focus} = opts;
+  const cells = grid.map(row => row.map(v => `<i style="background:${shade(v)}"></i>`).join("")).join("");
+  const cards = players.map(x => {
+    const [l, t] = vpos(x), c = cardOf ? cardOf(x) : null, faded = focus && !focus.has(x.pid);
+    return `<a class="pc ${x.side === "H" ? "h" : "a"}${faded ? " dim" : ""}" href="?p=${encodeURIComponent(x.name)}" style="left:${(l * 100).toFixed(1)}%;top:${(t * 100).toFixed(1)}%">
+      <span class="hd"><span class="dot">${x.shirt ?? ""}</span>${c ? `<span class="odds${c.v ? " v" : ""}">${od(c.best)}</span>` : ""}</span><span class="nm">${esc(last(x.name))}</span>${statOf ? boxes(statOf(x)) : ""}</a>`;
+  }).join("");
+  return `<div class="vpitch ${confirmed ? "ok" : "pred"}"><div class="grid">${cells}</div><div class="lines"><b class="half"></b><b class="circle"></b><b class="box t"></b><b class="box b"></b></div>${cards}</div>`;
+}
+function gameView(g, mode = 0) {
+  const pl = (g.pitch || []).filter(x => x.pos !== "G" || true), fm = g.foul_map || [];
+  const cards = Object.fromEntries((g.cards || []).map(c => [c.pid, c]));
   const [home, away] = g.game.split(" v ");
-  const price = n => { const c = cards[n]; if (!c) return "";
-    const v = c.edge != null && c.edge >= 0.15; return ` <span class="np${v ? " v" : ""}">${od(c.best)}${c.fair ? ` · fair ${c.fair}` : ""}</span>`; };
-  const items = fm.map((m, i) => `<li class="${i === sel ? "on" : ""}" data-i="${i}"><div><span class="sw" style="background:${RED}"></span><b>${esc(m.name)}</b> <small style="display:inline">${esc(m.side === "H" ? home : away)}</small></div>
-      <div class="fw">Wins <b>${m.fw.toFixed(1)}</b> fouls a game</div>
-      ${m.near.length ? `<div class="nr">Around them: ${m.near.map(n => `<a href="?p=${encodeURIComponent(n.name)}">${esc(n.name)}</a>${price(n.name)}`).join(", ")}</div>` : ""}</li>`).join("");
-  out.innerHTML = `<div class="card">
-    <div class="name">${esc(g.game)}</div>
-    <div class="sub">${new Date(g.kickoff).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})} · ${esc(home)} attacking →${g.lineup !== "standard" ? " · lineup not confirmed" : ""}</div>
-    <h3>Foul map</h3>
-    <div class="vs"><span><i style="background:${RED}"></i>${cur ? esc(cur.name) : "wins lots of fouls"}</span><span><i style="background:${YEL}"></i>plays in their area</span></div>${fm.length > 1 ? `<p class="cap" style="margin:0 0 6px">Tap a player below to switch.</p>` : ""}
-    ${svg}
-    ${items ? `<ul class="magnets">${items}</ul>` : `<p class="cap">No one in this game wins ${"1.8"}+ fouls a game.</p>`}
-    <p class="cap">Price shown is the best bookie price and our fair price for that player to be carded. Tap a name for the full breakdown.</p>
+  const commitSide = mode === 0 ? "H" : "A";
+  const commitTeam = mode === 0 ? home : away, winTeam = mode === 0 ? away : home;
+  const grid = foulGrid(pl, mode);
+  const pitch = gridPitch(pl, grid, {
+    confirmed: g.lineup === "standard",
+    cardOf: x => { const c = cards[x.pid]; return c && c.best ? {best: c.best, v: c.edge != null && c.edge >= 0.15} : null; },
+    statOf: x => (x.rf || []).map(r => r == null ? null : (x.side === commitSide ? r[0] : r[1])),
+  });
+  const magnets = fm.filter(m => m.side !== commitSide).slice(0, 3).map(m => `<li><a href="?p=${encodeURIComponent(m.name)}">${esc(m.name)}</a> wins <b>${m.fw.toFixed(1)}</b> fouls a game
+      ${m.near.length ? `<small>Around them: ${m.near.slice(0, 2).map(n => { const c = Object.values(cards).find(c => c.player === n.name);
+        return `<a href="?p=${encodeURIComponent(n.name)}">${esc(n.name)}</a>${c && c.best ? ` <span class="np${c.edge >= 0.15 ? " v" : ""}">${od(c.best)}</span>` : ""}`; }).join(", ")}</small>` : ""}</li>`).join("");
+  out.innerHTML = `<div class="card gv">
+    <div class="namerow"><div><div class="name">${esc(g.game)}</div>
+    <div class="sub">${new Date(g.kickoff).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})} · ${g.lineup === "standard" ? "lineups confirmed" : "predicted lineups"}</div></div>
+    <button class="sharebtn" id="swap" type="button">Swap ⇄</button></div>
+    <p class="legend"><span><i class="kh"></i>${esc(commitTeam)}: fouls committed</span><span><i class="ka"></i>${esc(winTeam)}: fouls won</span></p>
+    ${pitch}
+    <p class="cap">Darker squares = where ${esc(commitTeam)} commit fouls and ${esc(winTeam)} win them. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
+    ${magnets ? `<h3>${esc(winTeam)} players who win the most fouls</h3><ul class="facts">${magnets}</ul>` : ""}
   </div>`;
-  out.querySelectorAll("ul.magnets li").forEach(li => li.onclick = e => { if (!e.target.closest("a")) gameView(g, +li.dataset.i); });
+  document.getElementById("swap").onclick = () => gameView(g, 1 - mode);
   history.replaceState(null, "", "?g=" + g.fotmob_id);
+}
+
+// ---------- games list (default view) ----------
+function gamesList() {
+  const gs = Object.values(GAMES).filter(g => (g.pitch || []).length).sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  if (!gs.length) { out.innerHTML = '<p class="none">No games with lineups yet.</p>'; return; }
+  let html = "", day = "";
+  for (const g of gs) {
+    const d = new Date(g.kickoff).toLocaleDateString([], {weekday: "long", day: "numeric", month: "short"});
+    if (d !== day) { html += `${day ? "</div>" : ""}<h2>${d}</h2><div class="glist">`; day = d; }
+    const nv = (g.cards || []).filter(c => c.value).length;
+    html += `<a class="grow" href="?g=${g.fotmob_id}"><span><b>${esc(g.game)}</b><small>${new Date(g.kickoff).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})} · ${esc(String(g.league).replace(/ Grp\. \w+/, "").replace(" (INT)", ""))}${g.lineup === "standard" ? " · lineups out" : ""}</small></span>${nv ? `<em>${nv} value</em>` : ""}</a>`;
+  }
+  out.innerHTML = html + "</div>";
+}
+// ---------- player page matchup: same grid pitch, only the player and their direct opponent ----------
+function matchupGrid(p) {
+  const pl = p.pitch || []; const me = pl.find(x => x.pid === p.pid); if (!me) return "";
+  const opp = pl.find(x => x.side !== me.side && x.name === p.opp);
+  const G = Array.from({length: 12}, () => Array(8).fill(0));
+  if (me.heat && opp && opp.heat) {
+    const A = Array.from({length: 12}, () => Array(8).fill(0)), B = Array.from({length: 12}, () => Array(8).fill(0));
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 8; j++) { let [r, c] = cellOf(me, i, j); A[r][c] = me.heat[i][j]; [r, c] = cellOf(opp, i, j); B[r][c] = opp.heat[i][j]; }
+    let mx = 0; for (let r = 0; r < 12; r++) for (let c = 0; c < 8; c++) { G[r][c] = Math.sqrt(A[r][c] * B[r][c]); mx = Math.max(mx, G[r][c]); }
+    for (let r = 0; r < 12; r++) for (let c = 0; c < 8; c++) G[r][c] /= mx || 1;
+  }
+  const pitch = gridPitch(pl, G, {confirmed: !p.predicted, focus: new Set([me.pid, opp && opp.pid]),
+    statOf: x => (x.rf || []).map(r => r == null ? null : (x.pid === me.pid ? r[0] : r[1]))});
+  const ov = p.opp_overlap != null ? Math.round(p.opp_overlap * 100) : null, fw = p.opp_fouls_won_raw90 ?? p.opp_fouls_won90;
+  const facts = opp ? [fw != null ? `${last(p.opp)} wins <b>${(+fw).toFixed(1)}</b> fouls a game` : null,
+    p.fouls90 ? `${last(p.player)} commits <b>${(+p.fouls90).toFixed(1)}</b> fouls a game` : null,
+    ov != null && !me.est && !opp.est ? `They share <b>${ov}%</b> of the same space` : null].filter(Boolean) : [];
+  const est = [me.est && last(p.player), opp && opp.est && last(p.opp)].filter(Boolean);
+  return `<h3>Matchup: ${esc(p.player)} v ${esc(p.opp || "no direct opponent")}</h3>${pitch}
+    <p class="cap">Darker squares = where they meet most. Boxes: ${esc(last(p.player))}'s fouls committed and ${esc(last(p.opp || ""))}'s fouls won, last 5 games, most recent first.</p>
+    ${facts.length ? `<ul class="facts">${facts.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}
+    ${est.length ? `<p class="cap">No tracking data for ${est.join(" or ")}: position estimated.</p>` : ""}
+    <p class="cap"><a href="?g=${p.gid}">See the whole game's foul heatmap</a></p>`;
 }
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
@@ -315,7 +374,7 @@ function show(p) {
       <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
     ${p.why ? `<h3>Why they could get booked</h3><p class="whyline">${esc(p.why)}</p>` : ""}
-    ${pitchSvg(p)}
+    ${matchupGrid(p)}
     <details class="more full"><summary>More detail</summary>
     ${ranked.length ? "<h3>For and against</h3>" + ranked.map(facRow).join("") : ""}
     ${statsTable(p)}
