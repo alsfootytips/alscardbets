@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Results · Al's Card Bets</title>
 <meta property="og:title" content="Al's Card Bets: Profit &amp; Loss">
-<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=874c922e"><link rel=icon href="logo.jpg">
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=390f2575"><link rel=icon href="logo.jpg">
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:0 16px 40px;display:grid;gap:14px}
 .pl-h{margin:26px 0 0;font-size:24px;font-weight:600}.sum{margin:0;color:var(--muted);font-size:14px}.sum b{color:var(--fg);font-weight:600}
@@ -16,7 +16,7 @@
 .pos{color:var(--accent)!important}.neg{color:var(--bad)!important}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;display:grid;gap:6px}
 .card h2{margin:0;font-size:15px;font-weight:600}.note{margin:0;font-size:13px;color:var(--muted)}
-#chart svg{width:100%;height:auto;display:block}
+#chart svg,#clv svg,.pchart svg{width:100%;height:auto;display:block}
 .scroll{overflow:auto;max-height:34rem}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;font-weight:500;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
@@ -42,6 +42,7 @@ td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
     <div class="tile"><span>Beat the closing price</span><b id="t-clv">—</b></div>
   </section>
   <section class="card"><h2>Running profit</h2><p class="note">Cumulative units after each settled bet, in the order they were placed.</p><div id="chart"></div></section>
+  <section class="card"><h2>Price v closing price</h2><p class="note">Each bar is one bet: how much better (green) or worse (red) the price we took was than the best price at kickoff. The line is the running average. Beating the close over time is the clearest sign the model is finding real value.</p><div id="clv"></div></section>
   <section class="card"><h2>Pick log</h2><p class="note">Every pick, newest first.</p>
     <div class="scroll"><table><thead><tr><th>Date</th><th>Player</th><th>Game</th><th>Bet</th><th class="num">Odds</th><th class="num">Close</th><th class="num">Stake</th><th>Result</th><th class="num">P/L</th></tr></thead><tbody id="log"></tbody></table></div>
   </section>
@@ -68,6 +69,16 @@ const area=d+` L${x(cum.length-1)} ${y(Math.max(lo,0))} L${x(0)} ${y(Math.max(lo
 const dots=cum.map((p,i)=>p.r.result==='W'?`<circle cx="${x(i)}" cy="${y(p.c)}" r="3" fill="var(--accent)"><title>${p.r.player} won · ${sign(p.c)}</title></circle>`:'').join('');
 document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Running profit">${g}<path d="${area}" fill="var(--accent)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>${dots}<text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--muted)">${cum.length} bets</text></svg>`;
 })();
+// closing line value
+(function(){const rows=PICKS.filter(r=>r.close).sort((a,b)=>a.id-b.id);const el=document.getElementById('clv');
+if(!rows.length){el.innerHTML='<p class="note">Closing prices are recorded from 12 Nov 2026; the chart fills in as bets settle.</p>';return;}
+const v=rows.map(r=>r.odds/r.close-1);let run=0;const avg=v.map((x,i)=>(run+=x)/(i+1));
+const W=420,H=220,L=40,R=8,T=12,B=24;const lim=Math.max(.2,...v.map(Math.abs));const y=x=>T+(H-T-B)*(1-(x+lim)/(2*lim));
+const bw=Math.max(3,Math.min(26,(W-L-R)/rows.length*.7)),x=i=>L+(W-L-R)*((i+.5)/rows.length);
+let g='';for(const t of [-lim,-lim/2,0,lim/2,lim]){g+=`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"${t===0?'':' stroke-dasharray="3 4"'}/><text x="${L-6}" y="${y(t)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${t>0?'+':''}${Math.round(t*100)}%</text>`;}
+const bars=v.map((c,i)=>`<rect x="${(x(i)-bw/2).toFixed(1)}" y="${Math.min(y(0),y(c)).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,Math.abs(y(c)-y(0))).toFixed(1)}" rx="2" fill="${c>=0?'var(--accent)':'var(--bad)'}" opacity=".85"><title>${rows[i].player}: took ${rows[i].odds}, closed ${rows[i].close} (${c>=0?'+':''}${Math.round(c*100)}%)</title></rect>`).join('');
+const line=avg.map((a,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(a).toFixed(1)).join(' ');
+el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Closing line value per bet">${g}${bars}<path d="${line}" fill="none" stroke="var(--fg)" stroke-width="2"/><text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--muted)">${rows.length} bets · average ${avg[avg.length-1]>=0?'+':''}${(avg[avg.length-1]*100).toFixed(1)}%</text></svg>`;})();
 // log
 const tb=document.getElementById('log');const fmtD=d=>new Date(d+'T12:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 [...PICKS].sort((a,b)=>b.id-a.id).forEach(r=>{const tr=document.createElement('tr');const st=r.result==='W'?['Won','w']:r.result==='L'?['Lost','l']:['Open','o'];

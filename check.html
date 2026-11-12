@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=874c922e"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=390f2575"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
@@ -320,6 +320,31 @@ function matchupGrid(p) {
     ${est.length ? `<p class="cap">No tracking data for ${est.join(" or ")}: position estimated.</p>` : ""}
     <p class="cap"><a href="?g=${p.gid}">See the whole game's foul heatmap</a></p>`;
 }
+
+// ---------- price over time (player page) ----------
+function priceChart(p) {
+  const h = (p.hist || []).filter(r => r[1]); if (h.length < 2) return "";
+  const W = 420, H = 210, L = 34, R = 8, T = 12, B = 24;
+  const ts = h.map(r => +new Date(r[0])), end = Math.max(ts[ts.length - 1], Math.min(+new Date(p.ko), Date.now()));
+  const t0 = ts[0], t1 = Math.max(end, t0 + 3600e3);
+  const vals = h.flatMap(r => [r[1], r[3], r[3] * 1.15]);
+  let lo = Math.min(...vals) * 0.92, hi = Math.max(...vals) * 1.06;
+  const x = t => L + (W - L - R) * (t - t0) / (t1 - t0), y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  let step = "", fairL = "", zone = "";
+  h.forEach((r, i) => { const X = x(ts[i]), Xn = i + 1 < h.length ? x(ts[i + 1]) : x(t1);
+    step += `${i ? "L" : "M"}${X.toFixed(1)} ${y(r[1]).toFixed(1)} L${Xn.toFixed(1)} ${y(r[1]).toFixed(1)} `;
+    fairL += `${i ? "L" : "M"}${X.toFixed(1)} ${y(r[3]).toFixed(1)} L${Xn.toFixed(1)} ${y(r[3]).toFixed(1)} `;
+    zone += `<rect x="${X.toFixed(1)}" y="${T}" width="${Math.max(0, Xn - X).toFixed(1)}" height="${Math.max(0, y(r[3] * 1.15) - T).toFixed(1)}" fill="var(--accent)" opacity=".10"/>`; });
+  const dots = h.map((r, i) => `<circle cx="${x(ts[i]).toFixed(1)}" cy="${y(r[1]).toFixed(1)}" r="3" fill="var(--fg)"><title>${new Date(ts[i]).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}: ${od(r[1])} ${esc(r[2])} (fair ${r[3]})</title></circle>`).join("");
+  let grid = ""; const n = 4; for (let k = 0; k <= n; k++) { const v = lo + (hi - lo) * k / n;
+    grid += `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--line)"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--muted)">${v.toFixed(1)}</text>`; }
+  const fmt = t => new Date(t).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"});
+  const first = h[0], lastp = h[h.length - 1];
+  return `<h3>Price over time</h3><div class="pchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Best price and fair price over time">${grid}${zone}
+    <path d="${fairL}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/><path d="${step}" fill="none" stroke="var(--fg)" stroke-width="2"/>${dots}
+    <text x="${L}" y="${H - 6}" font-size="11" fill="var(--muted)">${fmt(t0)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t1)}</text></svg></div>
+    <p class="cap">Solid line: best price at our books (${od(first[1])} → ${od(lastp[1])}). Dashed: our fair price. Green band: value zone (15%+ over fair).</p>`;
+}
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
   const KEEP = ["Fouls", "Fouls won", "Tackles", "Duels won", "Dribbled past"];
@@ -380,6 +405,7 @@ function show(p) {
       <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
     ${p.why ? `<h3>Why they could get booked</h3><p class="whyline">${esc(p.why)}</p>` : ""}
+    ${priceChart(p)}
     ${matchupGrid(p)}
     <details class="more full"><summary>More detail</summary>
     ${ranked.length ? "<h3>For and against</h3>" + ranked.map(facRow).join("") : ""}
