@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-12T22:16:00.447656+00:00",
+ "updated": "2026-11-12T22:18:30.162345+00:00",
  "picks": [
   {
    "id": 4,
@@ -572,7 +572,7 @@
    "game": "Italy v France",
    "kind": "single",
    "odds": 6.0,
-   "bookie": "Sky/Paddy",
+   "bookie": "BetMGM",
    "stake": 1,
    "result": null,
    "pl": 0

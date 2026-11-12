@@ -375,7 +375,7 @@ function show(p) {
     <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
     <p class="vtext">${esc(v.text || "")}</p>
     <div class="nums">
-      <div><b>${od(p.best)}</b><span>${esc(p.book || "no price")}${p.super_sub ? " · Super Sub" : ""}</span></div>
+      <div><b>${od(p.best)}</b><span>${esc(p.book || "no price")}${p.super_sub ? " · " + esc(p.sub_cover || "Super Sub") : ""}</span></div>
       <div><b>${p.fair ?? "–"}</b><span>fair (${chance})</span></div>
       <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
