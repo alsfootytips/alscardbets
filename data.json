@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-12T22:20:55.254543+00:00",
+ "updated": "2026-11-12T22:28:50.976720+00:00",
  "picks": [
   {
    "id": 4,
@@ -576,6 +576,18 @@
    "stake": 1,
    "result": "L",
    "pl": -1
+  },
+  {
+   "id": 87,
+   "date": "2026-11-12",
+   "player": "Ruiz + Alexander-Arnold",
+   "game": "Czechia v Spain / England v Croatia",
+   "kind": "double",
+   "odds": 76.0,
+   "bookie": "BetMGM",
+   "stake": 0.5,
+   "result": "L",
+   "pl": -0.5
   }
  ]
 }
