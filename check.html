@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=874c922e"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
@@ -50,7 +50,7 @@ list.addEventListener("click", e => { const li = e.target.closest("li[data-i]");
 
 // ---------- pitch: the player v their direct opponent ----------
 const NX = 12, NY = 8, L = 105, W = 68;
-const DARK = false;   // site is always white
+const DARK = true;    // site is black with white text
 // pitch colours: light page = pale pitch with grey lines; dark page and the share image = dark pitch
 const colours = img => (img || DARK)
   ? {line: 'stroke="rgba(255,255,255,.45)" stroke-width=".35"', own: "#ffffff", them: "#f7b3b5", ink: "#ffffff", yel: "#F2D022", red: "#ff5a5f", ora: "#ff9f43"}
@@ -270,7 +270,7 @@ function gameView(g, mode = 0) {
     <button class="sharebtn" id="swap" type="button">Swap ⇄</button></div>
     <p class="legend"><span><i class="kh"></i>${esc(commitTeam)}: fouls committed</span><span><i class="ka"></i>${esc(winTeam)}: fouls won</span></p>
     ${pitch}
-    <p class="cap">Darker squares = where ${esc(commitTeam)} commit fouls and ${esc(winTeam)} win them. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
+    <p class="cap">Brighter red squares = where ${esc(commitTeam)} commit fouls and ${esc(winTeam)} win them. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
     ${magnets ? `<h3>${esc(winTeam)} players who win the most fouls</h3><ul class="facts">${magnets}</ul>` : ""}
   </div>`;
   document.getElementById("swap").onclick = () => gameView(g, 1 - mode);
@@ -279,14 +279,20 @@ function gameView(g, mode = 0) {
 
 // ---------- games list (default view) ----------
 function gamesList() {
-  const gs = Object.values(GAMES).filter(g => (g.pitch || []).length).sort((a, b) => a.kickoff.localeCompare(b.kickoff));
-  if (!gs.length) { out.innerHTML = '<p class="none">No games with lineups yet.</p>'; return; }
+  // only games with a card market: at least one player with a bookie card price
+  const gs = Object.values(GAMES).filter(g => (g.pitch || []).length && (g.cards || []).some(c => c.best))
+    .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  if (!gs.length) { out.innerHTML = '<p class="none">No games with card markets and lineups yet.</p>'; return; }
   let html = "", day = "";
   for (const g of gs) {
     const d = new Date(g.kickoff).toLocaleDateString([], {weekday: "long", day: "numeric", month: "short"});
     if (d !== day) { html += `${day ? "</div>" : ""}<h2>${d}</h2><div class="glist">`; day = d; }
-    const nv = (g.cards || []).filter(c => c.value).length;
-    html += `<a class="grow" href="?g=${g.fotmob_id}"><span><b>${esc(g.game)}</b><small>${new Date(g.kickoff).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})} · ${esc(String(g.league).replace(/ Grp\. \w+/, "").replace(" (INT)", ""))}${g.lineup === "standard" ? " · lineups out" : ""}</small></span>${nv ? `<em>${nv} value</em>` : ""}</a>`;
+    const nv = (g.cards || []).filter(c => c.value && c.best).length;
+    const lg = String(g.league).replace(/ Grp\. \w+/, "").replace(" (INT)", "");
+    html += `<a class="grow" href="?g=${g.fotmob_id}">
+      <span class="gt">${new Date(g.kickoff).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}</span>
+      <span class="gn"><b>${esc(g.game)}</b><small>${esc(lg)}${g.lineup === "standard" ? " · lineups out" : ""}</small></span>
+      <span class="gv2">${nv ? `<em>${nv} value</em>` : ""}<i>›</i></span></a>`;
   }
   out.innerHTML = html + "</div>";
 }
@@ -309,7 +315,7 @@ function matchupGrid(p) {
     ov != null && !me.est && !opp.est ? `They share <b>${ov}%</b> of the same space` : null].filter(Boolean) : [];
   const est = [me.est && last(p.player), opp && opp.est && last(p.opp)].filter(Boolean);
   return `<h3>Matchup: ${esc(p.player)} v ${esc(p.opp || "no direct opponent")}</h3>${pitch}
-    <p class="cap">Darker squares = where they meet most. Boxes: ${esc(last(p.player))}'s fouls committed and ${esc(last(p.opp || ""))}'s fouls won, last 5 games, most recent first.</p>
+    <p class="cap">Brighter red squares = where they meet most. Boxes: ${esc(last(p.player))}'s fouls committed and ${esc(last(p.opp || ""))}'s fouls won, last 5 games, most recent first.</p>
     ${facts.length ? `<ul class="facts">${facts.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}
     ${est.length ? `<p class="cap">No tracking data for ${est.join(" or ")}: position estimated.</p>` : ""}
     <p class="cap"><a href="?g=${p.gid}">See the whole game's foul heatmap</a></p>`;
