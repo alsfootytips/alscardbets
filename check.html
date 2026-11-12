@@ -7,22 +7,28 @@
 <input id="q" placeholder="Search a player" autocomplete="off" autofocus>
 <ul id="list"></ul>
 <div id="out"></div>
+<div id="sharebox" hidden><div class="sheet"><div class="img"></div><div class="acts"><button class="send" type="button">Send to group</button><a class="save">Save image</a><button class="close" type="button">Close</button></div></div></div>
 <footer class=foot><i></i>Al's Card Bets</footer></main>
 <script>
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ø/g,"o").toLowerCase();
 let players = [], updated = "";
+const GAMES = {};
+const od = x => x == null ? "–" : String(+(+x).toFixed(2));   // 4.3333335 -> 4.33
 const EXAMPLE = new URLSearchParams(location.search).has("example");
 if (EXAMPLE) document.querySelector(".meta").outerHTML = '<p class="meta example">Example analysis from a past game: <b>Bournemouth v Sunderland, Sun 18 Oct 2026</b>, priced 10 minutes before kickoff. Search any player in that game. <a href="check.html">Back to live players</a></p>';
 fetch((EXAMPLE ? "example.json?" : "picks_latest.json?") + Date.now()).then(r => r.json()).then(d => {
   for (const g of Object.values(d)) {
     if (g.status !== "ok") continue;
+    GAMES[String(g.fotmob_id)] = g;
     if (g.priced_at > updated) updated = g.priced_at;
-    for (const c of g.cards || []) if (c.best || (g.fair_only && c.fair)) players.push({...c, fair_only: !!g.fair_only, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard", lineup: g.lineup});
+    for (const c of g.cards || []) if (c.best || (g.fair_only && c.fair)) players.push({...c, gid: g.fotmob_id, fair_only: !!g.fair_only, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: g.pitch || [], predicted: g.lineup !== "standard", lineup: g.lineup});
     for (const b of g.bench || []) if (b.best) players.push({...b, bench: true, game: g.game, league: g.league, ko: g.kickoff, ref: g.referee || {}, pitch: [], tcards: g.tcards, predicted: g.lineup !== "standard"});
     for (const p of players) if (p.game === g.game) p.tcards = g.tcards;
   }
   document.querySelector(".meta").insertAdjacentHTML("beforeend", ` · ${players.length} players priced` + (updated ? `, updated ${new Date(updated).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}` : ""));
+  const gq = new URLSearchParams(location.search).get("g");
+  if (gq && GAMES[gq]) { gameView(GAMES[gq]); return; }
   const p = new URLSearchParams(location.search).get("p") || (EXAMPLE ? "Granit Xhaka" : "");
   if (p) { q.value = p; search(); }
   if (!players.length && !EXAMPLE) out.innerHTML = '<p class="none">No players priced in the next few days yet. <a href="check.html?example">See an example analysis</a>.</p>';
@@ -42,50 +48,211 @@ q.addEventListener("input", search);
 list.addEventListener("click", e => { const li = e.target.closest("li[data-i]"); if (li) { list.innerHTML = ""; show(players[+li.dataset.i]); } });
 
 
-// ---------- pitch: lineups + season heatmaps ----------
-const NX = 12, NY = 8, L = 105, W = 68;
-function heatRects(grid, flip, colour) {
+// ---------- pitch: the player v their direct opponent ----------
+const NX = 12, NY = 8, L = 105, W = 68, YEL = "#F2D022", RED = "#ff5a5f", ORA = "#ff9f43";
+const last = n => esc(String(n || "").split(" ").slice(-1)[0]);
+function heatRects(grid, flip, colour, est) {
   if (!grid) return "";
   const mx = Math.max(...grid.flat()) || 1; let s = "";
   for (let i = 0; i < NX; i++) for (let j = 0; j < NY; j++) {
-    const v = grid[i][j] / mx; if (v < 0.35) continue;
+    const v = grid[i][j] / mx; if (v < 0.28) continue;
     const ii = flip ? NX - 1 - i : i, jj = flip ? NY - 1 - j : j;
-    s += `<rect x="${(ii * L / NX).toFixed(2)}" y="${(jj * W / NY).toFixed(2)}" width="${(L / NX).toFixed(2)}" height="${(W / NY).toFixed(2)}" fill="${colour}" fill-opacity="${(0.15 + 0.55 * v).toFixed(2)}"/>`;
+    s += `<ellipse cx="${((ii + .5) * L / NX).toFixed(2)}" cy="${((jj + .5) * W / NY).toFixed(2)}" rx="${(L / NX * .75).toFixed(2)}" ry="${(W / NY * .75).toFixed(2)}" fill="${colour}" fill-opacity="${((est ? .1 : .15) + (est ? .35 : .6) * v).toFixed(2)}"/>`;
   }
-  return s;
+  return `<g filter="url(#soft)">${s}</g>`;
 }
-function pitchSvg(p) {
+function clashCell(a, b, flipA, flipB) {             // where the two heatmaps overlap most (in view coords)
+  if (!a || !b) return null; let best = null;
+  for (let i = 0; i < NX; i++) for (let j = 0; j < NY; j++) {
+    const ai = flipA ? NX - 1 - i : i, aj = flipA ? NY - 1 - j : j, bi = flipB ? NX - 1 - i : i, bj = flipB ? NY - 1 - j : j;
+    const v = Math.min(a[ai][aj], b[bi][bj]); if (!best || v > best.v) best = {v, x: (i + .5) * L / NX, y: (j + .5) * W / NY};
+  }
+  return best;
+}
+function pitchSvg(p, img) {          // img: standalone SVG (inline styles) for the share card
+  const LN = 'stroke="rgba(255,255,255,.55)" stroke-width=".35"', PL = 'fill="#fff" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif"';
   const pl = p.pitch || []; if (!pl.length) return "";
   const me = pl.find(x => x.pid === p.pid); if (!me) return "";
-  const flipMe = me.side === "A";                         // draw home attacking right
-  const zoneNames = (p.zone_opps || []).map(z => z[0]);
-  const zone = pl.filter(x => x.side !== me.side && zoneNames.includes(x.name));
-  let heat = heatRects(me.heat, flipMe, "#F2D022");
-  const main = zone.find(x => x.name === zoneNames[0]);
-  if (main) heat = heatRects(main.heat, main.side === "A", "#e5484d") + heat;   // main opponent underneath, player on top
-  const pos = x => {                                       // FotMob layout is each team's own half, x from own goal
-    const X = x.side === "H" ? x.x * 52.5 : L - x.x * 52.5, Y = x.side === "H" ? x.y * W : W - x.y * W; return [X, Y];
+  const opp = pl.find(x => x.side !== me.side && x.name === p.opp);
+  const central = me.pos === "M" && me.y > 0.25 && me.y < 0.75;          // central midfielders get a second opponent
+  const opp2 = central && opp ? pl.find(x => x.side !== me.side && x !== opp && x.name === ((p.zone_opps || [])[0] || [])[0]) : null;
+  const F = me.side === "A";                           // always draw the player's team attacking left to right
+  const hflip = x => (x.side === "A") !== F;           // heat grids run from the player's own goal
+  const pos = x => {                                   // FotMob layout = own half, x from own goal
+    let X = x.side === "H" ? x.x * 52.5 : L - x.x * 52.5, Y = x.side === "H" ? x.y * W : W - x.y * W;
+    if (F) { X = L - X; Y = W - Y; } return [X, Y];
   };
-  const dots = pl.map(x => {
-    const [X, Y] = pos(x), isMe = x.pid === p.pid, isZone = zoneNames.includes(x.name);
-    const fill = isMe ? "#F2D022" : isZone ? "#e5484d" : (x.side === me.side ? "#ffffff" : "#f2a3a5");
-    const r = isMe || isZone ? 2.6 : 1.9;
-    const label = (isMe || isZone) ? `<text x="${X.toFixed(1)}" y="${(Y - 3.4).toFixed(1)}" font-size="3" text-anchor="middle" class="pl">${esc(x.name.split(" ").slice(-1)[0])}</text>` : "";
-    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="${r}" fill="${fill}" stroke="#172A3A" stroke-width="0.6"/>${label}`;
-  }).join("");
-  const lines = `<rect x="0" y="0" width="${L}" height="${W}" fill="none" class="ln"/><line x1="52.5" y1="0" x2="52.5" y2="${W}" class="ln"/>
-    <circle cx="52.5" cy="34" r="9.15" fill="none" class="ln"/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" class="ln"/>
-    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" class="ln"/><rect x="0" y="24.84" width="5.5" height="18.32" fill="none" class="ln"/>
-    <rect x="99.5" y="24.84" width="5.5" height="18.32" fill="none" class="ln"/>`;
-  const zl = (p.zone_opps || []).map(z => `${esc(z[0])} (${Math.round(z[1] * 100)}%)`).join(", ");
-  return `<h3>Who they'll be up against</h3>
-    <svg viewBox="-2 -2 ${L + 4} ${W + 4}" class="pitch" role="img" aria-label="Lineups and heatmaps">${lines}${heat}${dots}</svg>
-    <p class="sub"><span style="color:#F2D022;text-shadow:0 0 1px #172A3A">■</span> ${esc(p.player)} &nbsp; <span style="color:#e5484d">■</span> ${esc(zoneNames[0] || "opponent")}, who shares most of the same space. Red dots: the opponents ${esc(p.player.split(" ").slice(-1)[0])} will be around most${zl ? " (" + zl + ")" : ""}.
-    The % is how much their season heatmaps overlap.${me.side === "A" ? " (Pitch flipped so " + esc(p.team) + " attack left to right.)" : ""}</p>`;
+  let heat = "", clash = "";
+  if (opp) heat += heatRects(opp.heat, hflip(opp), RED, opp.est);
+  heat += heatRects(me.heat, hflip(me), YEL, me.est);
+  const c = opp && clashCell(me.heat, opp.heat, hflip(me), hflip(opp));
+  if (c && !me.est && !opp.est) clash = `<circle cx="${c.x.toFixed(1)}" cy="${Math.min(W - 5.5, Math.max(5.5, c.y)).toFixed(1)}" r="5" fill="none" stroke="#fff" stroke-width=".7" stroke-dasharray="1.6 1.2"/>`;
+  const [mx, my] = pos(me), [ox, oy] = opp ? pos(opp) : [0, 0];
+  const link = opp ? `<line x1="${mx.toFixed(1)}" y1="${my.toFixed(1)}" x2="${ox.toFixed(1)}" y2="${oy.toFixed(1)}" stroke="#fff" stroke-width=".6" stroke-dasharray="1.5 1" opacity=".9"/>` : "";
+  const [px, py] = opp2 ? pos(opp2) : [0, 0];
+  const dots = pl.filter(x => x !== me && x !== opp && x !== opp2).map(x => { const [X, Y] = pos(x);
+    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="1.5" fill="${x.side === me.side ? "#fff" : "#f7b3b5"}" opacity=".55"/>`; }).join("");
+  const tag = (x, X, Y, col) => { const t = last(x.name), w = t.length * 2.3 + 3, up = Y > 8 ? -6.2 : 3.6;
+    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="2.6" fill="${col}" stroke="#172A3A" stroke-width=".7"/>
+      <rect x="${(X - w / 2).toFixed(1)}" y="${(Y + up).toFixed(1)}" width="${w.toFixed(1)}" height="4.6" rx="1.2" fill="#172A3A" opacity=".85"/>
+      <text x="${X.toFixed(1)}" y="${(Y + up + 3.4).toFixed(1)}" font-size="3.6" text-anchor="middle" ${PL}>${t}</text>`; };
+  const lines = `<rect x="0" y="0" width="${L}" height="${W}" fill="none" ${LN}/><line x1="52.5" y1="0" x2="52.5" y2="${W}" ${LN}/>
+    <circle cx="52.5" cy="34" r="9.15" fill="none" ${LN}/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>
+    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>`;
+  const svg = `<svg ${img ? 'xmlns="http://www.w3.org/2000/svg" width="1090" height="720"' : 'class="pitch" role="img"'} viewBox="-2 -2 ${L + 4} ${W + 4}" aria-label="${esc(p.player)} and ${esc(p.opp || "")} heatmaps">${img ? `<rect x="-2" y="-2" width="${L + 4}" height="${W + 4}" rx="2" fill="#173F24"/>` : ""}
+    <defs><filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>
+    ${lines}${heat}${clash}${dots}${link}${opp2 ? tag(opp2, px, py, ORA) : ""}${opp ? tag(opp, ox, oy, RED) : ""}${tag(me, mx, my, YEL)}
+    <text x="${L - 1}" y="${W - 1.5}" font-size="3" text-anchor="end" fill="#fff" opacity=".7" font-family="Inter,Helvetica,Arial,sans-serif">attacking →</text></svg>`;
+  if (img) return svg;
+  const ov = p.opp_overlap != null ? Math.round(p.opp_overlap * 100) : null;
+  const fw = p.opp_fouls_won_raw90 ?? p.opp_fouls_won90;
+  const facts = opp ? [
+    fw != null ? `${last(p.opp)} wins <b>${(+fw).toFixed(1)}</b> fouls a game` : null,
+    ov != null && !me.est && !opp.est ? `They share <b>${ov}%</b> of the same space` : null,
+    p.fouls90 ? `${last(p.player)} commits <b>${(+p.fouls90).toFixed(1)}</b> fouls a game` : null].filter(Boolean) : [];
+  const est = [me.est && last(p.player), opp && opp.est && last(p.opp)].filter(Boolean);
+  return `<h3>Matchup</h3>
+    <div class="vs"><span><i style="background:${YEL}"></i>${esc(p.player)}</span><b>v</b><span><i style="background:${RED}"></i>${esc(p.opp || "no direct opponent")}</span>${opp2 ? `<span class="also"><i style="background:${ORA}"></i>also ${esc(opp2.name)}</span>` : ""}</div>
+    ${svg}
+    ${facts.length ? `<ul class="facts">${facts.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}
+    ${clash ? `<p class="cap">Dashed ring: where they meet most.</p>` : ""}
+    ${est.length ? `<p class="cap">No tracking data for ${est.join(" or ")}: heatmap estimated from their position.</p>` : ""}`;
+}
+
+// ---------- share card: heatmap + reasons + fair price, as an image for the group ----------
+function wrap(ctx, text, maxW) {
+  const words = text.split(" "), lines = []; let cur = "";
+  for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur); return lines;
+}
+const loadImg = src => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
+async function makeCard(p) {
+  try { await Promise.all(["800 64px Inter", "700 34px Inter", "500 34px Inter"].map(f => document.fonts.load(f))); } catch (e) {}
+  const Wd = 1080, pad = 54, F = "Inter,Helvetica,Arial,sans-serif";
+  const pts = (p.points && p.points.length ? p.points : (p.why ? p.why.split(", ") : [])).slice(0, 4);
+  const c = document.createElement("canvas"), ctx = c.getContext("2d");
+  // measure bullets first so the card height fits them
+  ctx.font = `500 36px ${F}`;
+  const bl = pts.map(t => wrap(ctx, t, Wd - pad * 2 - 56));
+  const svg = pitchSvg(p, true), hasPitch = !!svg;
+  const Ht = 210 + 120 + (hasPitch ? 640 + 70 : 0) + 60 + bl.reduce((n, l) => n + l.length * 48 + 22, 0) + 230 + 90;
+  c.width = Wd; c.height = Ht;
+  ctx.fillStyle = "#0F1A24"; ctx.fillRect(0, 0, Wd, Ht);
+  // header
+  ctx.fillStyle = "#172A3A"; ctx.fillRect(0, 0, Wd, 150);
+  ctx.fillStyle = "#1F6B2C"; ctx.fillRect(0, 150, Wd, 10); ctx.fillStyle = "#F2D022"; ctx.fillRect(0, 150, Wd, 4);
+  try { const logo = await loadImg("logo.jpg"); const h = 96, w = logo.width / logo.height * h;
+    ctx.fillStyle = "#F3F1F2"; ctx.beginPath(); ctx.roundRect(pad - 8, 27, w + 16, h + 6, 14); ctx.fill(); ctx.drawImage(logo, pad, 30, w, h); } catch (e) {}
+  ctx.fillStyle = "#C9D3DB"; ctx.font = `600 30px ${F}`; ctx.textAlign = "right";
+  ctx.fillText("To be carded", Wd - pad, 72);
+  ctx.fillStyle = "#97A5B1"; ctx.font = `500 26px ${F}`;
+  ctx.fillText(new Date(p.ko).toLocaleString([], {weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}), Wd - pad, 112);
+  ctx.textAlign = "left";
+  let y = 250;
+  ctx.fillStyle = "#EEF1F3"; ctx.font = `800 64px ${F}`; ctx.fillText(p.player, pad, y);
+  y += 50; ctx.fillStyle = "#97A5B1"; ctx.font = `500 30px ${F}`; ctx.fillText(`${p.team} · ${p.game}`, pad, y);
+  y += 40;
+  if (hasPitch) {
+    const im = await loadImg("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg));
+    const pw = Wd - pad * 2, ph = pw * 720 / 1090;
+    ctx.drawImage(im, pad, y, pw, ph); y += ph + 50;
+    // legend
+    ctx.font = `700 30px ${F}`;
+    const dot = (x, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y - 24, 26, 26, 6); ctx.fill(); };
+    dot(pad, "#F2D022"); ctx.fillStyle = "#EEF1F3"; ctx.fillText(p.player.split(" ").slice(-1)[0], pad + 38, y);
+    let x = pad + 38 + ctx.measureText(p.player.split(" ").slice(-1)[0]).width + 26;
+    if (p.opp) { ctx.fillStyle = "#97A5B1"; ctx.font = `500 30px ${F}`; ctx.fillText("v", x, y); x += 36; ctx.font = `700 30px ${F}`;
+      dot(x, "#ff5a5f"); ctx.fillStyle = "#EEF1F3"; ctx.fillText(p.opp, x + 38, y); }
+    y += 30;
+  }
+  // reasons
+  y += 40; ctx.fillStyle = "#97A5B1"; ctx.font = `700 28px ${F}`; ctx.fillText("Why they could get booked", pad, y); y += 26;
+  ctx.font = `500 36px ${F}`;
+  bl.forEach(lines => {
+    y += 22;
+    ctx.save(); ctx.translate(pad + 14, y + 6); ctx.rotate(0.17); ctx.fillStyle = "#F2D022"; ctx.beginPath(); ctx.roundRect(-11, -16, 22, 30, 4); ctx.fill(); ctx.restore();
+    lines.forEach((l, i) => { ctx.fillStyle = "#EEF1F3"; ctx.fillText(l, pad + 56, y + 18 + i * 48); });
+    y += lines.length * 48;
+  });
+  // prices
+  y += 50;
+  const boxes = [[p.fair ? p.fair.toFixed(2) : "–", `fair price (${p.fair ? Math.round(100 / p.fair) : "–"}%)`],
+                 [od(p.best), p.best != null ? `best · ${p.book}` : "no price yet"],
+                 p.edge != null && p.edge >= 0 ? ["+" + Math.round(p.edge * 100) + "%", "value"]
+                   : [(p.verdict || {}).need ? (p.verdict.need) + "+" : "–", "value from"]];
+  const bw = (Wd - pad * 2 - 40) / 3;
+  boxes.forEach(([big, small], i) => {
+    const x = pad + i * (bw + 20), hi = i === 2 && p.edge >= 0.15;
+    ctx.fillStyle = hi ? "#F2D022" : "#152331"; ctx.beginPath(); ctx.roundRect(x, y, bw, 150, 14); ctx.fill();
+    ctx.fillStyle = hi ? "#172A3A" : "#EEF1F3"; ctx.font = `800 58px ${F}`; ctx.fillText(big, x + 24, y + 78);
+    ctx.fillStyle = hi ? "#172A3A" : "#97A5B1"; ctx.font = `500 25px ${F}`; ctx.fillText(small, x + 24, y + 120);
+  });
+  y += 150 + 60;
+  ctx.fillStyle = "#5E6B76"; ctx.font = `500 24px ${F}`;
+  ctx.fillText("Fair price = our model's true odds. Value = best price vs fair. 18+ · gamble responsibly", pad, y);
+  return c;
+}
+async function shareCard(p) {
+  const modal = document.getElementById("sharebox"); modal.hidden = false;
+  modal.querySelector(".img").innerHTML = '<p class="cap">Making the card…</p>';
+  const c = await makeCard(p);
+  const blob = await new Promise(r => c.toBlob(r, "image/png"));
+  const name = p.player.replace(/[^A-Za-z0-9]+/g, "_") + "_card.png", file = new File([blob], name, {type: "image/png"});
+  const url = URL.createObjectURL(blob);
+  modal.querySelector(".img").innerHTML = `<img src="${url}" alt="Share card for ${esc(p.player)}">`;
+  const link = location.origin + location.pathname + "?p=" + encodeURIComponent(p.player);
+  const text = `${p.player} to be carded · fair ${p.fair}${p.best ? `, best ${od(p.best)} (${p.book})` : ""}`;
+  const send = modal.querySelector(".send"), save = modal.querySelector(".save");
+  send.hidden = !(navigator.canShare && navigator.canShare({files: [file]}));
+  send.onclick = () => navigator.share({files: [file], title: text, text: text + "\n" + link}).catch(() => {});
+  save.href = url; save.download = name;
+}
+document.addEventListener("click", e => { if (e.target.closest("#sharebox .close") || e.target.id === "sharebox") document.getElementById("sharebox").hidden = true; });
+
+// ---------- game foul map: who wins the most fouls, and who plays around them ----------
+function gameView(g, sel = 0) {
+  const pl = g.pitch || [], fm = g.foul_map || [], cur = fm[sel];
+  const cards = Object.fromEntries((g.cards || []).map(c => [c.player, c]));
+  const magnets = new Set(cur ? [cur.pid] : []), near = new Set(cur ? cur.near.map(n => n.pid) : []);
+  const pos = x => [x.side === "H" ? x.x * 52.5 : L - x.x * 52.5, x.side === "H" ? x.y * W : W - x.y * W];
+  const LN = 'stroke="rgba(255,255,255,.55)" stroke-width=".35"';
+  let heat = "";
+  if (cur) { const x = pl.find(q => q.pid === cur.pid); if (x) heat += heatRects(x.heat, x.side === "A", RED, x.est); }
+  for (const n of cur ? cur.near.slice(0, 1) : []) { const x = pl.find(q => q.pid === n.pid); if (x) heat += heatRects(x.heat, x.side === "A", YEL, true); }
+  const tag = (x, col) => { const [X, Y] = pos(x), t = last(x.name), w = t.length * 2.3 + 3, up = Y > 8 ? -6.2 : 3.6;
+    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="2.5" fill="${col}" stroke="#172A3A" stroke-width=".7"/>
+      <rect x="${(X - w / 2).toFixed(1)}" y="${(Y + up).toFixed(1)}" width="${w.toFixed(1)}" height="4.6" rx="1.2" fill="#172A3A" opacity=".85"/>
+      <text x="${X.toFixed(1)}" y="${(Y + up + 3.4).toFixed(1)}" font-size="3.6" text-anchor="middle" fill="#fff" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif">${t}</text>`; };
+  const dots = pl.filter(x => !magnets.has(x.pid) && !near.has(x.pid)).map(x => { const [X, Y] = pos(x);
+    return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="1.6" fill="#fff" opacity="${x.side === "H" ? .6 : .35}"/>`; }).join("");
+  const tags = pl.filter(x => near.has(x.pid) && !magnets.has(x.pid)).map(x => tag(x, YEL)).join("") + pl.filter(x => magnets.has(x.pid)).map(x => tag(x, RED)).join("");
+  const svg = `<svg viewBox="-2 -2 ${L + 4} ${W + 4}" class="pitch" role="img" aria-label="Foul map for ${esc(g.game)}">
+    <defs><filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>
+    <rect x="0" y="0" width="${L}" height="${W}" fill="none" ${LN}/><line x1="52.5" y1="0" x2="52.5" y2="${W}" ${LN}/>
+    <circle cx="52.5" cy="34" r="9.15" fill="none" ${LN}/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>
+    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>${heat}${dots}${tags}</svg>`;
+  const [home, away] = g.game.split(" v ");
+  const price = n => { const c = cards[n]; if (!c) return "";
+    const v = c.edge != null && c.edge >= 0.15; return ` <span class="np${v ? " v" : ""}">${od(c.best)}${c.fair ? ` · fair ${c.fair}` : ""}</span>`; };
+  const items = fm.map((m, i) => `<li class="${i === sel ? "on" : ""}" data-i="${i}"><div><span class="sw" style="background:${RED}"></span><b>${esc(m.name)}</b> <small style="display:inline">${esc(m.side === "H" ? home : away)}</small></div>
+      <div class="fw">Wins <b>${m.fw.toFixed(1)}</b> fouls a game</div>
+      ${m.near.length ? `<div class="nr">Around them: ${m.near.map(n => `<a href="?p=${encodeURIComponent(n.name)}">${esc(n.name)}</a>${price(n.name)}`).join(", ")}</div>` : ""}</li>`).join("");
+  out.innerHTML = `<div class="card">
+    <div class="name">${esc(g.game)}</div>
+    <div class="sub">${new Date(g.kickoff).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})} · ${esc(home)} attacking →${g.lineup !== "standard" ? " · lineup not confirmed" : ""}</div>
+    <h3>Foul map</h3>
+    <div class="vs"><span><i style="background:${RED}"></i>${cur ? esc(cur.name) : "wins lots of fouls"}</span><span><i style="background:${YEL}"></i>plays in their area</span></div>${fm.length > 1 ? `<p class="cap" style="margin:0 0 6px">Tap a player below to switch.</p>` : ""}
+    ${svg}
+    ${items ? `<ul class="magnets">${items}</ul>` : `<p class="cap">No one in this game wins ${"1.8"}+ fouls a game.</p>`}
+    <p class="cap">Price shown is the best bookie price and our fair price for that player to be carded. Tap a name for the full breakdown.</p>
+  </div>`;
+  out.querySelectorAll("ul.magnets li").forEach(li => li.onclick = e => { if (!e.target.closest("a")) gameView(g, +li.dataset.i); });
+  history.replaceState(null, "", "?g=" + g.fotmob_id);
 }
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
-  const keys = Object.keys(a).length ? Object.keys(a) : Object.keys(b); if (!keys.length) return "";
+  const KEEP = ["Fouls", "Fouls won", "Tackles", "Duels won", "Dribbled past"];
+  const keys = KEEP.filter(k => k in a || k in b); if (!keys.length) return "";
   const rows = keys.map(k => `<tr><td>${esc(k)}</td><td>${a[k] ?? "–"}</td><td>${b[k] ?? "–"}</td></tr>`).join("");
   return `<h3>Per 90 this season</h3><table class="st"><tr><th></th><th>${esc(p.player.split(" ").slice(-1)[0])}</th><th>${esc((p.opp || "Opponent").split(" ").slice(-1)[0])}</th></tr>${rows}</table>`;
 }
@@ -106,7 +273,7 @@ function tcardsBlock(p) {
 }
 function benchView(p) {
   const s = p.sub || [0, 0, 0], st = p.starts_record || [0, 0];
-  const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
+  const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${od(o)}`).join(" · ");
   out.innerHTML = `<div class="card"><div class="name">${esc(p.player)}</div>
     <div class="sub">${esc(p.team)} · ${esc(p.game)} · on the bench</div>
     <div class="verdict fair">On the bench</div>
@@ -123,35 +290,37 @@ function show(p) {
   if (p.bench) return benchView(p);
   const v = p.verdict || {};
   const chance = p.fair ? (100 / p.fair).toFixed(0) + "%" : "–";
-  const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${o ?? "–"}`).join(" · ");
+  const shown = Object.entries(p.shown || {}).map(([b, o]) => `${esc(b)} ${od(o)}`).join(" · ");
   const facRow = ([s, t]) => `<div class="f ${s > 0 ? "p" : s < 0 ? "n" : "z"}"><i>${s > 0 ? "✓" : s < 0 ? "✗" : "•"}</i><span>${esc(t)}</span></div>`;
   const ranked = [...(p.factors || [])].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
-  const fac = ranked.slice(0, 3).map(facRow).join("");
-  const facRest = ranked.slice(3).map(facRow).join("");
-  const angleTxt = {strong: "Strong matchup", good: "Good matchup", neutral: "Average matchup", weak: "Poor matchup"}[v.angle] || "";
+  const ko = new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"});
+  const src = [p.data_src && p.data_src.length ? `${last(p.player)}'s stats include ${esc(p.data_src.join(", "))}` : "",
+               p.opp_data_src && p.opp_data_src.length ? `${last(p.opp)}'s include ${esc(p.opp_data_src.join(", "))}` : ""].filter(Boolean).join(". ");
   out.innerHTML = `<div class="card">
-    <div class="name">${esc(p.player)}</div>
-    <div class="sub">${esc(p.team)} · ${esc(p.game)} · KO ${new Date(p.ko).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})}</div>
-    ${p.start_chance != null ? `<div class="sub"><b>Start chance ${Math.round(p.start_chance * 100)}%</b> · ${esc((p.sources || []).join(", ") || "recent starts")}${p.avail_note ? " · " + esc(p.avail_note) : ""}</div>` : ""}
-    ${p.fair_only ? `<p class="predicted">Not in our odds feed yet. Compare the fair price with bet365 yourself.</p>` : ""}${p.predicted ? `<p class="predicted">${p.lineup === "blend" || p.lineup === "lastXI" ? "Lineup not confirmed: blended from FotMob, recent starts and injury news" : "Predicted lineup (blended with recent starts and injury news)"}. Early price, not sent as a pick. Updated when the teams are announced.</p>` : ""}<div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
-    <div>${esc(v.text || "")}</div>
+    <div class="namerow"><div class="name">${esc(p.player)}</div><button class="sharebtn" id="sharebtn" type="button">Share</button></div>
+    <div class="sub">${esc(p.team)} · <a href="?g=${p.gid}">${esc(p.game)}</a> · ${ko}</div>
+    ${p.start_chance != null && p.start_chance < 0.95 ? `<div class="sub">Start chance <b>${Math.round(p.start_chance * 100)}%</b>${p.avail_note ? " · " + esc(p.avail_note) : ""}</div>` : ""}
+    ${p.fair_only ? `<p class="predicted">Not in our odds feed. Compare the fair price with the bookies yourself.</p>` : p.predicted ? `<p class="predicted">Lineup not confirmed yet, so this isn't sent as a pick.</p>` : ""}
+    <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
+    <p class="vtext">${esc(v.text || "")}</p>
     <div class="nums">
-      <div><b>${p.best ?? "–"}</b><span>${esc(p.book || "no price")}</span></div>
-      <div><b>${p.fair ?? "–"}</b><span>fair price (${chance})</span></div>
+      <div><b>${od(p.best)}</b><span>${esc(p.book || "no price")}${p.super_sub ? " · Super Sub" : ""}</span></div>
+      <div><b>${p.fair ?? "–"}</b><span>fair (${chance})</span></div>
       <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
-    <div class="books">${p.super_sub ? "<b>Super Sub</b> · " : ""}Value at ${v.need ?? "–"} or bigger</div>
-    <h3>Key points</h3>${fac}
-    <details class="more full"><summary>Full analysis</summary>
-    <span class="angle">${angleTxt}</span>
-    ${facRest ? "<h3>More for and against</h3>" + facRest : ""}
+    ${p.why ? `<h3>Why they could get booked</h3><p class="whyline">${esc(p.why)}</p>` : ""}
     ${pitchSvg(p)}
+    <details class="more full"><summary>More detail</summary>
+    ${ranked.length ? "<h3>For and against</h3>" + ranked.map(facRow).join("") : ""}
     ${statsTable(p)}
     ${recordBlock(p)}
     ${tcardsBlock(p)}
-    <p class="sub" style="margin-top:14px">Fair price uses the player's card rate, minutes, the referee, the direct opponent and the match odds. A pick needs a price 15% over fair at 3+ bookies, not a one-off outlier and not bet365 alone at the top, plus confidence 6/10 or better (8–10 has been the strongest). Super Sub means the Sky Bet or Paddy Power price, with the replacement counted.</p>
+    <div class="books">${shown}</div>
+    ${src ? `<p class="cap">${src}.</p>` : ""}
+    <p class="cap">A pick needs one bookie 15%+ over fair and confidence 6/10+. We skip markets only 1–2 bookies price, and prices 20%+ above every other bookie (or bet365 alone at the top): in testing those lost about 20%, usually because the bookie knew something. They still show here as "Big price, but be careful".</p>
     </details>
   </div>`;
+  document.getElementById("sharebtn").onclick = () => shareCard(p);
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
 </script>
