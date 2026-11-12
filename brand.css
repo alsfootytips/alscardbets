@@ -233,3 +233,5 @@ footer.foot i{display:none}
 #sharebox .send{background:#F5F5F5;color:#000;border-color:#F5F5F5}
 .pc .odds.v{color:#000;background:var(--accent);border-color:var(--accent)}
 .pchart svg{width:100%;height:auto;display:block}
+.dsel{width:100%;font:500 15px var(--body);padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--fg);margin:4px 0 10px}
+.dout .nums{margin-top:4px}

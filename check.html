@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=390f2575"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=5c5d94f4"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
@@ -345,6 +345,39 @@ function priceChart(p) {
     <text x="${L}" y="${H - 6}" font-size="11" fill="var(--muted)">${fmt(t0)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t1)}</text></svg></div>
     <p class="cap">Solid line: best price at our books (${od(first[1])} → ${od(lastp[1])}). Dashed: our fair price. Green band: value zone (15%+ over fair).</p>`;
 }
+
+// ---------- double / bet builder checker ----------
+// backtest/team_style_and_pairs.py: beyond chance, two bookings in the same game come together x1.01 (same team),
+// x1.06 (opposite teams), x1.075 (direct opponents). Different games: independent.
+function pairLift(a, b) {
+  if (a.gid !== b.gid) return 1;
+  if (a.team === b.team) return 1.01;
+  const direct = [a.opp, a.model_opp].includes(b.player) || [b.opp, b.model_opp].includes(a.player);
+  return direct ? 1.075 : 1.06;
+}
+function doubleBox(p) {
+  if (!p.fair) return "";
+  const others = players.filter(q => q !== p && q.fair && !q.bench).sort((a, b) => (b.gid === p.gid) - (a.gid === p.gid) || a.fair - b.fair);
+  if (!others.length) return "";
+  const opts = others.slice(0, 200).map(q => `<option value="${players.indexOf(q)}">${esc(q.player)} · ${esc(q.gid === p.gid ? "same game" : q.game)} · fair ${q.fair}</option>`).join("");
+  return `<details class="more"><summary>Double / bet builder checker</summary>
+    <label class="cap" for="dbl2">Add a second player</label><select id="dbl2" class="dsel">${opts}</select>
+    <label class="cap" for="dblp">Bookie's price for the double (decimal)</label><input id="dblp" class="dsel" inputmode="decimal" placeholder="e.g. 18.66">
+    <div id="dblout" class="dout"></div></details>`;
+}
+function wireDouble(p) {
+  const s = document.getElementById("dbl2"), i = document.getElementById("dblp"), o = document.getElementById("dblout");
+  if (!s) return;
+  const calc = () => {
+    const q = players[+s.value]; if (!q) return;
+    const lift = pairLift(p, q), fair = p.fair * q.fair / lift, need = fair * 1.15, price = parseFloat(i.value);
+    const edge = price ? price / fair - 1 : null;
+    o.innerHTML = `<div class="nums"><div><b>${fair.toFixed(2)}</b><span>fair double</span></div><div><b>${need.toFixed(2)}+</b><span>value from</span></div>
+      <div><b class="${edge == null ? "" : edge >= 0.15 ? "pos" : edge < 0 ? "neg" : ""}">${edge == null ? "–" : (edge > 0 ? "+" : "") + Math.round(edge * 100) + "%"}</b><span>${edge == null ? "enter a price" : "v fair"}</span></div></div>
+      <p class="cap">${p.fair} × ${q.fair}${lift !== 1 ? ` ÷ ${lift} (same-game link: ${lift === 1.01 ? "same team" : lift === 1.075 ? "direct opponents" : "opposite teams"})` : " (different games, independent)"}. ${edge != null && edge < 0.15 ? "Not value as a double." : ""}</p>`;
+  };
+  s.onchange = calc; i.oninput = calc; calc();
+}
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
   const KEEP = ["Fouls", "Fouls won", "Tackles", "Duels won", "Dribbled past"];
@@ -407,6 +440,7 @@ function show(p) {
     ${p.why ? `<h3>Why they could get booked</h3><p class="whyline">${esc(p.why)}</p>` : ""}
     ${priceChart(p)}
     ${matchupGrid(p)}
+    ${doubleBox(p)}
     <details class="more full"><summary>More detail</summary>
     ${ranked.length ? "<h3>For and against</h3>" + ranked.map(facRow).join("") : ""}
     ${statsTable(p)}
@@ -418,6 +452,7 @@ function show(p) {
     </details>
   </div>`;
   document.getElementById("sharebtn").onclick = () => shareCard(p);
+  wireDouble(p);
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
 </script>
