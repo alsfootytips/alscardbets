@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-12T22:11:07.980125+00:00",
+ "updated": "2026-11-12T22:16:00.447656+00:00",
  "picks": [
   {
    "id": 4,
@@ -528,6 +528,54 @@
    "stake": 1,
    "result": "L",
    "pl": -1
+  },
+  {
+   "id": 83,
+   "date": "2026-11-12",
+   "player": "Timothy Castagne",
+   "game": "Turkiye v Belgium",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": 0
+  },
+  {
+   "id": 84,
+   "date": "2026-11-12",
+   "player": "Fabi\u00e1n Ruiz",
+   "game": "Czechia v Spain",
+   "kind": "single",
+   "odds": 9.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": 0
+  },
+  {
+   "id": 85,
+   "date": "2026-11-12",
+   "player": "Trent Alexander-Arnold",
+   "game": "England v Croatia",
+   "kind": "single",
+   "odds": 8.0,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": 0
+  },
+  {
+   "id": 86,
+   "date": "2026-11-12",
+   "player": "Adrien Truffert",
+   "game": "Italy v France",
+   "kind": "single",
+   "odds": 6.0,
+   "bookie": "Sky/Paddy",
+   "stake": 1,
+   "result": null,
+   "pl": 0
   }
  ]
 }
