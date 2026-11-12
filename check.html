@@ -70,7 +70,7 @@ function clashCell(a, b, flipA, flipB) {             // where the two heatmaps o
   return best;
 }
 function pitchSvg(p, img) {          // img: standalone SVG (inline styles) for the share card
-  const LN = 'stroke="rgba(255,255,255,.55)" stroke-width=".35"', PL = 'fill="#fff" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif"';
+  const LN = 'stroke="rgba(255,255,255,.55)" stroke-width=".35"', PL = 'fill="#fff" font-weight="600" font-family="Inter,Helvetica,Arial,sans-serif"';
   const pl = p.pitch || []; if (!pl.length) return "";
   const me = pl.find(x => x.pid === p.pid); if (!me) return "";
   const opp = pl.find(x => x.side !== me.side && x.name === p.opp);
@@ -127,7 +127,7 @@ function wrap(ctx, text, maxW) {
 }
 const loadImg = src => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
 async function makeCard(p) {
-  try { await Promise.all(["800 64px Inter", "700 34px Inter", "500 34px Inter"].map(f => document.fonts.load(f))); } catch (e) {}
+  try { await Promise.all(["700 64px Inter", "700 34px Inter", "500 34px Inter"].map(f => document.fonts.load(f))); } catch (e) {}
   const Wd = 1080, pad = 54, F = "Inter,Helvetica,Arial,sans-serif";
   const pts = (p.points && p.points.length ? p.points : (p.why ? p.why.split(", ") : [])).slice(0, 4);
   const c = document.createElement("canvas"), ctx = c.getContext("2d");
@@ -149,7 +149,7 @@ async function makeCard(p) {
   ctx.fillText(new Date(p.ko).toLocaleString([], {weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}), Wd - pad, 112);
   ctx.textAlign = "left";
   let y = 250;
-  ctx.fillStyle = "#EEF1F3"; ctx.font = `800 64px ${F}`; ctx.fillText(p.player, pad, y);
+  ctx.fillStyle = "#EEF1F3"; ctx.font = `700 64px ${F}`; ctx.fillText(p.player, pad, y);
   y += 50; ctx.fillStyle = "#97A5B1"; ctx.font = `500 30px ${F}`; ctx.fillText(`${p.team} · ${p.game}`, pad, y);
   y += 40;
   if (hasPitch) {
@@ -184,7 +184,7 @@ async function makeCard(p) {
   boxes.forEach(([big, small], i) => {
     const x = pad + i * (bw + 20), hi = i === 2 && p.edge >= 0.15;
     ctx.fillStyle = hi ? "#F2D022" : "#152331"; ctx.beginPath(); ctx.roundRect(x, y, bw, 150, 14); ctx.fill();
-    ctx.fillStyle = hi ? "#172A3A" : "#EEF1F3"; ctx.font = `800 58px ${F}`; ctx.fillText(big, x + 24, y + 78);
+    ctx.fillStyle = hi ? "#172A3A" : "#EEF1F3"; ctx.font = `700 58px ${F}`; ctx.fillText(big, x + 24, y + 78);
     ctx.fillStyle = hi ? "#172A3A" : "#97A5B1"; ctx.font = `500 25px ${F}`; ctx.fillText(small, x + 24, y + 120);
   });
   y += 150 + 60;
@@ -222,7 +222,7 @@ function gameView(g, sel = 0) {
   const tag = (x, col) => { const [X, Y] = pos(x), t = last(x.name), w = t.length * 2.3 + 3, up = Y > 8 ? -6.2 : 3.6;
     return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="2.5" fill="${col}" stroke="#172A3A" stroke-width=".7"/>
       <rect x="${(X - w / 2).toFixed(1)}" y="${(Y + up).toFixed(1)}" width="${w.toFixed(1)}" height="4.6" rx="1.2" fill="#172A3A" opacity=".85"/>
-      <text x="${X.toFixed(1)}" y="${(Y + up + 3.4).toFixed(1)}" font-size="3.6" text-anchor="middle" fill="#fff" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif">${t}</text>`; };
+      <text x="${X.toFixed(1)}" y="${(Y + up + 3.4).toFixed(1)}" font-size="3.6" text-anchor="middle" fill="#fff" font-weight="600" font-family="Inter,Helvetica,Arial,sans-serif">${t}</text>`; };
   const dots = pl.filter(x => !magnets.has(x.pid) && !near.has(x.pid)).map(x => { const [X, Y] = pos(x);
     return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="1.6" fill="#fff" opacity="${x.side === "H" ? .6 : .35}"/>`; }).join("");
   const tags = pl.filter(x => near.has(x.pid) && !magnets.has(x.pid)).map(x => tag(x, YEL)).join("") + pl.filter(x => magnets.has(x.pid)).map(x => tag(x, RED)).join("");
