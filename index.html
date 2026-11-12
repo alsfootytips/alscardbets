@@ -5,38 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Results · Al's Card Bets</title>
 <meta property="og:title" content="Al's Card Bets: Profit &amp; Loss">
-<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg">
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg">
 <style>
-:root{--navy:#172A3A;--yellow:#F2D022;--green:#1F6B2C;--paper:#F3F1F2;--bg:#F6F5F2;--panel:#FFFFFF;--fg:#172A3A;--muted:#5B6873;--line:#E2E0DC;--ok:#1E7B3A;--bad:#B4362B;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#0F1A24;--panel:#162433;--fg:#EEF1F3;--muted:#9AA8B4;--line:#26384A;--ok:#4CC27A;--bad:#F07B6E;color-scheme:dark}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 "Inter",system-ui,sans-serif;padding-block:0 32px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
-.wrap{max-width:1000px;margin:16px auto 0;display:grid;gap:16px}.top{margin:0 calc(-1*max(16px,env(safe-area-inset-left)))}
-.brand{background:var(--paper);color:var(--navy);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-bottom:6px solid var(--green);box-shadow:inset 0 -12px 0 -6px var(--yellow)}
-.brand img{width:128px;height:auto;display:block}
-.brand h1{margin:0;font:800 2.2rem/1 "Inter",system-ui,sans-serif;letter-spacing:.01em}
-.pl-h{margin:6px 0 0;font:800 34px/1 "Inter",system-ui,sans-serif}.sum{margin:0;color:var(--muted)}.sum b{color:var(--fg)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:12px}@media (max-width:520px){.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile b{font-size:1.4rem}}
-.tile{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--yellow);border-radius:10px;padding:12px 16px;display:grid;gap:4px}
-.tile span{font-size:12px;color:var(--muted)}
-.tile b{font:800 1.9rem/1 "Inter",system-ui,sans-serif;font-variant-numeric:tabular-nums}
-.pos{color:var(--ok)!important}.neg{color:var(--bad)!important}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:grid;gap:8px}
-.card h2{margin:0;font:700 1.3rem/1.1 "Inter",system-ui,sans-serif;letter-spacing:.02em}.note{margin:0;font-size:12px;color:var(--muted)}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 40px;display:grid;gap:14px}
+.pl-h{margin:26px 0 0;font-size:24px;font-weight:600}.sum{margin:0;color:var(--muted);font-size:14px}.sum b{color:var(--fg);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tile{padding:12px 0 10px;display:grid;gap:2px}.tile:not(:nth-child(3n+1)){border-left:1px solid var(--line);padding-left:14px}
+.tile:nth-child(n+4){border-top:1px solid var(--line)}
+.tile span{font-size:12px;color:var(--muted)}.tile b{font-size:20px;font-weight:600}
+.pos{color:var(--accent)!important}.neg{color:var(--bad)!important}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;display:grid;gap:6px}
+.card h2{margin:0;font-size:15px;font-weight:600}.note{margin:0;font-size:13px;color:var(--muted)}
 #chart svg{width:100%;height:auto;display:block}
 .scroll{overflow:auto;max-height:34rem}
-table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
-th{text-align:left;font-weight:600;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
-td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .num{text-align:right}
-.pill{display:inline-block;min-width:3.2em;text-align:center;border-radius:6px;padding:0 6px;font-weight:600;font-size:12px}
-.pill.w{color:var(--ok);border:1px solid var(--ok)}.pill.l{color:var(--muted);border:1px solid var(--line)}.pill.o{color:var(--navy);background:var(--yellow)}
-footer{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;letter-spacing:.08em;font-weight:600;color:var(--muted);padding-top:10px;border-top:3px solid var(--green);box-shadow:inset 0 3px 0 0 var(--yellow)}
-footer i{display:inline-block;width:9px;height:13px;border-radius:2px;background:var(--yellow);transform:rotate(10deg)}
+.pill{font-size:12px;font-weight:500}.pill.w{color:var(--accent)}.pill.l{color:var(--muted)}.pill.o{color:var(--amber)}
+.wrap>footer{text-align:center;font-size:12px;color:var(--muted);padding-top:14px;border-top:1px solid var(--line)}
+.wrap>footer i{display:none}
 </style>
 </head>
 <body>
-<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="check.html">Player check</a><a href="combos.html">Combos</a><a href="referees.html">Referees</a><a class=on href="index.html">Results</a></nav></div></header>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="check.html">Players</a><a href="combos.html">Combos</a><a href="referees.html">Referees</a><a class=on href="index.html">Results</a></nav></div></header>
 <div class="wrap">
   <h1 class="pl-h">Results</h1>
   <p class="sum"><b id="s-pl">—</b> units from <b id="s-bets">—</b> bets so far. Updated <span id="s-upd">…</span>.</p>
@@ -52,7 +44,7 @@ footer i{display:inline-block;width:9px;height:13px;border-radius:2px;background
   <section class="card"><h2>Pick log</h2><p class="note">Every pick, newest first.</p>
     <div class="scroll"><table><thead><tr><th>Date</th><th>Player</th><th>Game</th><th>Bet</th><th class="num">Odds</th><th class="num">Stake</th><th>Result</th><th class="num">P/L</th></tr></thead><tbody id="log"></tbody></table></div>
   </section>
-  <footer><i></i>Al's Card Bets · Telegram</footer>
+  <footer>Al's Card Bets</footer>
 </div>
 <script>
 fetch('data.json?v='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{window.__PICKS=d.picks;document.getElementById('s-upd').textContent=new Date(d.updated).toLocaleString([], {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});render();}).catch(()=>{document.getElementById('s-upd').textContent='(couldn\'t load results)';});
@@ -71,9 +63,9 @@ const x=i=>L+(W-L-R)*(cum.length<2?0:i/(cum.length-1)),y=v=>T+(H-T-B)*(1-(v-lo)/
 let g='';for(let v=lo;v<=hi;v+=step){g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"${v===0?' stroke-dasharray="4 4"':''}/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v>0?'+'+v:v}</text>`;}
 const d=cum.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.c).toFixed(1)).join(' ');
 const area=d+` L${x(cum.length-1)} ${y(Math.max(lo,0))} L${x(0)} ${y(Math.max(lo,0))} Z`;
-const dots=cum.map((p,i)=>p.r.result==='W'?`<circle cx="${x(i)}" cy="${y(p.c)}" r="4" fill="var(--green)"><title>${p.r.player} won · ${sign(p.c)}</title></circle>`:'').join('');
-document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Running profit">${g}<path d="${area}" fill="var(--yellow)" opacity=".18"/><path d="${d}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-linejoin="round"/>${dots}<text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--muted)">${cum.length} bets</text></svg>`;
-if(matchMedia('(prefers-color-scheme: dark)').matches)document.querySelector('#chart path:nth-of-type(2)').setAttribute('stroke','var(--yellow)');})();
+const dots=cum.map((p,i)=>p.r.result==='W'?`<circle cx="${x(i)}" cy="${y(p.c)}" r="3" fill="var(--accent)"><title>${p.r.player} won · ${sign(p.c)}</title></circle>`:'').join('');
+document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Running profit">${g}<path d="${area}" fill="var(--accent)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>${dots}<text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="var(--muted)">${cum.length} bets</text></svg>`;
+})();
 // log
 const tb=document.getElementById('log');const fmtD=d=>new Date(d+'T12:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 [...PICKS].sort((a,b)=>b.id-a.id).forEach(r=>{const tr=document.createElement('tr');const st=r.result==='W'?['Won','w']:r.result==='L'?['Lost','l']:['Open','o'];
