@@ -343,3 +343,19 @@ details.pl>summary .nm{display:inline-flex;align-items:center}
 .who .face{float:left;margin:2px 10px 0 0}
 .ranked .who .face{float:none;width:22px;height:22px;margin:0 6px 0 0}.ranked .leg .face{width:22px;height:22px;margin-right:6px}
 .game header h3 .badge.sm{width:18px;height:18px}
+/* compact NBA rows */
+a.plrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line);font-size:14px;text-decoration:none}
+a.plrow .nm{display:inline-flex;align-items:center;font-weight:500}
+a.plrow .nums2{color:var(--muted);font-size:13px;white-space:nowrap}
+a.plrow:hover{background:var(--soft)}
+.facts{display:grid;grid-template-columns:auto auto 1fr;gap:4px 12px;align-items:baseline;font-size:13px}
+.facts div{display:contents}
+.facts span{color:var(--muted)}
+.facts b{font-weight:600;font-size:14px}
+.facts em{font-style:normal;color:var(--muted)}
+.spark{display:block;width:120px;height:32px;margin:10px 0 8px}
+.chips2{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.chips2 .nba-tag{margin-left:0}
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.pill{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--fg);white-space:nowrap}
+.pill.q1{border-style:dashed}

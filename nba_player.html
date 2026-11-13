@@ -2,7 +2,7 @@
 <title>Player · Al's NBA Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=99991727"><link rel=icon href="nba_logo.jpg">
+<link rel=stylesheet href="brand.css?v=085cd35f"><link rel=icon href="nba_logo.jpg">
 <style>
 .ph{display:flex;gap:14px;align-items:center;margin:20px 0 6px}
 .ph .face{width:84px;height:62px;object-fit:cover;object-position:top;border-radius:10px;background:var(--soft);flex:none}
@@ -33,7 +33,7 @@
 .qbars div{background:#F27A1A;border-radius:6px 6px 0 0;position:relative;min-height:2px}
 .qbars div span{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:12px;font-weight:600}
 .qlab{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-size:12px;color:var(--muted)}
-.zt{width:100%;font-size:13px}.zt td,.zt th{padding:6px 4px}
+.zt{width:100%;font-size:13px}.zt th:first-child,.zt td:first-child{text-align:left}.zt td,.zt th{padding:6px 4px}
 .court{width:100%;max-width:420px;display:block;margin:4px auto;background:#14100C;border-radius:10px}
 .court .ln{fill:none;stroke:#5A4632;stroke-width:.25}
 .why{font-size:14px;line-height:1.55}
@@ -57,7 +57,7 @@ const STATS = [
   {k:"q1min", label:"1Q Minutes", col:7}];
 const pid = new URLSearchParams(location.search).get("p");
 // same rules as the Tonight list: projection 1.2x the line, 5%+ EV, odds 15 or shorter
-const isValue = (r, proj) => r[3] >= 5 && r[1] <= 15 && proj / (r[0] - 0.5) >= 1.2;
+const isValue = (r, proj, q1) => r[3] >= 5 && r[1] <= (q1 ? 6 : 15) && proj / (r[0] - 0.5) >= 1.2;
 let S = {stat: "pts", k: null};
 
 fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
@@ -102,14 +102,14 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
                + `<text x="2" y="${y(k - 0.5) + 3}" font-size="10" fill="#F27A1A">${k}+</text>`;
     const projLine = `<line x1="${pad}" x2="${W}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width="1" opacity=".35"/>`;
     const chart = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">${projLine}${bars}${line}</svg>`;
-    const rungBtns = rungs.map(r => `<button data-k="${r[0]}" class="${isValue(r, proj) ? "val" : ""} ${r[0] === k ? "on" : ""}">${r[0]}+ @ ${r[1].toFixed(2)}<small>${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV</small></button>`).join("");
+    const rungBtns = rungs.map(r => `<button data-k="${r[0]}" class="${isValue(r, proj, st.q1) ? "val" : ""} ${r[0] === k ? "on" : ""}">${r[0]}+ @ ${r[1].toFixed(2)}<small>${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV</small></button>`).join("");
     const verdict = rung ? `<p class=meta>bet365 ${rung[1].toFixed(2)} (${(100 / rung[1]).toFixed(0)}%) · model ${rung[2].toFixed(0)}% · `
-                         + `<b class="${isValue(rung, proj) ? "pos" : rung[3] < 0 ? "neg" : ""}">${rung[3] > 0 ? "+" : ""}${rung[3].toFixed(0)}% EV</b>${isValue(rung, proj) ? " · value" : rung[3] >= 5 ? " · line above projection, model less reliable here" : ""}${st.q1 ? "<span class=untested>1Q model untested</span>" : ""}</p>` : "";
+                         + `<b class="${isValue(rung, proj, st.q1) ? "pos" : rung[3] < 0 ? "neg" : ""}">${rung[3] > 0 ? "+" : ""}${rung[3].toFixed(0)}% EV</b>${isValue(rung, proj, st.q1) ? " · value" : ""}${st.q1 ? "<span class=untested>untested</span>" : ""}</p>` : "";
     document.getElementById("stat").innerHTML =
       `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
       + `<div class=panel><h2>${esc(st.label)}: projection ${proj.toFixed(1)}</h2>`
-      + `<p class=meta>Last ${last.length} games. Green = hit ${k}+, red = missed. Faded bars = came off the bench. Grey line = tonight's projection.</p>`
-      + chart + (rungs.length ? `<div class=rungs>${rungBtns}</div>` : `<p class=meta>No bet365 ladder for this one.</p>`) + verdict
+      + `<p class=meta>Last ${last.length} · faded = bench · grey = projection</p>`
+      + chart + (rungs.length ? `<div class=rungs>${rungBtns}</div>` : `<p class=meta>No bet365 props for this yet.</p>`) + verdict
       + `<div class=hr>${hrs.map(([l, xs]) => { const h = hit(xs); return `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l} ${k}+</span></div>`; }).join("")}`
       + `<div><b>${(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>season avg</span></div></div></div>`;
     document.querySelectorAll("#stat .chips button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
@@ -119,12 +119,13 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
   // minutes + quarters
   const qmax = Math.max(...P.q_avg, 1);
   const qbars = P.q_avg.map((v, i) => `<div style="height:${100 * v / qmax}%"><span>${v.toFixed(1)}</span></div>`).join("");
+  const extra = [P.boost >= 0.5 ? `+${P.boost.toFixed(0)} (${esc(P.boost_for[0].split(" ").slice(-1)[0])} out)` : "", P.adj < 1 ? "blowout cut" : "", P.b2b ? "B2B" : ""].filter(Boolean).join(" · ");
   const minsHtml = `<div class=panel><h2>Minutes</h2>
-    <p class=meta>Expected tonight <b>${P.exp_m.toFixed(1)}</b> (season ${P.season.min.toFixed(1)}, last 5 ${P.l5.min.toFixed(1)})${P.boost >= 0.5 ? ` · +${P.boost.toFixed(1)} with ${esc(P.boost_for.join(", "))} out` : ""}${P.adj < 1 ? ` · cut ${(100 * (1 - P.adj)).toFixed(0)}% for blowout risk` : ""}${P.b2b ? " · back-to-back" : ""}</p>
-    <p class=meta>Average minutes by quarter (and share of his minutes)</p>
+    <div class=hr><div><b>${P.exp_m.toFixed(1)}</b><span>tonight</span></div><div><b>${P.season.min.toFixed(1)}</b><span>season</span></div>
+    <div><b>${P.l5.min.toFixed(1)}</b><span>last 5</span></div><div><b>${P.q1.exp.toFixed(1)}</b><span>Q1 tonight</span></div></div>
+    ${extra ? `<p class=meta>${extra}</p>` : ""}
     <div class=qbars>${qbars}</div>
-    <div class=qlab>${P.q_avg.map((v, i) => `<span>Q${i + 1} · ${P.q_share[i]}%</span>`).join("")}</div>
-    <p class=meta style="margin-top:10px">1st quarter tonight: <b>${P.q1.exp.toFixed(1)} min</b> expected as a ${P.q1.basis} (season Q1 avg ${P.q1.season.toFixed(1)}). Projected 1Q: ${P.q1.proj.pts.toFixed(1)} pts · ${P.q1.proj.reb.toFixed(1)} reb · ${P.q1.proj.ast.toFixed(1)} ast.</p></div>`;
+    <div class=qlab>${P.q_avg.map((v, i) => `<span>Q${i + 1} · ${P.q_share[i]}%</span>`).join("")}</div></div>`;
 
   // shot chart (ESPN coords: x 0-50 across, basket at (25,0), baseline y=-5.25)
   const sh = P.shots || {bins: [], zones: {}, n: 0};
@@ -149,7 +150,7 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
   const ztot = Object.values(sh.zones).reduce((a, z) => a + z[0], 0) || 1;
   const zrows = ZORDER.filter(z => sh.zones[z]).map(z => { const [a, m] = sh.zones[z];
     return `<tr><td class=pl>${z}</td><td>${Math.round(100 * a / ztot)}%</td><td>${a}</td><td>${Math.round(100 * m / a)}%</td></tr>`; }).join("");
-  const shotHtml = `<div class=panel><h2>Where he shoots</h2><p class=meta>${sh.n} shots this season. Brighter = more shots from there. Tap a square for his hit rate.</p>
+  const shotHtml = `<div class=panel><h2>Shot map</h2><p class=meta>${sh.n} shots this season</p>
     ${court}<div class=tw><table class=zt><tr><th>Zone</th><th>Share</th><th>Shots</th><th>Made</th></tr>${zrows}</table></div></div>`;
 
   const tags = (P.inj ? `<span class="nba-tag ${P.inj.toLowerCase() === "out" ? "out" : "dtd"}">${esc(P.inj)}</span>` : "")
@@ -160,7 +161,7 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
     <div class=kv style="margin-top:12px"><div><b>${P.exp_m.toFixed(1)}</b><span>exp min</span></div><div><b>${P.proj.pts.toFixed(1)}</b><span>pts</span></div>
     <div><b>${P.proj.reb.toFixed(1)}</b><span>reb</span></div><div><b>${P.proj.ast.toFixed(1)}</b><span>ast</span></div><div><b>${P.proj.fg3m.toFixed(1)}</b><span>3pm</span></div></div>
     <div id=stat></div>${minsHtml}${shotHtml}
-    <p class=meta>Headshots and logos: ESPN. Research log, not betting advice.</p>`;
+    <p class=meta>Photos and logos: ESPN · not betting advice</p>`;
   render();
 }).catch(e => { document.getElementById("app").innerHTML = "<p class=none>Couldn't load player data.</p>"; });
 </script></body></html>
