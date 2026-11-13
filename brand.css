@@ -298,3 +298,4 @@ details.pl .body{padding:6px 14px 10px;background:var(--soft)}
 .stats3 div{padding:10px 0}.stats3 div+div{border-left:1px solid var(--line);padding-left:12px}
 .stats3 b{display:block;font-size:20px;font-weight:600}.stats3 span{font-size:12px;color:var(--muted)}
 @media (max-width:520px){.stats3{grid-template-columns:repeat(2,1fr)}.stats3 div:nth-child(3){border-left:0;padding-left:0}}
+.ranked .leg{display:block;line-height:1.35;margin-bottom:3px}.ranked .leg em{display:block;font-style:normal;font-size:12px;color:var(--muted)}
