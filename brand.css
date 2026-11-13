@@ -317,3 +317,29 @@ details.nbapk[open]>summary{background:var(--soft)}
 .top.nba .sport a.on{background:#F27A1A;color:#fff}
 .top.nba .logo img{height:36px}
 footer.foot.nba{border-top-color:#3A2410;color:#F2A15E}
+/* last-10 stat charts (player page) */
+.sh,.shl{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:6px 0}.sh::-webkit-scrollbar{display:none}
+.sh button,.shl button{font:inherit;font-size:13px;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 12px;white-space:nowrap;cursor:pointer}
+.shl button{font-size:12px;padding:3px 10px}
+.sh button.on,.shl button.on{color:#000;background:var(--fg);border-color:var(--fg)}
+.shr{display:flex;align-items:baseline;gap:12px;margin:8px 0 2px;font-size:13px;color:var(--muted)}.shr span{flex:1}.shr b{font-weight:500;color:var(--fg)}.shr b.pos{color:var(--accent)}
+.sbars{width:100%;height:auto;display:block}
+.ev{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0 4px;font-size:13px;color:var(--muted)}
+.ev b{font-size:16px;font-weight:600;color:var(--fg)}.ev span{flex:1}.ev em{font-style:normal;font-weight:500;color:var(--fg)}.ev.v{border-color:var(--accent)}.ev.v em{color:var(--accent)}
+.hitb{cursor:pointer}.hitb.sel{fill:rgba(255,255,255,.07)}
+.gdet{font-size:13px;color:var(--muted);margin:2px 0 6px;line-height:1.5;min-height:39px}.gdet b{font-weight:500;color:var(--fg)}
+.nface{width:30px;height:22px;object-fit:cover;object-position:top;border-radius:6px;background:var(--soft);vertical-align:middle;margin-right:7px;flex:none}
+.nmrow{display:inline-flex;align-items:center}
+.tlogo{width:18px;height:18px;vertical-align:-3px;margin-right:4px}
+details.pl>summary .nm{display:inline-flex;align-items:center}
+/* faces and badges */
+.pid{display:flex;align-items:center;gap:12px;min-width:0}
+.face{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--soft);flex:none;vertical-align:middle}
+.face.big{width:56px;height:56px;border:1px solid var(--line)}
+.badge{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:5px}
+.badge.sm{width:15px;height:15px}
+.name .badge.sm{width:22px;height:22px;vertical-align:-4px}
+.vs{color:var(--muted);font-weight:400;margin:0 2px}
+.who .face{float:left;margin:2px 10px 0 0}
+.ranked .who .face{float:none;width:22px;height:22px;margin:0 6px 0 0}.ranked .leg .face{width:22px;height:22px;margin-right:6px}
+.game header h3 .badge.sm{width:18px;height:18px}

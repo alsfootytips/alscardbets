@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=f5f4a647"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=99991727"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
@@ -14,6 +14,9 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ø/g,"o").toLowerCase();
 let players = [], updated = "";
 const GAMES = {};
+const IMG = "https://images.fotmob.com/image_resources/";
+const face = (pid, cls = "face") => pid ? `<img class="${cls}" src="${IMG}playerimages/${pid}.png" alt="" loading="lazy" onerror="this.remove()">` : "";
+const badge = (tid, cls = "badge") => tid ? `<img class="${cls}" src="${IMG}logo/teamlogo/${tid}_small.png" alt="" loading="lazy" onerror="this.remove()">` : "";
 const od = x => x == null ? "–" : String(+(+x).toFixed(2));   // 4.3333335 -> 4.33
 const EXAMPLE = new URLSearchParams(location.search).has("example");
 if (EXAMPLE) document.querySelector(".meta").outerHTML = '<p class="meta example">Example analysis from a past game: <b>Bournemouth v Sunderland, Sun 18 Oct 2026</b>, priced 10 minutes before kickoff. Search any player in that game. <a href="check.html">Back to live players</a></p>';
@@ -299,7 +302,7 @@ function gameView(g, mode = 0) {
       ${m.near.length ? `<small>Around them: ${m.near.slice(0, 2).map(n => { const c = Object.values(cards).find(c => c.player === n.name);
         return `<a href="?p=${encodeURIComponent(n.name)}">${esc(n.name)}</a>${c && c.best ? ` <span class="np${c.edge >= 0.15 ? " v" : ""}">${od(c.best)}</span>` : ""}`; }).join(", ")}</small>` : ""}</li>`).join("");
   out.innerHTML = `<div class="card gv">
-    <div class="namerow"><div><div class="name">${esc(g.game)}</div>
+    <div class="namerow"><div><div class="name">${gameBadges(g)}</div>
     <div class="sub">${new Date(g.kickoff).toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"})} · ${g.lineup === "standard" ? "lineups confirmed" : "predicted lineups"}</div></div>
     <button class="sharebtn" id="swap" type="button">Swap ⇄</button></div>
     <p class="legend"><span><i class="kh"></i>${esc(commitTeam)}: fouls committed</span><span><i class="ka"></i>${esc(winTeam)}: fouls won</span></p>
@@ -315,6 +318,10 @@ function gameView(g, mode = 0) {
 }
 
 // ---------- games list (default view) ----------
+function gameBadges(g) {
+  const [h, a] = g.game.split(" v "), t = g.team_ids || [];
+  return `${badge(t[0], "badge sm")}${esc(h)} <span class="vs">v</span> ${badge(t[1], "badge sm")}${esc(a)}`;
+}
 function gamesList() {
   // only games with a card market: at least one player with a bookie card price
   const gs = Object.values(GAMES).filter(g => (g.pitch || []).length && (g.cards || []).some(c => c.best))
@@ -328,12 +335,20 @@ function gamesList() {
     const lg = String(g.league).replace(/ Grp\. \w+/, "").replace(" (INT)", "");
     html += `<a class="grow" href="?g=${g.fotmob_id}">
       <span class="gt">${new Date(g.kickoff).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}</span>
-      <span class="gn"><b>${esc(g.game)}</b><small>${esc(lg)}${g.lineup === "standard" ? " · lineups out" : ""}</small></span>
+      <span class="gn"><b>${gameBadges(g)}</b><small>${esc(lg)}${g.lineup === "standard" ? " · lineups out" : ""}</small></span>
       <span class="gv2">${nv ? `<em>${nv} value</em>` : ""}<i>›</i></span></a>`;
   }
   out.innerHTML = html + "</div>";
 }
 // ---------- player page matchup: same grid pitch, only the player and their direct opponent ----------
+function ownHeat(p) {
+  const pl = p.pitch || [], me = pl.find(x => x.pid === p.pid); if (!me || !me.heat) return "";
+  const G = Array.from({length: 12}, () => Array(8).fill(0)); let mx = 0;
+  for (let i = 0; i < 12; i++) for (let j = 0; j < 8; j++) { const [r, c] = cellOf(me, i, j); G[r][c] = me.heat[i][j]; mx = Math.max(mx, G[r][c]); }
+  for (let r = 0; r < 12; r++) for (let c = 0; c < 8; c++) G[r][c] /= mx || 1;
+  return `<h3>${esc(last(p.player))}'s heatmap${me.est ? " (estimated from position)" : ""}</h3>${gridPitch(pl, G, {confirmed: !p.predicted, focus: new Set([me.pid])})}
+    <p class="cap">Red = the 3 areas where ${esc(last(p.player))} spends most time, faint red = the next 5, shown on ${p.predicted ? "the predicted" : "today's"} lineup.</p>`;
+}
 function matchupGrid(p) {
   const pl = p.pitch || []; const me = pl.find(x => x.pid === p.pid); if (!me) return "";
   const opp = pl.find(x => x.side !== me.side && x.name === p.opp);
@@ -446,6 +461,93 @@ function wireFoulPairs(g, commitSide) {
     sel.onchange = calc; inp.oninput = calc;
   });
 }
+// ---------- StatsHub-style last-10 charts (player page) ----------
+const abbr = n => (String(n || "").replace(/^(1\.|FC|AFC|SC|SV|VfB|VfL|TSG|RB|AC|AS|SS|US|CF|CD|RC|Real|Club)\s+/i, "").replace(/[^A-Za-zÀ-ž]/g, "").slice(0, 3) || "–").toUpperCase();
+function pairPrice(p, who, k) {     // real single price + our probability for k+ fouls (who "a") / fouled (who "b")
+  const g = GAMES[String(p.gid)] || {}, pid = who === "a" ? p.pid : (p.pitch.find(x => x.name === p.opp) || {}).pid;
+  for (const x of g.foul_pairs || []) {
+    if (x[who + "_pid"] !== pid) continue;
+    const L = who === "a" ? x.la : x.lb, P = who === "a" ? x.pa : x.pb, B = who === "a" ? x.la_bk : x.lb_bk;
+    const pr = L && L[k], pm = P && P[k];
+    if (pm != null) return {price: pr || null, book: (B && B[k]) || "", p: pm, edge: pr ? pr * pm - 1 : null};
+  }
+  return null;
+}
+function statTabs(p) {
+  const me = p.pitch.find(x => x.pid === p.pid), opp = p.pitch.find(x => x.side !== (me || {}).side && x.name === p.opp);
+  const tabs = [];
+  if (me && me.g && me.g.length) {
+    tabs.push({id: "c", label: "Cards", who: me, kind: "card"});
+    if (me.g.some(r => r[6] != null)) tabs.push({id: "f", label: "Fouls", who: me, kind: "fc", line: 1, pk: "a"});
+    if (me.g.some(r => r[7] != null)) tabs.push({id: "w", label: "Fouls won", who: me, kind: "fw", line: 1});
+  }
+  if (opp && opp.g && opp.g.some(r => r[7] != null)) tabs.push({id: "o", label: `${last(opp.name)} fouls won`, who: opp, kind: "fw", line: 1, pk: "b"});
+  return tabs;
+}
+function barChart(rows, kind, line) {   // rows most recent first -> drawn oldest left
+  const R = [...rows].reverse(), n = R.length, W = 340, H = 168, T = 18, B = 52, gap = 6, bw = (W - gap * (n - 1)) / n;
+  const val = r => kind === "card" ? (r[5] ? 1 : 0) : kind === "fc" ? r[6] : r[7];
+  const mx = kind === "card" ? 1 : Math.max(4, line + 1, ...R.map(r => val(r) ?? 0));
+  const y = v => T + (H - T - B) * (1 - v / mx);
+  let s = "";
+  R.forEach((r, i) => {
+    const x = i * (bw + gap), v = val(r), hit = kind === "card" ? r[5] > 0 : v != null && v >= line;
+    const col = kind === "card" ? (r[5] === 2 ? "var(--bad)" : r[5] ? "var(--card)" : "var(--soft)") : v == null ? "transparent" : hit ? "var(--accent)" : "#3A3A3A";
+    const top = v == null ? H - B : kind === "card" ? (r[5] ? T + 8 : H - B - 6) : Math.min(H - B - 4, y(v));
+    s += `<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - B - top).toFixed(1)}" rx="3" fill="${col}"/>`;
+    s += `<rect class="hitb" data-i="${n - 1 - i}" x="${(x - gap / 2).toFixed(1)}" y="0" width="${(bw + gap).toFixed(1)}" height="${H}" fill="transparent"/>`;
+    const lab = kind === "card" ? (r[5] === 2 ? "R" : r[5] ? "Y" : "") : v == null ? "–" : v;
+    if (lab !== "") s += `<text x="${(x + bw / 2).toFixed(1)}" y="${(top - 4).toFixed(1)}" text-anchor="middle" font-size="11" fill="var(--fg)">${lab}</text>`;
+    if (r[2]) s += `<image href="${IMG}logo/teamlogo/${r[2]}_xsmall.png" x="${(x + bw / 2 - 8).toFixed(1)}" y="${H - B + 5}" width="16" height="16"/>`;
+    s += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - B + 32}" text-anchor="middle" font-size="9.5" fill="var(--muted)">${esc(abbr(r[1]))}</text>`;
+    s += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - B + 44}" text-anchor="middle" font-size="8.5" fill="#666">${r[3] ? "H" : "A"} ${r[4] < 60 ? r[4] + "'" : ""}</text>`;
+  });
+  if (kind !== "card") s += `<line x1="0" x2="${W}" y1="${y(line - 0.5).toFixed(1)}" y2="${y(line - 0.5).toFixed(1)}" stroke="var(--fg)" stroke-dasharray="3 3" stroke-width=".8" opacity=".55"/>`;
+  return `<svg class="sbars" viewBox="0 0 ${W} ${H}" role="img">${s}</svg>`;
+}
+function hitRate(rows, kind, line, n) {
+  const R = rows.slice(0, n).filter(r => kind === "card" || (kind === "fc" ? r[6] : r[7]) != null);
+  const h = R.filter(r => kind === "card" ? r[5] > 0 : (kind === "fc" ? r[6] : r[7]) >= line).length;
+  return R.length ? {h, n: R.length, pct: Math.round(h / R.length * 100)} : null;
+}
+function statsBlock(p) {
+  const tabs = statTabs(p); if (!tabs.length) return "";
+  return `<h3>Last 10 games <small style="display:inline">· tap a bar for who they were up against</small></h3><div class="sh" id="sh">${tabs.map((t, i) => `<button type="button" data-t="${i}" class="${i ? "" : "on"}">${esc(t.label)}</button>`).join("")}</div><div id="shbody"></div>`;
+}
+function wireStats(p) {
+  const tabs = statTabs(p), box = document.getElementById("shbody"); if (!box) return;
+  let cur = 0;
+  const draw = () => {
+    const t = tabs[cur], rows = t.who.g;
+    const lines = t.kind === "card" ? [] : [1, 2, 3, 4];
+    const r5 = hitRate(rows, t.kind, t.line, 5), r10 = hitRate(rows, t.kind, t.line, 10);
+    const what = t.kind === "card" ? "booked" : `${t.line}+ ${t.kind === "fc" ? "fouls" : "fouled"}`;
+    let ev = "";
+    if (t.kind === "card") {
+      ev = p.best ? `<div class="ev${p.edge >= 0.15 ? " v" : ""}"><b>${od(p.best)}</b> ${esc(p.book || "")}<span>fair ${p.fair}</span><em>${p.edge != null ? (p.edge > 0 ? "+" : "") + Math.round(p.edge * 100) + "% EV" : ""}</em></div>` : "";
+    } else if (t.pk) {
+      const q = pairPrice(p, t.pk, t.line);
+      if (q) ev = `<div class="ev${q.edge != null && q.edge >= 0.15 ? " v" : ""}">${q.price ? `<b>${od(q.price)}</b> ${esc(q.book)}` : `<b>no price</b>`}<span>fair ${od(1 / q.p)} (${Math.round(q.p * 100)}%)</span><em>${q.edge != null ? (q.edge > 0 ? "+" : "") + Math.round(q.edge * 100) + "% EV" : ""}</em></div>`;
+    }
+    box.innerHTML = `${lines.length ? `<div class="shl">${lines.map(k => `<button type="button" data-k="${k}" class="${k === t.line ? "on" : ""}">${k}+</button>`).join("")}</div>` : ""}
+      <div class="shr"><span>${esc(t.kind === "card" ? last(t.who.name) + " booked" : last(t.who.name) + " " + what)}</span>
+      ${r5 ? `<b class="${r5.pct >= 50 ? "pos" : ""}">L5 ${r5.h}/${r5.n}</b>` : ""}${r10 ? `<b class="${r10.pct >= 50 ? "pos" : ""}">L10 ${r10.pct}%</b>` : ""}</div>
+      ${barChart(rows, t.kind, t.line)}<p class="gdet" id="gdet"></p>${ev}`;
+    box.querySelectorAll(".shl button").forEach(b => b.onclick = () => { t.line = +b.dataset.k; draw(); });
+    const det = i => { const r = rows[i]; if (!r) return;
+      const d = new Date(`2026-${r[0]}T12:00:00`), when = d.toLocaleDateString([], {day: "numeric", month: "short"});
+      const own = r[6] == null ? "no foul data" : `${r[6]} foul${r[6] === 1 ? "" : "s"}, fouled ${r[7]}`;
+      const card = r[5] === 2 ? " · red card" : r[5] ? " · booked" : "";
+      const vs = r[8] ? `<br>Up against <b>${esc(r[8])}</b>${r[9] != null ? `: fouled ${r[9]}, ${r[10]} foul${r[10] === 1 ? "" : "s"}` : ""}` : r[4] < 46 ? "<br>Came off the bench" : "";
+      document.getElementById("gdet").innerHTML = `${when} · v ${badge(r[2], "badge sm")}${esc(r[1])} (${r[3] ? "H" : "A"}) · ${r[4]}' · ${own}${card}${vs}`;
+      box.querySelectorAll(".hitb").forEach(h => h.classList.toggle("sel", +h.dataset.i === i)); };
+    box.querySelectorAll(".hitb").forEach(h => h.onclick = () => det(+h.dataset.i));
+    det(0);
+  };
+  document.querySelectorAll("#sh button").forEach(b => b.onclick = () => {
+    cur = +b.dataset.t; document.querySelectorAll("#sh button").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  draw();
+}
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
   const KEEP = ["Fouls", "Fouls won", "Tackles", "Duels won", "Dribbled past"];
@@ -483,6 +585,11 @@ function benchView(p) {
     ${tcardsBlock(p)}</div>`;
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
+function teamId(p) {           // this fixture's team (country for internationals), else the player's club
+  const g = GAMES[String(p.gid)] || {}, me = (p.pitch || []).find(x => x.pid === p.pid);
+  if (me && g.team_ids) return g.team_ids[me.side === "H" ? 0 : 1];
+  return me && me.tid;
+}
 function show(p) {
   if (p.bench) return benchView(p);
   const v = p.verdict || {};
@@ -494,8 +601,8 @@ function show(p) {
   const src = [p.data_src && p.data_src.length ? `${last(p.player)}'s stats include ${esc(p.data_src.join(", "))}` : "",
                p.opp_data_src && p.opp_data_src.length ? `${last(p.opp)}'s include ${esc(p.opp_data_src.join(", "))}` : ""].filter(Boolean).join(". ");
   out.innerHTML = `<div class="card">
-    <div class="namerow"><div class="name">${esc(p.player)}</div><button class="sharebtn" id="sharebtn" type="button">Share</button></div>
-    <div class="sub">${esc(p.team)} · <a href="?g=${p.gid}">${esc(p.game)}</a> · ${ko}</div>
+    <div class="namerow"><div class="pid">${face(p.pid, "face big")}<div><div class="name">${esc(p.player)}</div>
+    <div class="sub">${badge(teamId(p))}${esc(p.team)} · <a href="?g=${p.gid}">${esc(p.game)}</a> · ${ko}</div></div></div><button class="sharebtn" id="sharebtn" type="button">Share</button></div>
     ${p.start_chance != null && p.start_chance < 0.95 ? `<div class="sub">Start chance <b>${Math.round(p.start_chance * 100)}%</b>${p.avail_note ? " · " + esc(p.avail_note) : ""}</div>` : ""}
     ${p.fair_only ? `<p class="predicted">Not in our odds feed. Compare the fair price with the bookies yourself.</p>` : p.predicted ? `<p class="predicted">Lineup not confirmed yet, so this isn't sent as a pick.</p>` : ""}
     <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
@@ -506,8 +613,10 @@ function show(p) {
       <div><b>${p.confidence ? p.confidence + "/10" : "–"}</b><span>confidence</span></div>
     </div>
     ${p.why ? `<h3>Why they could get booked</h3><p class="whyline">${esc(p.why)}</p>` : ""}
-    ${priceChart(p)}
+    ${statsBlock(p)}
+    ${ownHeat(p)}
     ${matchupGrid(p)}
+    ${priceChart(p)}
     ${doubleBox(p)}
     <details class="more full"><summary>More detail</summary>
     ${ranked.length ? "<h3>For and against</h3>" + ranked.map(facRow).join("") : ""}
@@ -521,6 +630,7 @@ function show(p) {
   </div>`;
   document.getElementById("sharebtn").onclick = () => shareCard(p);
   wireDouble(p);
+  wireStats(p);
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
 </script>
