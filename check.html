@@ -651,8 +651,19 @@ function tagsFor(p) {
   return (p.pick ? `<span class="nba-tag st">Pick</span>` : p.value ? `<span class="nba-tag up">Value</span>` : "")
        + (p.predicted ? `<span class="nba-tag dtd">Predicted XI</span>` : `<span class="nba-tag st">Starting</span>`)
        + (p.super_sub ? `<span class="nba-tag up">${esc(p.sub_cover || "Super Sub")}</span>` : "")
+       + ((pc => pc ? (pc.changed ? `<span class="nba-tag dtd">${pc.today} today · usually ${pc.usual}</span>` : `<span class="nba-tag">${pc.today}</span>`) : "")(posChange(p)))
        + (p.start_chance != null && p.start_chance < 0.95 ? `<span class="nba-tag dtd">${Math.round(p.start_chance * 100)}% to start</span>` : "")
        + (p.fair_only ? `<span class="nba-tag">Not in odds feed</span>` : "");
+}
+// today's position v where they usually start (last 20 starts). Same family (LB/LWB, LW/LM...) isn't a change.
+const POS_FAM = {LB: "LB", LWB: "LB", RB: "RB", RWB: "RB", LW: "LW", LM: "LW", RW: "RW", RM: "RW", CB: "CB", DM: "DM", CM: "CM", AM: "AM", ST: "ST", GK: "GK"};
+function posChange(p) {
+  const me = (p.pitch || []).find(x => x.pid === p.pid); if (!me || !me.pl || !me.g) return null;
+  const c = {}; let n = 0; for (const r of me.g) if (r[13]) { c[r[13]] = (c[r[13]] || 0) + 1; n++; }
+  if (n < 5) return null;
+  const usual = Object.keys(c).sort((a, b) => c[b] - c[a])[0];
+  const fam = k => POS_FAM[k] || k, sameFam = Object.keys(c).filter(k => fam(k) === fam(me.pl)).reduce((a, k) => a + c[k], 0);
+  return {today: me.pl, usual, changed: fam(me.pl) !== fam(usual) && sameFam / n < 0.2, times: c[me.pl] || 0, n};
 }
 function kvRow(p) {
   const me = (p.pitch || []).find(x => x.pid === p.pid) || {};

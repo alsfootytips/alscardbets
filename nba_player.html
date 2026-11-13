@@ -111,7 +111,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     const top = Math.max(5, Math.ceil(Math.max(...vals, proj) * 1.2));
     document.getElementById("stat").innerHTML =
       `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
-      + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; return m && Math.abs(m - 1) >= 0.03 ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">matchup ${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
+      + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; const so = (T.star_out || []).map(n => n.split(" ").slice(-1)[0] + " out").join(", "); return m && (Math.abs(m - 1) >= 0.03 || so) ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">${so ? so + " · " : ""}${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
       + `<div class="chips range">${RANGES.map(([n, l]) => `<button data-n="${n}" class="${n === S.n ? "on" : ""}">${l}</button>`).join("")}</div>`
       + `<div id=chartbox></div>`
       + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
