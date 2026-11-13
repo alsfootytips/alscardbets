@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=ca4c75d6"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=6222f8aa"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game or search a player</p>
@@ -492,33 +492,39 @@ function statTabs(p) {
   if (opp && opp.g && opp.g.some(r => r[7] != null)) tabs.push({id: "o", label: `Opponent fouls won (${last(opp.name)})`, who: opp, col: 7, info: fwInfo(p, opp), avg: opp.fw, word: "fouled"});
   return tabs;
 }
-const ST = {tab: 0, k: null, sel: 0, n: 10, subs: false};
+const ST = {tab: 0, k: null, sel: 0, n: 10, subs: false, pos: ""};
 const isStart = r => r[11] === 1 || (r[11] == null && r[4] >= 46);
-const rowsOf = t => t.who.g.filter(r => ST.subs || isStart(r)).slice(0, ST.n);
+const rowsOf = t => { const R = t.who.g.filter(r => ST.pos ? r[13] === ST.pos : (ST.subs || isStart(r))); return ST.n ? R.slice(0, ST.n) : R.filter(r => r[12] === 1); };   // n 0 = this season
 function statsBlock(p) {
   const me = (p.pitch || []).find(x => x.pid === p.pid);
   if (!me || !me.g) return `<div class="panel"><h2>Last 10 games</h2><p class="meta">Coming at the next reprice.</p></div>`;
   return `<div id="stat"></div>`;
 }
+function posSelect(t) {            // positions this player has started in, most common first
+  const c = {}; for (const r of t.who.g) if (r[13]) c[r[13]] = (c[r[13]] || 0) + 1;
+  const ks = Object.keys(c).sort((a, b) => c[b] - c[a]); if (ks.length < 1) return "";
+  return `<select id="posf" class="posf" aria-label="Filter by position"><option value="">All positions</option>${ks.map(k => `<option value="${k}"${k === ST.pos ? " selected" : ""}>${k} (${c[k]})</option>`).join("")}</select>`;
+}
 function wireStats(p) {
   const box = document.getElementById("stat"); if (!box) return;
-  const tabs = statTabs(p); ST.tab = 0; ST.k = null; ST.sel = 0; ST.n = 10; ST.subs = false;
+  const tabs = statTabs(p); ST.tab = 0; ST.k = null; ST.sel = 0; ST.n = 10; ST.subs = false; ST.pos = "";
   const render = () => {
     const t = tabs[ST.tab], card = t.col === 5, mins = t.col === 4, rows = rowsOf(t);
     const L = (t.info && t.info.L) || {}, rungs = Object.keys(L).map(Number).sort((a, b) => a - b);
     if (ST.k == null) ST.k = card ? 1 : mins ? 60 : (rungs.find(k => (t.info.P || {})[k] && (t.info.P[k] < 0.75)) || rungs[0] || Math.max(1, Math.round(t.avg || 1)));
     box.innerHTML = `<div class="chips">${tabs.map((x, i) => `<button type="button" data-t="${i}" class="${i === ST.tab ? "on" : ""}">${esc(x.label)}</button>`).join("")}</div>
       <div class="panel"><h2>${esc(t.label)}${t.avg != null ? ` · ${(+t.avg).toFixed(1)} a game` : card ? ` · booked ${rows.filter(r => r[5]).length} of ${rows.length}` : mins ? ` · ${Math.round(rows.reduce((a, r) => a + r[4], 0) / Math.max(rows.length, 1))}' a game` : ""}</h2>
-      <p class="meta">Last ${rows.length} ${ST.subs ? "games (faded = off the bench)" : "starts"}${rows.length < ST.n ? ` · only ${rows.length} on record` : ""} · tap a bar for who they faced</p>
+      <p class="meta">${ST.n ? "Last " : "This season · "}${rows.length} ${ST.subs ? "games (faded = off the bench)" : "starts"}${ST.n && rows.length < ST.n ? ` · only ${rows.length} on record` : ""} · tap a bar for who they faced</p>
       <div id="chartbox"></div>
-      <div class="seg nseg"><span>${[5, 10, 20].map(n => `<button type="button" data-n="${n}" class="${n === ST.n ? "on" : ""}">L${n}</button>`).join("")}</span>
-      <button type="button" id="subs" class="tgl${ST.subs ? "" : " on"}" role="switch" aria-checked="${!ST.subs}"><i></i>Starts only</button></div>
+      <div class="seg nseg"><span>${[5, 10, 20, 0].map(n => `<button type="button" data-n="${n}" class="${n === ST.n ? "on" : ""}">${n ? "L" + n : "This season"}</button>`).join("")}</span>
+      <button type="button" id="subs" class="tgl${ST.subs || ST.pos ? "" : " on"}" role="switch" aria-checked="${!ST.subs}"${ST.pos ? " disabled" : ""}><i></i>Starts only</button>${posSelect(t)}</div>
       ${card || mins ? "" : `<div class="mover"><button type="button" id="kdown" aria-label="Lower line">−</button><input id="kslide" type="range" min="1" max="6" step="1" value="${ST.k}" aria-label="Move the line"><button type="button" id="kup" aria-label="Raise line">+</button></div>
       ${rungs.length ? `<div class="rungs">${rungs.map(k => `<button type="button" data-k="${k}">${k}+ @ ${od(L[k])}<small></small></button>`).join("")}</div>` : ""}`}
       <div id="verdict"></div><div class="hr" id="hitrates"></div><p class="gdet" id="gdet"></p></div>`;
     box.querySelectorAll(".chips button").forEach(b => b.onclick = () => { ST.tab = +b.dataset.t; ST.k = null; render(); });
     box.querySelectorAll(".seg [data-n]").forEach(b => b.onclick = () => { ST.n = +b.dataset.n; ST.sel = 0; render(); });
     document.getElementById("subs").onclick = () => { ST.subs = !ST.subs; ST.sel = 0; render(); };
+    const ps = document.getElementById("posf"); if (ps) ps.onchange = () => { ST.pos = ps.value; ST.sel = 0; render(); };
     box.querySelectorAll(".rungs button").forEach(b => b.onclick = () => { ST.k = +b.dataset.k; draw(); });
     const sl = document.getElementById("kslide");
     if (sl) { sl.oninput = () => { ST.k = +sl.value; draw(); };
@@ -536,7 +542,7 @@ function wireStats(p) {
     else { price = L[k] || null; pm = Pm[k] ?? null; book = B[k] || ""; }
     const ev = price && pm != null ? (price * pm - 1) * 100 : null;
     // chart
-    const W = 340, H = 196, pad = 4, bw = (W - pad) / Math.max(R.length, 1), base = H - 52;
+    const W = 340, H = 206, pad = 4, bw = (W - pad) / Math.max(R.length, 1), base = H - 62;
     const mx = card ? 1.25 : mins ? 100 : Math.max(k * 1.3, ...R.map(r => val(r) ?? 0), 2);
     const y = v => base - (base - (mins ? 24 : 44)) * v / mx;
     let bars = "";
@@ -551,6 +557,7 @@ function wireStats(p) {
       if (r[2]) bars += `<image href="${IMG}logo/teamlogo/${r[2]}_xsmall.png" x="${(cx - bs / 2).toFixed(1)}" y="${base + 6}" width="${bs}" height="${bs}"/>`;
       if (!many) bars += `<text x="${cx.toFixed(1)}" y="${base + 33}" text-anchor="middle" font-size="8.5" fill="#9A9A9A">${esc(abbr(r[1]))}</text>`
             + `<text x="${cx.toFixed(1)}" y="${base + 44}" text-anchor="middle" font-size="8" fill="#666">${r[0].slice(3)}/${r[0].slice(0, 2)}</text>`;
+      bars += `<text x="${cx.toFixed(1)}" y="${base + (many ? 30 : 55)}" text-anchor="middle" font-size="${many ? 7 : 8}" font-weight="600" fill="#C8C8C8">${r[13] || (isStart(r) ? "" : "sub")}</text>`;
       bars += `<rect class="hitb${i === ST.sel ? " sel" : ""}" data-i="${i}" x="${(x - 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
     });
     // minutes played each game: blue line + dots on a 0-90 scale (right edge), on every stat
@@ -582,7 +589,7 @@ function wireStats(p) {
     const vals = rows.map(val).filter(v => v != null);
     const hit = n => { const xs = vals.slice(0, n); return xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0; };
     const nm = card ? "booked" : mins ? "60'+" : `${k}+`;
-    const wins = ST.n >= 20 ? [["L5", 5], ["L10", 10], ["L20", 20]] : ST.n >= 10 ? [["L3", 3], ["L5", 5], ["L10", 10]] : [["L3", 3], ["L5", 5]];
+    const wins = !ST.n ? [["L5", 5], ["L10", 10], ["Season", rows.length]] : ST.n >= 20 ? [["L5", 5], ["L10", 10], ["L20", 20]] : ST.n >= 10 ? [["L3", 3], ["L5", 5], ["L10", 10]] : [["L3", 3], ["L5", 5]];
     document.getElementById("hitrates").innerHTML = (mins ? [] : wins).map(([l, n]) => {
       const h = hit(n), good2 = card ? h >= 40 : h >= 60, bad2 = card ? h === 0 : h < 40;
       return `<div class="${good2 ? "good" : bad2 ? "bad" : ""}"><b>${h}%</b><span>${l} ${nm}</span></div>`; }).join("")
@@ -598,7 +605,7 @@ function wireStats(p) {
                : !isStart(r) ? `<span><em>Opposition player</em>came off the bench</span>` : "";
       document.getElementById("gdet").innerHTML = `<span class="gh">${i === 0 ? "Last game" : "Selected game"} · ${when}</span>`
         + `<span><em>Opposition</em>${badge(r[2], "badge sm")}<b>${esc(r[1])}</b> (${r[3] ? "H" : "A"})</span>`
-        + `<span><em>${who}</em>${r[4]}' · ${own}${cd}</span>${vs}`;
+        + `<span><em>${who}</em>${r[13] ? `<b>${r[13]}</b> · ` : isStart(r) ? "" : "sub · "}${r[4]}' · ${own}${cd}</span>${vs}`;
       document.querySelectorAll("#chartbox .hitb").forEach(h => h.classList.toggle("sel", +h.dataset.i === i)); };
     document.querySelectorAll("#chartbox .hitb").forEach(h => h.onclick = () => det(+h.dataset.i));
     det(ST.sel);

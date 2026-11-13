@@ -407,3 +407,15 @@ a.plrow:hover{background:var(--soft)}
 .tgl i::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#bbb;transition:transform .15s}
 .seg #subs.tgl.on{color:var(--fg);background:none}.tgl.on i{background:var(--accent)}.tgl.on i::after{transform:translateX(13px);background:#000}
 .seg.nseg{gap:14px}
+.seg.nseg{flex-wrap:wrap;gap:8px 12px}.seg.nseg span button{padding:5px 10px;white-space:nowrap}.seg #subs.tgl{white-space:nowrap}
+/* collapsible NBA games */
+details.gfold>summary{list-style:none;cursor:pointer}
+details.gfold>summary::-webkit-details-marker{display:none}
+.game>summary>header{padding:12px 40px 10px 14px;position:relative}
+.game>summary>header h3{margin:0;font-size:15px;font-weight:600;color:var(--fg)}
+.game>summary>header span{display:block;font-size:13px;color:var(--muted);margin-top:1px}
+.game>summary>header h3 .gcount{display:inline-block;margin:0 0 0 8px;font-size:11px;font-weight:600;color:var(--accent);border:1px solid #1F4D2E;border-radius:999px;padding:0 7px;vertical-align:1px}
+.game>summary>header:after{content:"▾";position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px}
+details.gfold[open]>summary>header:after{content:"▴"}
+.posf{font:500 12px var(--body);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.seg #subs.tgl[disabled]{opacity:.4}
