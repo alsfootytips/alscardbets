@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=a21de9bc"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=ca4c75d6"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game or search a player</p>
@@ -508,11 +508,11 @@ function wireStats(p) {
     const L = (t.info && t.info.L) || {}, rungs = Object.keys(L).map(Number).sort((a, b) => a - b);
     if (ST.k == null) ST.k = card ? 1 : mins ? 60 : (rungs.find(k => (t.info.P || {})[k] && (t.info.P[k] < 0.75)) || rungs[0] || Math.max(1, Math.round(t.avg || 1)));
     box.innerHTML = `<div class="chips">${tabs.map((x, i) => `<button type="button" data-t="${i}" class="${i === ST.tab ? "on" : ""}">${esc(x.label)}</button>`).join("")}</div>
-      <div class="seg"><span>${[5, 10, 20].map(n => `<button type="button" data-n="${n}" class="${n === ST.n ? "on" : ""}">L${n}</button>`).join("")}</span>
-      <button type="button" id="subs" class="${ST.subs ? "on" : ""}">${ST.subs ? "Starts + sub apps" : "Starts only"}</button></div>
       <div class="panel"><h2>${esc(t.label)}${t.avg != null ? ` · ${(+t.avg).toFixed(1)} a game` : card ? ` · booked ${rows.filter(r => r[5]).length} of ${rows.length}` : mins ? ` · ${Math.round(rows.reduce((a, r) => a + r[4], 0) / Math.max(rows.length, 1))}' a game` : ""}</h2>
       <p class="meta">Last ${rows.length} ${ST.subs ? "games (faded = off the bench)" : "starts"}${rows.length < ST.n ? ` · only ${rows.length} on record` : ""} · tap a bar for who they faced</p>
       <div id="chartbox"></div>
+      <div class="seg nseg"><span>${[5, 10, 20].map(n => `<button type="button" data-n="${n}" class="${n === ST.n ? "on" : ""}">L${n}</button>`).join("")}</span>
+      <button type="button" id="subs" class="tgl${ST.subs ? "" : " on"}" role="switch" aria-checked="${!ST.subs}"><i></i>Starts only</button></div>
       ${card || mins ? "" : `<div class="mover"><button type="button" id="kdown" aria-label="Lower line">−</button><input id="kslide" type="range" min="1" max="6" step="1" value="${ST.k}" aria-label="Move the line"><button type="button" id="kup" aria-label="Raise line">+</button></div>
       ${rungs.length ? `<div class="rungs">${rungs.map(k => `<button type="button" data-k="${k}">${k}+ @ ${od(L[k])}<small></small></button>`).join("")}</div>` : ""}`}
       <div id="verdict"></div><div class="hr" id="hitrates"></div><p class="gdet" id="gdet"></p></div>`;
@@ -538,7 +538,7 @@ function wireStats(p) {
     // chart
     const W = 340, H = 196, pad = 4, bw = (W - pad) / Math.max(R.length, 1), base = H - 52;
     const mx = card ? 1.25 : mins ? 100 : Math.max(k * 1.3, ...R.map(r => val(r) ?? 0), 2);
-    const y = v => base - (base - 24) * v / mx;
+    const y = v => base - (base - (mins ? 24 : 44)) * v / mx;
     let bars = "";
     R.forEach((r, i) => {
       const v = val(r), x = pad + i * bw + 2, w = bw - 4, cx = x + w / 2, hit = v != null && v >= k, sub = !isStart(r);
@@ -553,11 +553,20 @@ function wireStats(p) {
             + `<text x="${cx.toFixed(1)}" y="${base + 44}" text-anchor="middle" font-size="8" fill="#666">${r[0].slice(3)}/${r[0].slice(0, 2)}</text>`;
       bars += `<rect class="hitb${i === ST.sel ? " sel" : ""}" data-i="${i}" x="${(x - 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
     });
+    // minutes played each game: blue line + dots on a 0-90 scale (right edge), on every stat
+    let mline = "";
+    if (!mins) {
+      const ym = m => base - (base - 18) * Math.min(m, 95) / 95, pts = R.map((r, i) => [pad + i * bw + bw / 2, ym(r[4])]);
+      mline = `<polyline points="${pts.map(q => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" ")}" fill="none" stroke="#60A5FA" stroke-width="1.4" stroke-linejoin="round" opacity=".85"/>`
+        + pts.map((q, i) => `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${many ? 1.8 : 2.4}" fill="#60A5FA" stroke="#000" stroke-width=".6"/>`
+          + (many ? "" : `<text x="${q[0].toFixed(1)}" y="${(q[1] - 5).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#93C5FD">${R[i][4]}'</text>`)).join("")
+        + `<text x="${W - 2}" y="${(ym(90) + 3).toFixed(1)}" text-anchor="end" font-size="0"></text>`;
+    }
     const ly = card ? y(0.5) : mins ? y(60) : y(k - 0.5);
     const tag = mins ? "60'" : (card ? "Booked" : `${k}+`) + (price ? ` · ${od(price)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? ` · fair ${od(1 / Math.max(pm, 0.001))}` : "");
     const good = ev != null && ev >= 15, bad = ev != null && ev < 0, col = good ? "#4ADE80" : bad ? "#F87171" : "#F5F5F5";
     const tagW = tag.length * 5.6 + 10;
-    document.getElementById("chartbox").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${bars}`
+    document.getElementById("chartbox").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${bars}${mline}`
       + `<line x1="0" x2="${W}" y1="${ly.toFixed(1)}" y2="${ly.toFixed(1)}" stroke="${col}" stroke-width="2" stroke-dasharray="5 3"/>`
       + `<rect x="${W - tagW}" y="${(ly - 17).toFixed(1)}" width="${tagW}" height="14" rx="4" fill="#000" stroke="${col}" stroke-width=".8"/>`
       + `<text x="${W - tagW / 2}" y="${(ly - 7).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${esc(tag)}</text></svg>`;
