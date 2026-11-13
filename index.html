@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Results · Al's Card Bets</title>
 <meta property="og:title" content="Al's Card Bets: Profit &amp; Loss">
-<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=085cd35f"><link rel=icon href="logo.jpg">
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=edb75990"><link rel=icon href="logo.jpg">
 <style>
 .wrap{max-width:760px;margin:0 auto;padding:0 16px 40px;display:grid;gap:14px}
 .pl-h{margin:26px 0 0;font-size:24px;font-weight:600}.sum{margin:0;color:var(--muted);font-size:14px}.sum b{color:var(--fg);font-weight:600}
@@ -42,7 +42,7 @@ td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
     <div class="tile"><span>Beat the closing price</span><b id="t-clv">—</b></div>
   </section>
   <section class="card"><h2>Running profit</h2><p class="note">Cumulative units after each settled bet, in the order they were placed.</p><div id="chart"></div></section>
-  <section class="card"><h2>Price v closing price</h2><p class="note">Each bar is one bet: how much better (green) or worse (red) the price we took was than the best price at kickoff. The line is the running average. Beating the close over time is the clearest sign the model is finding real value.</p><div id="clv"></div></section>
+  <section class="card"><h2>Price v closing price</h2><p class="note">Our price vs the price at kickoff · green = beat it · line = average</p><div id="clv"></div></section>
   <section class="card"><h2>Pick log</h2><p class="note">Every pick, newest first.</p>
     <div class="scroll"><table><thead><tr><th>Date</th><th>Player</th><th>Game</th><th>Bet</th><th class="num">Odds</th><th class="num">Close</th><th class="num">Stake</th><th>Result</th><th class="num">P/L</th></tr></thead><tbody id="log"></tbody></table></div>
   </section>
