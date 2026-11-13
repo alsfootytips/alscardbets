@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=a3d33db3"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
-<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=ec0537cd"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Cards</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
 <input id="q" placeholder="Search a player or team" autocomplete="off">
@@ -241,18 +241,38 @@ function shadeGrid(grid) {
   const hot = flat[HOT - 1] ?? Infinity, warm = flat[HOT + WARM - 1] ?? Infinity;
   return grid.map(row => row.map(v => v > 0 && v >= hot ? "rgba(255,59,64,.9)" : v > 0 && v >= warm ? "rgba(255,59,64,.28)" : "transparent"));
 }
+function zoneLabels(players, grid, winSide) {
+  const flat = grid.flat().filter(v => v > 0).sort((a, b) => b - a), hot = flat[HOT - 1] ?? Infinity;
+  const cells = [];
+  grid.forEach((row, r) => row.forEach((v, c) => { if (v > 0 && v >= hot) cells.push([v, r, c]); }));
+  cells.sort((a, b) => b[0] - a[0]);
+  const seen = new Set(), out = [];
+  for (const [, r, c] of cells) {
+    let best = null;
+    for (const x of players) {
+      if (!x.heat || x.pos === "G" || x.side !== winSide) continue;
+      for (let i = 0; i < 12; i++) for (let j = 0; j < 8; j++) {
+        const [rr, cc] = cellOf(x, i, j); if (rr !== r || cc !== c) continue;
+        const v = x.heat[i][j] * (x.fw ?? 1.2); if (!best || v > best.v) best = {v, x};
+      }
+    }
+    if (best && !seen.has(best.x.pid)) { seen.add(best.x.pid); out.push({r, c, name: best.x.name}); }
+  }
+  return out;
+}
 function boxes(vals) {           // last-5 numbers, most recent first
   return `<span class="l5">${(vals || []).slice(0, 5).map(v => v == null ? `<i class="na">–</i>` : `<i class="b${Math.min(v, 4)}">${v}</i>`).join("")}</span>`;
 }
 function gridPitch(players, grid, opts) {
-  const {confirmed, cardOf, statOf, focus} = opts;
+  const {confirmed, cardOf, statOf, focus, labels} = opts;
+  const tags = (labels || []).map(z => `<span class="zl ${z.c < 3 ? "l" : z.c > 4 ? "r" : ""}" style="left:${((z.c + .5) / 8 * 100).toFixed(1)}%;top:${((z.r + .5) / 12 * 100).toFixed(1)}%">${esc(last(z.name))}</span>`).join("");
   const cells = shadeGrid(grid).map(row => row.map(c => `<i style="background:${c}"></i>`).join("")).join("");
   const cards = players.map(x => {
     const [l, t] = vpos(x), c = cardOf ? cardOf(x) : null, faded = focus && !focus.has(x.pid);
     return `<a class="pc ${x.side === "H" ? "h" : "a"}${faded ? " dim" : ""}" href="?p=${encodeURIComponent(x.name)}" style="left:${(l * 100).toFixed(1)}%;top:${(t * 100).toFixed(1)}%">
       <span class="hd"><span class="dot">${x.shirt ?? ""}</span>${c ? `<span class="odds${c.v ? " v" : ""}">${od(c.best)}</span>` : ""}</span><span class="nm">${esc(last(x.name))}</span>${statOf ? boxes(statOf(x)) : ""}</a>`;
   }).join("");
-  return `<div class="vpitch ${confirmed ? "ok" : "pred"}"><div class="grid">${cells}</div><div class="lines"><b class="half"></b><b class="circle"></b><b class="box t"></b><b class="box b"></b></div>${cards}</div>`;
+  return `<div class="vpitch ${confirmed ? "ok" : "pred"}"><div class="grid">${cells}</div><div class="lines"><b class="half"></b><b class="circle"></b><b class="box t"></b><b class="box b"></b></div>${tags}${cards}</div>`;
 }
 function gameView(g, mode = 0) {
   const pl = (g.pitch || []).filter(x => x.pos !== "G" || true), fm = g.foul_map || [];
@@ -265,6 +285,8 @@ function gameView(g, mode = 0) {
     confirmed: g.lineup === "standard",
     cardOf: x => { const c = cards[x.pid]; return c && c.best ? {best: c.best, v: c.edge != null && c.edge >= 0.15} : null; },
     statOf: x => (x.rf || []).map(r => r == null ? null : (x.side === commitSide ? r[0] : r[1])),
+
+    labels: zoneLabels(pl, grid, commitSide === "H" ? "A" : "H"),
   });
   const magnets = fm.filter(m => m.side !== commitSide).slice(0, 3).map(m => `<li><a href="?p=${encodeURIComponent(m.name)}">${esc(m.name)}</a> wins <b>${m.fw.toFixed(1)}</b> fouls a game
       ${m.near.length ? `<small>Around them: ${m.near.slice(0, 2).map(n => { const c = Object.values(cards).find(c => c.player === n.name);
@@ -275,7 +297,7 @@ function gameView(g, mode = 0) {
     <button class="sharebtn" id="swap" type="button">Swap ⇄</button></div>
     <p class="legend"><span><i class="kh"></i>${esc(commitTeam)}: fouls committed</span><span><i class="ka"></i>${esc(winTeam)}: fouls won</span></p>
     ${pitch}
-    <p class="cap">Red = the 3 spots where ${esc(commitTeam)} foul and ${esc(winTeam)} get fouled most. Faint red = the next 5. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
+    <p class="cap">Red = the 3 spots where ${esc(commitTeam)} foul and ${esc(winTeam)} get fouled most. Faint red = the next 5. Grey name = who wins most fouls there. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
     ${magnets ? `<h3>${esc(winTeam)} players who win the most fouls</h3><ul class="facts">${magnets}</ul>` : ""}
     ${foulPairsBlock(g, commitSide)}
   </div>`;
