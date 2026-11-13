@@ -410,9 +410,11 @@ function wireDouble(p) {
 
 // ---------- foul matchups: A commits + B (direct opponent) is fouled; one foul can land both legs ----------
 const COMBO_NAMES = {"11": "1+ & 1+", "21": "2+ & 1+", "12": "1+ & 2+", "22": "2+ & 2+"};
+// only matchups you can actually bet: a fouls committed AND a fouls won price
+const bothPriced = x => Object.keys(x.la || {}).length && Object.keys(x.lb || {}).length;
 function foulPairsBlock(g, commitSide) {
   const team = commitSide === "H" ? 0 : 1;
-  const fp = (g.foul_pairs || []).filter(x => x.a_team === team).slice(0, 8);
+  const fp = (g.foul_pairs || []).filter(x => x.a_team === team && bothPriced(x)).slice(0, 8);
   if (!fp.length) return "";
   const rows = fp.map((x, i) => {
     const cells = Object.keys(COMBO_NAMES).map(k => { const c = x.combos[k];
@@ -427,7 +429,7 @@ function foulPairsBlock(g, commitSide) {
   return `<h3>Foul matchups</h3><p class="cap">Builder of "commits a foul" + their direct opponent "is fouled". Bookies price the two legs as if they were unrelated, but one foul can land both, so the fair price (big number) is shorter than the legs multiplied. Type the bookie's builder price to check it. Best spot in testing: 2+ & 2+ at 25%+ over fair.</p><ul class="fpairs">${rows}</ul>`;
 }
 function wireFoulPairs(g, commitSide) {
-  const team = commitSide === "H" ? 0 : 1, fp = (g.foul_pairs || []).filter(x => x.a_team === team).slice(0, 8);
+  const team = commitSide === "H" ? 0 : 1, fp = (g.foul_pairs || []).filter(x => x.a_team === team && bothPriced(x)).slice(0, 8);
   out.querySelectorAll(".fchk").forEach(box => {
     const sel = box.querySelector("select"), inp = box.querySelector("input"), res = box.querySelector(".fres");
     const calc = () => { const x = fp[+sel.dataset.i], c = x.combos[sel.value], pr = parseFloat(inp.value);
