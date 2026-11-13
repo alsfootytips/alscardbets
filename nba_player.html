@@ -2,7 +2,7 @@
 <title>Player · Al's NBA Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=959ae2d0"><link rel=icon href="nba_logo.jpg">
+<link rel=stylesheet href="brand.css?v=900283e2"><link rel=icon href="nba_logo.jpg">
 <style>
 .ph{display:flex;gap:14px;align-items:center;margin:20px 0 6px}
 .ph .face{width:84px;height:62px;object-fit:cover;object-position:top;border-radius:10px;background:var(--soft);flex:none}
@@ -13,6 +13,8 @@
 .chips::-webkit-scrollbar{display:none}
 .chips button{font:500 13px var(--body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap;cursor:pointer}
 .chips button.on{background:#F27A1A;border-color:#F27A1A;color:#fff}
+.chips.range{margin:4px 0 2px}.chips.range button{font-size:12px;padding:4px 10px}
+.chips.range button.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
 .rungs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px 0}
 .rungs::-webkit-scrollbar{display:none}
 .rungs button{flex:none;font:500 13px var(--body);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;color:var(--fg);cursor:pointer;text-align:center;min-width:64px}
@@ -23,7 +25,7 @@
 .mover{display:flex;align-items:center;gap:8px;margin:4px 0 6px}
 .mover input{flex:1;accent-color:#F27A1A;height:28px}
 .mover button{width:36px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 18px var(--body);cursor:pointer}
-.hr{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.hr{display:flex;gap:6px;margin:10px 0}.hr div{flex:1;min-width:0}
 .hr div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
 .hr b{display:block;font-size:17px}.hr span{font-size:11px;color:var(--muted)}
 .hr .good b{color:var(--accent)}.hr .bad b{color:var(--bad)}
@@ -74,9 +76,10 @@ function tailP(k, mu, cal) {
   return Math.max(0, 1 - cdf); }
 // same rules as the Tonight list: projection 1.2x the line, 5%+ EV, odds 15 or shorter
 const isValue = (r, proj, q1) => r[3] >= 5 && r[1] <= (q1 ? 6 : 15) && proj / (r[0] - 0.5) >= 1.2;
-let S = {stat: "pts", k: null};
+let S = {stat: "pts", k: null, n: 15};
 
-fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
+Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
+             fetch("nba_prev.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([data, prevAll]) => {
   const CAL = (data.settings || {}).cal || {}, Q1CAL = (data.settings || {}).q1cal || {};
   let P, T, G, O;
   for (const g of data.games) for (const t of g.teams) for (const p of t.players)
@@ -92,6 +95,10 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
   for (const st of STATS) for (const r of rungsFor(st)) if (!st.q1 && isValue(r, projFor(st)) && (!best || r[3] > best.r[3])) best = {st, r};
   if (best) { S.stat = best.st.k; S.k = best.r[0]; }
 
+  const PREV = prevAll[P.pid] || [];
+  const games = () => S.n === -1 ? PREV.concat(P.log) : S.n === 0 ? P.log : P.log.slice(-S.n);
+  const RANGES = [[10, "L10"], [15, "L15"], [25, "L25"], [0, "This season"]].concat(PREV.length ? [[-1, "+ Last season"]] : []);
+
   function render() {
     const st = STATS.find(s => s.k === S.stat);
     const rungs = rungsFor(st), proj = projFor(st);
@@ -103,13 +110,14 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
     const top = Math.max(5, Math.ceil(Math.max(...vals, proj) * 1.2));
     document.getElementById("stat").innerHTML =
       `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
-      + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}</h2>`
-      + `<p class=meta>Last ${Math.min(15, vals.length)} · faded = bench · grey = projection</p>`
+      + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; return m && Math.abs(m - 1) >= 0.03 ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">matchup ${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
+      + `<div class="chips range">${RANGES.map(([n, l]) => `<button data-n="${n}" class="${n === S.n ? "on" : ""}">${l}</button>`).join("")}</div>`
       + `<div id=chartbox></div>`
       + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
       + (rungs.length ? `<div class=rungs>${rungs.map(r => `<button data-k="${r[0]}">${r[0]}+ @ ${r[1].toFixed(2)}<small></small></button>`).join("")}</div>` : "")
       + `<div id=verdict></div><div class=hr id=hitrates></div></div>`;
-    document.querySelectorAll("#stat .chips button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
+    document.querySelectorAll("#stat .chips:not(.range) button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
+    document.querySelectorAll("#stat .chips.range button").forEach(b => b.onclick = () => { S.n = +b.dataset.n; render(); });
     document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; draw(); });
     const sl = document.getElementById("kslide");
     sl.oninput = () => { S.k = +sl.value; draw(); };
@@ -121,32 +129,52 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
   function draw() {
     const st = STATS.find(s => s.k === S.stat);
     const rungs = rungsFor(st), proj = projFor(st), k = S.k;
-    const vals = P.log.map(r => r[st.col]), last = P.log.slice(-15);
+    const vals = P.log.map(r => r[st.col]), last = games();
     const rung = rungs.find(r => r[0] === k);
     const cal = st.q1 ? Q1CAL[st.q1] : CAL[st.k];
     const pm = rung ? rung[2] / 100 : tailP(k, proj, cal);
     const ev = rung ? rung[3] : null;
-    // chart
-    const W = 340, H = 180, pad = 22, bw = (W - pad) / Math.max(last.length, 1);
-    const mx = Math.max(k * 1.3, ...last.map(r => r[st.col]), 1);
-    const y = v => H - 22 - (H - 46) * v / mx;
-    let bars = "";
+    // chart: stat bars, with a minutes line drawn through them (right-hand scale, 0-48)
+    const n = last.length + 1, W = 340, H = 200, pad = 22, padR = 18, bw = (W - pad - padR) / n, gap = Math.min(4, bw * 0.25);
+    const base = H - 22, topY = 26;
+    const mx = Math.max(k * 1.3, proj * 1.1, ...last.map(r => r[st.col]), 1);
+    const y = v => base - (base - topY) * v / mx;
+    const ym = m => base - (base - topY) * Math.min(m, 48) / 48;
+    const showVals = bw >= 13, every = Math.ceil(n / 6);
+    const dm = d => { const [m, dd] = d.slice(-5).split("-"); return `${+dd}/${+m}`; };
+    let bars = "", pts = [], dots = "", labels = "", seasonEdge = "";
     last.forEach((r, i) => {
-      const v = r[st.col], x = pad + i * bw + 2;
-      bars += `<rect x="${x}" y="${y(v)}" width="${bw - 4}" height="${Math.max(1, H - 22 - y(v))}" rx="3" fill="${v >= k ? "#4ADE80" : "#F87171"}" opacity="${r[6] ? 1 : .6}"/>`
-            + `<text x="${x + (bw - 4) / 2}" y="${y(v) - 4}" text-anchor="middle" font-size="10" fill="#F5F5F5">${v}</text>`
-            + `<text x="${x + (bw - 4) / 2}" y="${H - 8}" text-anchor="middle" font-size="8" fill="#9A9A9A">${r[0].slice(3)}</text>`;
+      const v = r[st.col], x = pad + i * bw + gap / 2, w = bw - gap, cx = x + w / 2;
+      bars += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, base - y(v))}" rx="${Math.min(3, w / 3)}" fill="${v >= k ? "#4ADE80" : "#F87171"}" opacity="${r[6] ? .95 : .55}"><title>${r[0]}: ${v} in ${r[1]} min</title></rect>`
+            + (showVals ? `<text x="${cx}" y="${y(v) - 4}" text-anchor="middle" font-size="10" fill="#F5F5F5">${v}</text>` : "");
+      pts.push(`${cx.toFixed(1)},${ym(r[1]).toFixed(1)}`);
+      dots += `<circle cx="${cx}" cy="${ym(r[1])}" r="${bw >= 10 ? 2.6 : 1.6}" fill="#60A5FA" stroke="#000" stroke-width=".6"><title>${r[1]} min</title></circle>`;
+      if (i % every === 0) labels += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="8" fill="#9A9A9A">${dm(r[0])}</text>`;
+      if (PREV.length && S.n === -1 && i === PREV.length) seasonEdge = `<line x1="${x - gap / 2}" x2="${x - gap / 2}" y1="${topY - 8}" y2="${base}" stroke="#F27A1A" stroke-width=".8" stroke-dasharray="2 2"/><text x="${x + 2}" y="${topY - 10}" font-size="8" fill="#F27A1A">this season</text>`;
     });
+    // tonight: dashed projection bar + hollow expected-minutes dot
+    const tx = pad + last.length * bw + gap / 2, tw = bw - gap, tcx = tx + tw / 2, expM = P.exp_m;
+    const lastPt = pts[pts.length - 1];
+    const tonight = `<rect x="${tx}" y="${y(proj)}" width="${tw}" height="${Math.max(1, base - y(proj))}" rx="${Math.min(3, tw / 3)}" fill="none" stroke="#F5F5F5" stroke-width="1" stroke-dasharray="3 2" opacity=".7"><title>Tonight: projection ${proj.toFixed(1)}</title></rect>`
+      + `<text x="${tcx}" y="${y(proj) - 4}" text-anchor="middle" font-size="10" fill="#F5F5F5" opacity=".85">${proj.toFixed(1)}</text>`
+      + (lastPt ? `<line x1="${lastPt.split(",")[0]}" y1="${lastPt.split(",")[1]}" x2="${tcx}" y2="${ym(expM)}" stroke="#60A5FA" stroke-width="1.4" stroke-dasharray="3 2"/>` : "")
+      + `<circle cx="${tcx}" cy="${ym(expM)}" r="3.4" fill="#000" stroke="#60A5FA" stroke-width="1.6"><title>Expected ${expM.toFixed(1)} min tonight</title></circle>`
+      + `<text x="${tcx}" y="${ym(expM) - 6}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#93C5FD">${expM.toFixed(0)}</text>`
+      + `<text x="${tcx}" y="${H - 8}" text-anchor="middle" font-size="8" font-weight="600" fill="#F27A1A">Tonight</text>`;
+    const minsLine = tonight + `<polyline points="${pts.join(" ")}" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-linejoin="round" opacity=".9"/>${dots}`
+      + `<text x="${W - 2}" y="${ym(48) + 3}" text-anchor="end" font-size="8" fill="#60A5FA">48</text><text x="${W - 2}" y="${ym(24) + 3}" text-anchor="end" font-size="8" fill="#60A5FA">24</text>`
+      + `<text x="${pad}" y="12" font-size="9" fill="#60A5FA">● minutes</text>`;
+    const mins = minsLine + labels;
     const ly = y(k - 0.5);
     const tag = rung ? `${k}+ · ${rung[1].toFixed(2)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? `${k}+ · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : `${k}+`;
     const tagW = tag.length * 5.6 + 10;
     const good = rung && isValue(rung, proj, st.q1), bad = rung && ev < 0;
     const col = good ? "#4ADE80" : bad ? "#F87171" : "#F27A1A";
     document.getElementById("chartbox").innerHTML = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">`
-      + `<line x1="${pad}" x2="${W}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width="1" opacity=".3"/>${bars}`
+      + `<line x1="${pad}" x2="${W}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width="1" opacity=".3"/>${bars}${mins}${seasonEdge}`
       + `<line x1="${pad}" x2="${W}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-width="2" stroke-dasharray="5 3"/>`
-      + `<rect x="${W - tagW}" y="${ly - 17}" width="${tagW}" height="14" rx="4" fill="#000" stroke="${col}" stroke-width=".8"/>`
-      + `<text x="${W - tagW / 2}" y="${ly - 7}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${tag}</text></svg>`;
+      + `<rect x="${pad}" y="${ly - 17}" width="${tagW}" height="14" rx="4" fill="#000" stroke="${col}" stroke-width=".8"/>`
+      + `<text x="${pad + tagW / 2}" y="${ly - 7}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${tag}</text></svg>`;
     document.getElementById("kslide").value = k;
     document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
       b.className = (isValue(r, proj, st.q1) ? "val " : "") + (+b.dataset.k === k ? "on" : "");
@@ -156,7 +184,8 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
       ? `<p class=meta>bet365 ${rung[1].toFixed(2)} (${(100 / rung[1]).toFixed(0)}%) · ${chance} · <b class="${good ? "pos" : bad ? "neg" : ""}">${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV</b>${st.q1 ? "<span class=untested>1Q</span>" : ""}</p>`
       : `<p class=meta>No bet365 price for ${k}+${chance ? ` · ${chance} · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : ""}</p>`;
     const hit = xs => xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0;
-    document.getElementById("hitrates").innerHTML = [["L5", vals.slice(-5)], ["L10", vals.slice(-10)], ["Season", vals]].map(([l, xs]) => {
+    const prevVals = PREV.map(r => r[st.col]);
+    document.getElementById("hitrates").innerHTML = [["L5", vals.slice(-5)], ["L10", vals.slice(-10)], ["Season", vals]].concat(prevVals.length ? [["Last yr", prevVals]] : []).map(([l, xs]) => {
       const h = hit(xs); return `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l} ${k}+</span></div>`; }).join("")
       + `<div><b>${(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>avg</span></div>`;
   }

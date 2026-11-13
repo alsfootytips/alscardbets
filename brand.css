@@ -388,3 +388,10 @@ a.plrow:hover{background:var(--soft)}
 .ph h1{padding-right:70px}
 .ph .sharebtn{position:absolute;top:14px;right:14px;padding:5px 12px;font-size:13px}
 .gdet{border-top:1px solid var(--line);padding-top:8px}
+.seg{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 4px}
+.seg span{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{font:500 12px var(--body);color:var(--muted);background:var(--panel);border:0;padding:5px 12px;cursor:pointer}
+.seg span button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--fg);color:#000}
+.seg #subs{border:1px solid var(--line);border-radius:999px}
+.ph .pface{width:76px;height:76px;object-fit:contain;object-position:center bottom}

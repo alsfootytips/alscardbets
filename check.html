@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=959ae2d0"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=900283e2"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game or search a player</p>
@@ -482,10 +482,13 @@ function statTabs(p) {
   tabs.push({id: "c", label: "Cards", who: me, col: 5});
   if (me.g.some(r => r[6] != null)) tabs.push({id: "f", label: "Fouls", who: me, col: 6, info: pairInfo(p, me), avg: me.f, word: "fouls"});
   if (me.g.some(r => r[7] != null)) tabs.push({id: "w", label: "Fouls won", who: me, col: 7, info: fwInfo(p, me), avg: me.fw, word: "fouled"});
-  if (opp && opp.g && opp.g.some(r => r[7] != null)) tabs.push({id: "o", label: `${last(opp.name)} fouls won`, who: opp, col: 7, info: fwInfo(p, opp), avg: opp.fw, word: "fouled"});
+  tabs.push({id: "m", label: "Minutes", who: me, col: 4});
+  if (opp && opp.g && opp.g.some(r => r[7] != null)) tabs.push({id: "o", label: `Opponent fouls won (${last(opp.name)})`, who: opp, col: 7, info: fwInfo(p, opp), avg: opp.fw, word: "fouled"});
   return tabs;
 }
-const ST = {tab: 0, k: null, sel: 0};
+const ST = {tab: 0, k: null, sel: 0, n: 10, subs: false};
+const isStart = r => r[11] === 1 || (r[11] == null && r[4] >= 46);
+const rowsOf = t => t.who.g.filter(r => ST.subs || isStart(r)).slice(0, ST.n);
 function statsBlock(p) {
   const me = (p.pitch || []).find(x => x.pid === p.pid);
   if (!me || !me.g) return `<div class="panel"><h2>Last 10 games</h2><p class="meta">Coming at the next reprice.</p></div>`;
@@ -493,19 +496,23 @@ function statsBlock(p) {
 }
 function wireStats(p) {
   const box = document.getElementById("stat"); if (!box) return;
-  const tabs = statTabs(p); ST.tab = 0; ST.k = null; ST.sel = 0;
+  const tabs = statTabs(p); ST.tab = 0; ST.k = null; ST.sel = 0; ST.n = 10; ST.subs = false;
   const render = () => {
-    const t = tabs[ST.tab], card = t.col === 5, rows = t.who.g;
+    const t = tabs[ST.tab], card = t.col === 5, mins = t.col === 4, rows = rowsOf(t);
     const L = (t.info && t.info.L) || {}, rungs = Object.keys(L).map(Number).sort((a, b) => a - b);
-    if (ST.k == null) ST.k = card ? 1 : (rungs.find(k => (t.info.P || {})[k] && (t.info.P[k] < 0.75)) || rungs[0] || Math.max(1, Math.round(t.avg || 1)));
+    if (ST.k == null) ST.k = card ? 1 : mins ? 60 : (rungs.find(k => (t.info.P || {})[k] && (t.info.P[k] < 0.75)) || rungs[0] || Math.max(1, Math.round(t.avg || 1)));
     box.innerHTML = `<div class="chips">${tabs.map((x, i) => `<button type="button" data-t="${i}" class="${i === ST.tab ? "on" : ""}">${esc(x.label)}</button>`).join("")}</div>
-      <div class="panel"><h2>${esc(t.label)}${t.avg != null ? ` · ${(+t.avg).toFixed(1)} a game` : card ? ` · booked ${rows.filter(r => r[5]).length} of last ${rows.length}` : ""}</h2>
-      <p class="meta">Last ${rows.length} · faded = came off the bench · tap a bar for who they faced</p>
+      <div class="seg"><span>${[5, 10, 20].map(n => `<button type="button" data-n="${n}" class="${n === ST.n ? "on" : ""}">L${n}</button>`).join("")}</span>
+      <button type="button" id="subs" class="${ST.subs ? "on" : ""}">${ST.subs ? "Starts + sub apps" : "Starts only"}</button></div>
+      <div class="panel"><h2>${esc(t.label)}${t.avg != null ? ` · ${(+t.avg).toFixed(1)} a game` : card ? ` · booked ${rows.filter(r => r[5]).length} of ${rows.length}` : mins ? ` · ${Math.round(rows.reduce((a, r) => a + r[4], 0) / Math.max(rows.length, 1))}' a game` : ""}</h2>
+      <p class="meta">Last ${rows.length} ${ST.subs ? "games (faded = off the bench)" : "starts"}${rows.length < ST.n ? ` · only ${rows.length} on record` : ""} · tap a bar for who they faced</p>
       <div id="chartbox"></div>
-      ${card ? "" : `<div class="mover"><button type="button" id="kdown" aria-label="Lower line">−</button><input id="kslide" type="range" min="1" max="6" step="1" value="${ST.k}" aria-label="Move the line"><button type="button" id="kup" aria-label="Raise line">+</button></div>
+      ${card || mins ? "" : `<div class="mover"><button type="button" id="kdown" aria-label="Lower line">−</button><input id="kslide" type="range" min="1" max="6" step="1" value="${ST.k}" aria-label="Move the line"><button type="button" id="kup" aria-label="Raise line">+</button></div>
       ${rungs.length ? `<div class="rungs">${rungs.map(k => `<button type="button" data-k="${k}">${k}+ @ ${od(L[k])}<small></small></button>`).join("")}</div>` : ""}`}
       <div id="verdict"></div><div class="hr" id="hitrates"></div><p class="gdet" id="gdet"></p></div>`;
     box.querySelectorAll(".chips button").forEach(b => b.onclick = () => { ST.tab = +b.dataset.t; ST.k = null; render(); });
+    box.querySelectorAll(".seg [data-n]").forEach(b => b.onclick = () => { ST.n = +b.dataset.n; ST.sel = 0; render(); });
+    document.getElementById("subs").onclick = () => { ST.subs = !ST.subs; ST.sel = 0; render(); };
     box.querySelectorAll(".rungs button").forEach(b => b.onclick = () => { ST.k = +b.dataset.k; draw(); });
     const sl = document.getElementById("kslide");
     if (sl) { sl.oninput = () => { ST.k = +sl.value; draw(); };
@@ -514,32 +521,34 @@ function wireStats(p) {
     draw();
   };
   const draw = () => {
-    const t = tabs[ST.tab], card = t.col === 5, rows = t.who.g, k = ST.k, R = [...rows].reverse();
+    const t = tabs[ST.tab], card = t.col === 5, mins = t.col === 4, rows = rowsOf(t), k = ST.k, R = [...rows].reverse(), many = R.length > 12;
     const val = r => card ? (r[5] ? 1 : 0) : r[t.col];
     const L = (t.info && t.info.L) || {}, Pm = (t.info && t.info.P) || {}, B = (t.info && t.info.B) || {};
     let price = null, pm = null, book = "";
     if (card) { price = p.best; pm = p.fair ? 1 / p.fair : null; book = p.book || ""; }
+    else if (mins) { /* no market */ }
     else { price = L[k] || null; pm = Pm[k] ?? null; book = B[k] || ""; }
     const ev = price && pm != null ? (price * pm - 1) * 100 : null;
     // chart
     const W = 340, H = 196, pad = 4, bw = (W - pad) / Math.max(R.length, 1), base = H - 52;
-    const mx = card ? 1.25 : Math.max(k * 1.3, ...R.map(r => val(r) ?? 0), 2);
+    const mx = card ? 1.25 : mins ? 100 : Math.max(k * 1.3, ...R.map(r => val(r) ?? 0), 2);
     const y = v => base - (base - 24) * v / mx;
     let bars = "";
     R.forEach((r, i) => {
-      const v = val(r), x = pad + i * bw + 2, w = bw - 4, cx = x + w / 2, hit = v != null && v >= k, sub = r[4] < 46;
-      const fill = card ? (r[5] === 2 ? "#F87171" : r[5] ? "#EAB308" : "#3A1C1C") : v == null ? "transparent" : hit ? "#4ADE80" : "#F87171";
+      const v = val(r), x = pad + i * bw + 2, w = bw - 4, cx = x + w / 2, hit = v != null && v >= k, sub = !isStart(r);
+      const fill = card ? (r[5] === 2 ? "#F87171" : r[5] ? "#EAB308" : "#3A1C1C") : mins ? (v >= 60 ? "#D4D4D4" : "#6B6B6B") : v == null ? "transparent" : hit ? "#4ADE80" : "#F87171";
       const top = v == null ? base : card ? (r[5] ? y(1) : base - 4) : y(v);
       bars += `<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1, base - top).toFixed(1)}" rx="3" fill="${fill}" opacity="${sub ? .55 : 1}"/>`;
       const lab = card ? (r[5] === 2 ? "R" : r[5] ? "Y" : "") : v == null ? "–" : v;
-      if (lab !== "") bars += `<text x="${cx.toFixed(1)}" y="${(top - 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="#F5F5F5">${lab}</text>`;
-      if (r[2]) bars += `<image href="${IMG}logo/teamlogo/${r[2]}_xsmall.png" x="${(cx - 8).toFixed(1)}" y="${base + 6}" width="16" height="16"/>`;
-      bars += `<text x="${cx.toFixed(1)}" y="${base + 33}" text-anchor="middle" font-size="8.5" fill="#9A9A9A">${esc(abbr(r[1]))}</text>`
-            + `<text x="${cx.toFixed(1)}" y="${base + 44}" text-anchor="middle" font-size="8" fill="#666">${r[0].slice(3)}/${r[0].slice(0, 2)}</text>`
-            + `<rect class="hitb${rows.length - 1 - i === ST.sel ? " sel" : ""}" data-i="${rows.length - 1 - i}" x="${(x - 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+      if (lab !== "") bars += `<text x="${cx.toFixed(1)}" y="${(top - 4).toFixed(1)}" text-anchor="middle" font-size="${many ? 8.5 : 10}" fill="#F5F5F5">${lab}</text>`;
+      const bs = many ? 12 : 16;
+      if (r[2]) bars += `<image href="${IMG}logo/teamlogo/${r[2]}_xsmall.png" x="${(cx - bs / 2).toFixed(1)}" y="${base + 6}" width="${bs}" height="${bs}"/>`;
+      if (!many) bars += `<text x="${cx.toFixed(1)}" y="${base + 33}" text-anchor="middle" font-size="8.5" fill="#9A9A9A">${esc(abbr(r[1]))}</text>`
+            + `<text x="${cx.toFixed(1)}" y="${base + 44}" text-anchor="middle" font-size="8" fill="#666">${r[0].slice(3)}/${r[0].slice(0, 2)}</text>`;
+      bars += `<rect class="hitb${rows.length - 1 - i === ST.sel ? " sel" : ""}" data-i="${rows.length - 1 - i}" x="${(x - 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
     });
-    const ly = card ? y(0.5) : y(k - 0.5);
-    const tag = (card ? "Booked" : `${k}+`) + (price ? ` · ${od(price)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? ` · fair ${od(1 / Math.max(pm, 0.001))}` : "");
+    const ly = card ? y(0.5) : mins ? y(60) : y(k - 0.5);
+    const tag = mins ? "60'" : (card ? "Booked" : `${k}+`) + (price ? ` · ${od(price)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? ` · fair ${od(1 / Math.max(pm, 0.001))}` : "");
     const good = ev != null && ev >= 15, bad = ev != null && ev < 0, col = good ? "#4ADE80" : bad ? "#F87171" : "#F5F5F5";
     const tagW = tag.length * 5.6 + 10;
     document.getElementById("chartbox").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${bars}`
@@ -552,21 +561,24 @@ function wireStats(p) {
       b.className = (e != null && e >= 15 ? "val " : "") + (kk === k ? "on" : "");
       b.querySelector("small").textContent = e != null ? `${e > 0 ? "+" : ""}${e.toFixed(0)}% EV` : "no model"; });
     const chance = pm != null ? `model ${(100 * pm).toFixed(0)}%` : "";
-    document.getElementById("verdict").innerHTML = price
+    document.getElementById("verdict").innerHTML = mins ? "" : price
       ? `<p class="meta">${esc(book)} ${od(price)} (${(100 / price).toFixed(0)}%)${chance ? " · " + chance : ""}${ev != null ? ` · <b class="${good ? "pos" : bad ? "neg" : ""}">${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV</b>` : ""}</p>`
       : `<p class="meta">No bookie price for ${card ? "a card" : k + "+"}${chance ? ` · ${chance} · fair ${od(1 / Math.max(pm, 0.001))}` : ""}${card ? "" : t.info ? "" : " · no fouls won market in our feed"}</p>`;
     const vals = rows.map(val).filter(v => v != null);
     const hit = n => { const xs = vals.slice(0, n); return xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0; };
-    const nm = card ? "booked" : `${k}+`;
-    document.getElementById("hitrates").innerHTML = [["L3", 3], ["L5", 5], ["L10", 10]].map(([l, n]) => {
+    const nm = card ? "booked" : mins ? "60'+" : `${k}+`;
+    const wins = ST.n >= 20 ? [["L5", 5], ["L10", 10], ["L20", 20]] : ST.n >= 10 ? [["L3", 3], ["L5", 5], ["L10", 10]] : [["L3", 3], ["L5", 5]];
+    document.getElementById("hitrates").innerHTML = (mins ? [] : wins).map(([l, n]) => {
       const h = hit(n), good2 = card ? h >= 40 : h >= 60, bad2 = card ? h === 0 : h < 40;
       return `<div class="${good2 ? "good" : bad2 ? "bad" : ""}"><b>${h}%</b><span>${l} ${nm}</span></div>`; }).join("")
-      + `<div><b>${card ? rows.filter(r => r[5]).length : (vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>${card ? "cards" : "avg"}</span></div>`;
+      + (mins ? `<div><b>${Math.round(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1))}'</b><span>avg</span></div><div><b>${vals.filter(v => v >= 85).length}</b><span>full games</span></div>`
+        + `<div><b>${rows.filter(isStart).length}</b><span>starts</span></div><div><b>${rows.filter(r => !isStart(r)).length}</b><span>sub apps</span></div>`
+        : `<div><b>${card ? rows.filter(r => r[5]).length : (vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>${card ? "cards" : "avg"}</span></div>`);
     const det = i => { const r = rows[i]; if (!r) return; ST.sel = i;
       const d = new Date(`2026-${r[0]}T12:00:00`), when = d.toLocaleDateString([], {day: "numeric", month: "short"});
       const own = r[6] == null ? "no foul data" : `${r[6]} foul${r[6] === 1 ? "" : "s"}, fouled ${r[7]}`;
       const cd = r[5] === 2 ? " · red card" : r[5] ? " · booked" : "";
-      const vs = r[8] ? `<br>Up against <b>${esc(r[8])}</b>${r[9] != null ? `: fouled ${r[9]}, ${r[10]} foul${r[10] === 1 ? "" : "s"}` : ""}` : r[4] < 46 ? "<br>Came off the bench" : "";
+      const vs = r[8] ? `<br>Up against <b>${esc(r[8])}</b>${r[9] != null ? `: fouled ${r[9]}, ${r[10]} foul${r[10] === 1 ? "" : "s"}` : ""}` : !isStart(r) ? "<br>Came off the bench" : "";
       document.getElementById("gdet").innerHTML = `${when} · v ${badge(r[2], "badge sm")}${esc(r[1])} (${r[3] ? "H" : "A"}) · ${r[4]}' · ${own}${cd}${vs}`;
       document.querySelectorAll("#chartbox .hitb").forEach(h => h.classList.toggle("sel", +h.dataset.i === i)); };
     document.querySelectorAll("#chartbox .hitb").forEach(h => h.onclick = () => det(+h.dataset.i));
