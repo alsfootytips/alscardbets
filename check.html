@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=900283e2"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=a21de9bc"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game or search a player</p>
@@ -341,13 +341,22 @@ function gamesList() {
   out.innerHTML = html + "</div>";
 }
 // ---------- player page matchup: same grid pitch, only the player and their direct opponent ----------
+function heatPanel(p, mode) {          // 0 = matchup with the direct opponent, 1 = the player alone
+  const opp = p.opp ? last(p.opp) : null;
+  const tabs = `<div class="seg"><span><button type="button" data-h="0" class="${mode ? "" : "on"}">${opp ? `v ${esc(opp)}` : "Matchup"}</button><button type="button" data-h="1" class="${mode ? "on" : ""}">${esc(last(p.player))} only</button></span><a class="cap" href="?g=${p.gid}">Whole game ›</a></div>`;
+  return tabs + (mode ? ownHeat(p) : matchupGrid(p));
+}
+function wireHeat(p) {
+  const box = document.getElementById("heatp"); if (!box) return;
+  box.querySelectorAll("[data-h]").forEach(b => b.onclick = () => { box.innerHTML = heatPanel(p, +b.dataset.h); wireHeat(p); });
+}
 function ownHeat(p) {
   const pl = p.pitch || [], me = pl.find(x => x.pid === p.pid); if (!me || !me.heat) return "";
   const G = Array.from({length: 12}, () => Array(8).fill(0)); let mx = 0;
   for (let i = 0; i < 12; i++) for (let j = 0; j < 8; j++) { const [r, c] = cellOf(me, i, j); G[r][c] = me.heat[i][j]; mx = Math.max(mx, G[r][c]); }
   for (let r = 0; r < 12; r++) for (let c = 0; c < 8; c++) G[r][c] /= mx || 1;
-  return `<h3>${esc(last(p.player))}'s heatmap${me.est ? " (estimated from position)" : ""}</h3>${gridPitch(pl, G, {confirmed: !p.predicted, focus: new Set([me.pid])})}
-    <p class="cap">Red = where ${esc(last(p.player))} plays most · ${p.predicted ? "predicted" : "confirmed"} lineup</p>`;
+  return `${gridPitch(pl, G, {confirmed: !p.predicted, focus: new Set([me.pid])})}
+    <p class="cap">Red = where ${esc(last(p.player))} plays most${me.est ? " (estimated from position)" : ""}</p>`;
 }
 function matchupGrid(p) {
   const pl = p.pitch || []; const me = pl.find(x => x.pid === p.pid); if (!me) return "";
@@ -360,17 +369,14 @@ function matchupGrid(p) {
     for (let r = 0; r < 12; r++) for (let c = 0; c < 8; c++) G[r][c] /= mx || 1;
   }
   const pitch = gridPitch(pl, G, {confirmed: !p.predicted, focus: new Set([me.pid, opp && opp.pid]),
-    statOf: x => (x.rf || []).map(r => r == null ? null : (x.pid === me.pid ? r[0] : r[1]))});
+    statOf: x => x.pid === me.pid || (opp && x.pid === opp.pid) ? (x.rf || []).map(r => r == null ? null : (x.pid === me.pid ? r[0] : r[1])) : null});
   const ov = p.opp_overlap != null ? Math.round(p.opp_overlap * 100) : null, fw = p.opp_fouls_won_raw90 ?? p.opp_fouls_won90;
   const facts = opp ? [fw != null ? `${last(p.opp)} wins <b>${(+fw).toFixed(1)}</b> fouls a game` : null,
     p.fouls90 ? `${last(p.player)} commits <b>${(+p.fouls90).toFixed(1)}</b> fouls a game` : null,
     ov != null && !me.est && !opp.est ? `They share <b>${ov}%</b> of the same space` : null].filter(Boolean) : [];
   const est = [me.est && last(p.player), opp && opp.est && last(p.opp)].filter(Boolean);
-  return `<h3>Matchup: ${esc(p.player)} v ${esc(p.opp || "no direct opponent")}</h3>${pitch}
-    <p class="cap">Red = where they meet most · boxes = last 5 games</p>
-    ${facts.length ? `<ul class="facts">${facts.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}
-    ${est.length ? `<p class="cap">No tracking data for ${est.join(" or ")}: position estimated.</p>` : ""}
-    <p class="cap"><a href="?g=${p.gid}">See the whole game's foul heatmap</a></p>`;
+  return `${pitch}
+    <p class="cap">Red = where they meet most${facts.length ? " · " + facts.join(" · ") : ""}${est.length ? ` · ${est.join(", ")}: position estimated` : ""}</p>`;
 }
 
 // ---------- price over time (player page) ----------
@@ -521,7 +527,7 @@ function wireStats(p) {
     draw();
   };
   const draw = () => {
-    const t = tabs[ST.tab], card = t.col === 5, mins = t.col === 4, rows = rowsOf(t), k = ST.k, R = [...rows].reverse(), many = R.length > 12;
+    const t = tabs[ST.tab], card = t.col === 5, mins = t.col === 4, rows = rowsOf(t), k = ST.k, R = rows, many = R.length > 12;
     const val = r => card ? (r[5] ? 1 : 0) : r[t.col];
     const L = (t.info && t.info.L) || {}, Pm = (t.info && t.info.P) || {}, B = (t.info && t.info.B) || {};
     let price = null, pm = null, book = "";
@@ -545,7 +551,7 @@ function wireStats(p) {
       if (r[2]) bars += `<image href="${IMG}logo/teamlogo/${r[2]}_xsmall.png" x="${(cx - bs / 2).toFixed(1)}" y="${base + 6}" width="${bs}" height="${bs}"/>`;
       if (!many) bars += `<text x="${cx.toFixed(1)}" y="${base + 33}" text-anchor="middle" font-size="8.5" fill="#9A9A9A">${esc(abbr(r[1]))}</text>`
             + `<text x="${cx.toFixed(1)}" y="${base + 44}" text-anchor="middle" font-size="8" fill="#666">${r[0].slice(3)}/${r[0].slice(0, 2)}</text>`;
-      bars += `<rect class="hitb${rows.length - 1 - i === ST.sel ? " sel" : ""}" data-i="${rows.length - 1 - i}" x="${(x - 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
+      bars += `<rect class="hitb${i === ST.sel ? " sel" : ""}" data-i="${i}" x="${(x - 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent"/>`;
     });
     const ly = card ? y(0.5) : mins ? y(60) : y(k - 0.5);
     const tag = mins ? "60'" : (card ? "Booked" : `${k}+`) + (price ? ` · ${od(price)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? ` · fair ${od(1 / Math.max(pm, 0.001))}` : "");
@@ -576,10 +582,14 @@ function wireStats(p) {
         : `<div><b>${card ? rows.filter(r => r[5]).length : (vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>${card ? "cards" : "avg"}</span></div>`);
     const det = i => { const r = rows[i]; if (!r) return; ST.sel = i;
       const d = new Date(`2026-${r[0]}T12:00:00`), when = d.toLocaleDateString([], {day: "numeric", month: "short"});
-      const own = r[6] == null ? "no foul data" : `${r[6]} foul${r[6] === 1 ? "" : "s"}, fouled ${r[7]}`;
-      const cd = r[5] === 2 ? " · red card" : r[5] ? " · booked" : "";
-      const vs = r[8] ? `<br>Up against <b>${esc(r[8])}</b>${r[9] != null ? `: fouled ${r[9]}, ${r[10]} foul${r[10] === 1 ? "" : "s"}` : ""}` : !isStart(r) ? "<br>Came off the bench" : "";
-      document.getElementById("gdet").innerHTML = `${when} · v ${badge(r[2], "badge sm")}${esc(r[1])} (${r[3] ? "H" : "A"}) · ${r[4]}' · ${own}${cd}${vs}`;
+      const who = esc(last(t.who.name));
+      const own = r[6] == null ? "no foul data" : `${r[6]} foul${r[6] === 1 ? "" : "s"} · fouled ${r[7]}`;
+      const cd = r[5] === 2 ? " · <b class=neg>red card</b>" : r[5] ? " · <b class=yel>booked</b>" : "";
+      const vs = r[8] ? `<span><em>Opposition player</em><b>${esc(r[8])}</b>${r[9] != null ? ` · fouled ${r[9]} · ${r[10]} foul${r[10] === 1 ? "" : "s"}` : ""}</span>`
+               : !isStart(r) ? `<span><em>Opposition player</em>came off the bench</span>` : "";
+      document.getElementById("gdet").innerHTML = `<span class="gh">${i === 0 ? "Last game" : "Selected game"} · ${when}</span>`
+        + `<span><em>Opposition</em>${badge(r[2], "badge sm")}<b>${esc(r[1])}</b> (${r[3] ? "H" : "A"})</span>`
+        + `<span><em>${who}</em>${r[4]}' · ${own}${cd}</span>${vs}`;
       document.querySelectorAll("#chartbox .hitb").forEach(h => h.classList.toggle("sel", +h.dataset.i === i)); };
     document.querySelectorAll("#chartbox .hitb").forEach(h => h.onclick = () => det(+h.dataset.i));
     det(ST.sel);
@@ -596,11 +606,9 @@ function statsTable(p) {
 function recordBlock(p) {
   const r = p.ref || {}, bits = [];
   if (p.season_apps != null) bits.push(`<b>${p.season_yc ?? 0}</b> yellow${p.season_yc === 1 ? "" : "s"}${p.season_rc ? `, <b>${p.season_rc}</b> red` : ""} in ${p.season_apps} league games this season${p.season_league ? " (" + esc(p.season_league) + ")" : ""}`);
-  if (p.recent_n) bits.push(`Booked in <b>${p.booked_recent}</b> of the last ${p.recent_n} games`);
-  if (p.mins) bits.push(`${(p.cards / p.mins * 90).toFixed(2)} cards per 90 over ${p.mins} recent minutes`);
   if (p.role && p.role_record) bits.push(`Today as ${esc(p.role)}: booked in ${p.role_record[1]} of ${p.role_record[0]} starts there${p.out_of_position ? " <b>(out of position, usually " + esc(p.usual_role) + ")</b>" : ""}`);
   const ref = r.name ? `<b>${esc(r.name)}</b>: ${r.ypg != null ? r.ypg.toFixed(1) : "–"} yellows a game (league ${r.league_avg != null ? r.league_avg.toFixed(1) : "–"}), ${r.cards_pg != null ? r.cards_pg.toFixed(1) : "–"} cards a game over ${r.games ?? "?"} games` : "Not announced";
-  return `<h3>Card record</h3><p class="rec">${bits.join("<br>")}</p><h3>Referee</h3><p class="rec">${ref}</p>`;
+  return `${bits.length ? `<h3>Card record</h3><p class="rec">${bits.join("<br>")}</p>` : ""}<h3>Referee</h3><p class="rec">${ref}</p>`;
 }
 function tcardsBlock(p) {
   const t = p.tcards; if (!t) return "";
@@ -626,7 +634,9 @@ function benchView(p) {
 function tagsFor(p) {
   return (p.pick ? `<span class="nba-tag st">Pick</span>` : p.value ? `<span class="nba-tag up">Value</span>` : "")
        + (p.predicted ? `<span class="nba-tag dtd">Predicted XI</span>` : `<span class="nba-tag st">Starting</span>`)
-       + (p.super_sub ? `<span class="nba-tag up">${esc(p.sub_cover || "Super Sub")}</span>` : "");
+       + (p.super_sub ? `<span class="nba-tag up">${esc(p.sub_cover || "Super Sub")}</span>` : "")
+       + (p.start_chance != null && p.start_chance < 0.95 ? `<span class="nba-tag dtd">${Math.round(p.start_chance * 100)}% to start</span>` : "")
+       + (p.fair_only ? `<span class="nba-tag">Not in odds feed</span>` : "");
 }
 function kvRow(p) {
   const me = (p.pitch || []).find(x => x.pid === p.pid) || {};
@@ -652,29 +662,21 @@ function show(p) {
     <div class="ph">${face(p.pid, "pface")}<div style="flex:1;min-width:0"><h1>${esc(p.player)}</h1>
     <div class="tm">${badge(teamId(p))}${esc(p.team)} · <a href="?g=${p.gid}">${esc(p.game)}</a> · ${ko}${tagsFor(p)}</div></div><button class="sharebtn" id="sharebtn" type="button">Share</button></div>
     ${kvRow(p)}
-    ${p.start_chance != null && p.start_chance < 0.95 ? `<div class="sub">Start chance <b>${Math.round(p.start_chance * 100)}%</b>${p.avail_note ? " · " + esc(p.avail_note) : ""}</div>` : ""}
-    ${p.fair_only ? `<p class="predicted">Not in our odds feed. Compare the fair price with the bookies yourself.</p>` : p.predicted ? `<p class="predicted">Lineup not confirmed yet, so this isn't sent as a pick.</p>` : ""}
-    <div class="verdict ${esc(v.tag)}">${esc(v.label || "")}</div>
-    <p class="vtext">${esc(v.text || "")}</p>
-    ${p.why ? `<h3>Why they could get booked</h3><p class="whyline">${esc(p.why)}</p>` : ""}
+    <p class="vsum"><b class="verdict ${esc(v.tag)}">${esc(v.label || "")}</b>${p.edge != null ? ` ${p.edge > 0 ? "+" : ""}${Math.round(p.edge * 100)}% v fair` : ""}${p.why ? ` · ${esc(p.why)}` : ""}</p>
     ${statsBlock(p)}
-    ${ownHeat(p)}
-    ${matchupGrid(p)}
+    <div class="panel" id="heatp">${heatPanel(p, 0)}</div>
     ${priceChart(p)}
     ${doubleBox(p)}
     <details class="more full"><summary>More detail</summary>
     ${ranked.length ? "<h3>For and against</h3>" + ranked.map(facRow).join("") : ""}
-    ${statsTable(p)}
     ${recordBlock(p)}
-    ${tcardsBlock(p)}
-    <div class="books">${shown}</div>
-    ${src ? `<p class="cap">${src}.</p>` : ""}
-    <p class="cap">A pick needs one bookie 15%+ over fair and confidence 6/10+. We skip markets only 1–2 bookies price, and prices 20%+ above every other bookie (or bet365 alone at the top): in testing those lost about 20%, usually because the bookie knew something. They still show here as "Big price, but be careful".</p>
+    ${shown ? `<h3>All prices</h3><p class="rec">${shown}</p>` : ""}
     </details>
   </div>`;
   document.getElementById("sharebtn").onclick = () => shareCard(p);
   wireDouble(p);
   wireStats(p);
+  wireHeat(p);
   history.replaceState(null, "", (EXAMPLE ? "?example&p=" : "?p=") + encodeURIComponent(p.player));
 }
 </script>

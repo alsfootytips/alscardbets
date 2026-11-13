@@ -2,7 +2,7 @@
 <title>Player · Al's NBA Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=900283e2"><link rel=icon href="nba_logo.jpg">
+<link rel=stylesheet href="brand.css?v=a21de9bc"><link rel=icon href="nba_logo.jpg">
 <style>
 .ph{display:flex;gap:14px;align-items:center;margin:20px 0 6px}
 .ph .face{width:84px;height:62px;object-fit:cover;object-position:top;border-radius:10px;background:var(--soft);flex:none}
@@ -144,16 +144,16 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     const dm = d => { const [m, dd] = d.slice(-5).split("-"); return `${+dd}/${+m}`; };
     let bars = "", pts = [], dots = "", labels = "", seasonEdge = "";
     last.forEach((r, i) => {
-      const v = r[st.col], x = pad + i * bw + gap / 2, w = bw - gap, cx = x + w / 2;
+      const v = r[st.col], x = pad + (last.length - i) * bw + gap / 2, w = bw - gap, cx = x + w / 2;   // newest on the left, after tonight
       bars += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, base - y(v))}" rx="${Math.min(3, w / 3)}" fill="${v >= k ? "#4ADE80" : "#F87171"}" opacity="${r[6] ? .95 : .55}"><title>${r[0]}: ${v} in ${r[1]} min</title></rect>`
             + (showVals ? `<text x="${cx}" y="${y(v) - 4}" text-anchor="middle" font-size="10" fill="#F5F5F5">${v}</text>` : "");
       pts.push(`${cx.toFixed(1)},${ym(r[1]).toFixed(1)}`);
       dots += `<circle cx="${cx}" cy="${ym(r[1])}" r="${bw >= 10 ? 2.6 : 1.6}" fill="#60A5FA" stroke="#000" stroke-width=".6"><title>${r[1]} min</title></circle>`;
       if (i % every === 0) labels += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="8" fill="#9A9A9A">${dm(r[0])}</text>`;
-      if (PREV.length && S.n === -1 && i === PREV.length) seasonEdge = `<line x1="${x - gap / 2}" x2="${x - gap / 2}" y1="${topY - 8}" y2="${base}" stroke="#F27A1A" stroke-width=".8" stroke-dasharray="2 2"/><text x="${x + 2}" y="${topY - 10}" font-size="8" fill="#F27A1A">this season</text>`;
+      if (PREV.length && S.n === -1 && i === PREV.length) seasonEdge = `<line x1="${x + w + gap / 2}" x2="${x + w + gap / 2}" y1="${topY - 8}" y2="${base}" stroke="#F27A1A" stroke-width=".8" stroke-dasharray="2 2"/><text x="${x + w + gap / 2 - 2}" y="${topY - 10}" text-anchor="end" font-size="8" fill="#F27A1A">this season</text>`;
     });
     // tonight: dashed projection bar + hollow expected-minutes dot
-    const tx = pad + last.length * bw + gap / 2, tw = bw - gap, tcx = tx + tw / 2, expM = P.exp_m;
+    const tx = pad + gap / 2, tw = bw - gap, tcx = tx + tw / 2, expM = P.exp_m;
     const lastPt = pts[pts.length - 1];
     const tonight = `<rect x="${tx}" y="${y(proj)}" width="${tw}" height="${Math.max(1, base - y(proj))}" rx="${Math.min(3, tw / 3)}" fill="none" stroke="#F5F5F5" stroke-width="1" stroke-dasharray="3 2" opacity=".7"><title>Tonight: projection ${proj.toFixed(1)}</title></rect>`
       + `<text x="${tcx}" y="${y(proj) - 4}" text-anchor="middle" font-size="10" fill="#F5F5F5" opacity=".85">${proj.toFixed(1)}</text>`
@@ -173,8 +173,8 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     document.getElementById("chartbox").innerHTML = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">`
       + `<line x1="${pad}" x2="${W}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width="1" opacity=".3"/>${bars}${mins}${seasonEdge}`
       + `<line x1="${pad}" x2="${W}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-width="2" stroke-dasharray="5 3"/>`
-      + `<rect x="${pad}" y="${ly - 17}" width="${tagW}" height="14" rx="4" fill="#000" stroke="${col}" stroke-width=".8"/>`
-      + `<text x="${pad + tagW / 2}" y="${ly - 7}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${tag}</text></svg>`;
+      + `<rect x="${W - padR - tagW}" y="${ly - 17}" width="${tagW}" height="14" rx="4" fill="#000" stroke="${col}" stroke-width=".8"/>`
+      + `<text x="${W - padR - tagW / 2}" y="${ly - 7}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${tag}</text></svg>`;
     document.getElementById("kslide").value = k;
     document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
       b.className = (isValue(r, proj, st.q1) ? "val " : "") + (+b.dataset.k === k ? "on" : "");

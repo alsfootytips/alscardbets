@@ -395,3 +395,9 @@ a.plrow:hover{background:var(--soft)}
 .seg button.on{background:var(--fg);color:#000}
 .seg #subs{border:1px solid var(--line);border-radius:999px}
 .ph .pface{width:76px;height:76px;object-fit:contain;object-position:center bottom}
+.vsum{margin:8px 0 2px;font-size:14px;line-height:1.45;color:var(--muted)}
+.vsum .verdict{display:inline;font-size:14px;font-weight:600;margin:0 2px 0 0;padding:0;background:none;border:0}
+#heatp .seg{margin-bottom:8px}#heatp .seg .cap{margin:0;text-decoration:none}
+#heatp .cap{margin:6px 0 2px}
+.gdet span{display:block}.gdet .gh{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.gdet em{font-style:normal;display:inline-block;min-width:112px;color:#6B6B6B}.gdet b.yel{color:var(--card)}
