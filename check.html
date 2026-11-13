@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=5ab69ab0"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
-<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Cards</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=f5f4a647"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
 <input id="q" placeholder="Search a player or team" autocomplete="off">
@@ -246,7 +246,7 @@ function zoneLabels(players, grid, winSide) {
   const cells = [];
   grid.forEach((row, r) => row.forEach((v, c) => { if (v > 0 && v >= hot) cells.push([v, r, c]); }));
   cells.sort((a, b) => b[0] - a[0]);
-  const seen = new Set(), out = [];
+  const out = [];
   for (const [, r, c] of cells) {
     let best = null;
     for (const x of players) {
@@ -256,16 +256,23 @@ function zoneLabels(players, grid, winSide) {
         const v = x.heat[i][j] * (x.fw ?? 1.2); if (!best || v > best.v) best = {v, x};
       }
     }
-    if (best && !seen.has(best.x.pid)) { seen.add(best.x.pid); out.push({r, c, name: best.x.name}); }
+    if (!best) continue;
+    const z = out.find(o => o.pid === best.x.pid);
+    if (z) z.cells.push([r, c]); else out.push({pid: best.x.pid, name: best.x.name, cells: [[r, c]]});
   }
-  return out;
+  return out.map(z => ({name: z.name, r: z.cells.reduce((a, q) => a + q[0], 0) / z.cells.length, c: z.cells.reduce((a, q) => a + q[1], 0) / z.cells.length}));
+}
+function fitLabels() {           // keep zone names centred on their zone but fully inside the pitch
+  out.querySelectorAll(".vpitch").forEach(pt => { const W = pt.clientWidth;
+    pt.querySelectorAll(".zl").forEach(z => { const w = z.offsetWidth, cx = parseFloat(z.dataset.cx) / 100 * W;
+      z.style.left = Math.min(W - w / 2 - 3, Math.max(w / 2 + 3, cx)) + "px"; }); });
 }
 function boxes(vals) {           // last-5 numbers, most recent first
   return `<span class="l5">${(vals || []).slice(0, 5).map(v => v == null ? `<i class="na">–</i>` : `<i class="b${Math.min(v, 4)}">${v}</i>`).join("")}</span>`;
 }
 function gridPitch(players, grid, opts) {
   const {confirmed, cardOf, statOf, focus, labels} = opts;
-  const tags = (labels || []).map(z => `<span class="zl ${z.c < 3 ? "l" : z.c > 4 ? "r" : ""}" style="left:${((z.c + .5) / 8 * 100).toFixed(1)}%;top:${((z.r + .5) / 12 * 100).toFixed(1)}%">${esc(last(z.name))}</span>`).join("");
+  const tags = (labels || []).map(z => `<span class="zl" data-cx="${((z.c + .5) / 8 * 100).toFixed(1)}" style="left:${((z.c + .5) / 8 * 100).toFixed(1)}%;top:${((z.r + .5) / 12 * 100).toFixed(1)}%">${esc(last(z.name))}</span>`).join("");
   const cells = shadeGrid(grid).map(row => row.map(c => `<i style="background:${c}"></i>`).join("")).join("");
   const cards = players.map(x => {
     const [l, t] = vpos(x), c = cardOf ? cardOf(x) : null, faded = focus && !focus.has(x.pid);
@@ -301,6 +308,7 @@ function gameView(g, mode = 0) {
     ${magnets ? `<h3>${esc(winTeam)} players who win the most fouls</h3><ul class="facts">${magnets}</ul>` : ""}
     ${foulPairsBlock(g, commitSide)}
   </div>`;
+  fitLabels();
   document.getElementById("swap").onclick = () => gameView(g, 1 - mode);
   wireFoulPairs(g, commitSide);
   history.replaceState(null, "", "?g=" + g.fotmob_id);

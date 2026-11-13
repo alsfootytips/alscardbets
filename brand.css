@@ -251,7 +251,7 @@ ul.fpairs li{border:1px solid var(--line);border-radius:10px;padding:10px 12px;m
 .fres{font-size:13px;color:var(--muted)}
 @media (max-width:520px){.fgrid{grid-template-columns:repeat(2,1fr)}}
 .vpitch .zl{position:absolute;transform:translate(-50%,-50%);z-index:1;pointer-events:none;font-size:9px;font-style:italic;color:rgba(255,255,255,.6);white-space:nowrap;letter-spacing:.02em}
-.vpitch .zl.l{transform:translate(-20%,-50%)}.vpitch .zl.r{transform:translate(-80%,-50%)}
+.vpitch .zl{text-align:center;color:rgba(255,255,255,.75);text-shadow:0 0 3px rgba(0,0,0,.8)}
 
 /* Cards | NBA switch in the header */
 .top .sport{display:flex;flex:none;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:2px;order:3;margin-left:auto}
@@ -299,3 +299,21 @@ details.pl .body{padding:6px 14px 10px;background:var(--soft)}
 .stats3 b{display:block;font-size:20px;font-weight:600}.stats3 span{font-size:12px;color:var(--muted)}
 @media (max-width:520px){.stats3{grid-template-columns:repeat(2,1fr)}.stats3 div:nth-child(3){border-left:0;padding-left:0}}
 .ranked .leg{display:block;line-height:1.35;margin-bottom:3px}.ranked .leg em{display:block;font-style:normal;font-size:12px;color:var(--muted)}
+.vpitch .zl{z-index:3;background:rgba(0,0,0,.35);padding:0 3px;border-radius:3px}
+.row .v b.pos,.row .c b.pos{color:var(--accent);font-weight:600}
+.row .v span.pos,.row .who .pos{color:var(--accent)}
+details.nbapk>summary.row{cursor:pointer}
+details.nbapk>summary .nm{font-weight:600}
+details.nbapk>summary .more{color:var(--fg);text-decoration:underline;text-underline-offset:2px;margin-top:3px}
+details.nbapk[open]>summary .more{display:none}
+details.nbapk[open]>summary{background:var(--soft)}
+.whybox{padding:4px 14px 12px 40px;background:var(--soft);font-size:14px;line-height:1.55}
+.whybox p{margin:6px 0}
+.whybox b{font-weight:600}
+
+/* Al's NBA Bets branding (orange #F27A1A, navy #13233A from the logo) */
+.top.nba{border-bottom-color:#F27A1A}
+.top.nba nav a.on{border-bottom-color:#F27A1A}
+.top.nba .sport a.on{background:#F27A1A;color:#fff}
+.top.nba .logo img{height:36px}
+footer.foot.nba{border-top-color:#3A2410;color:#F2A15E}
