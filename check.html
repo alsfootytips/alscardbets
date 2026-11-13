@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=5c5d94f4"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=1d64e943"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
@@ -272,8 +272,10 @@ function gameView(g, mode = 0) {
     ${pitch}
     <p class="cap">Brighter red squares = where ${esc(commitTeam)} commit fouls and ${esc(winTeam)} win them. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
     ${magnets ? `<h3>${esc(winTeam)} players who win the most fouls</h3><ul class="facts">${magnets}</ul>` : ""}
+    ${foulPairsBlock(g, commitSide)}
   </div>`;
   document.getElementById("swap").onclick = () => gameView(g, 1 - mode);
+  wireFoulPairs(g, commitSide);
   history.replaceState(null, "", "?g=" + g.fotmob_id);
 }
 
@@ -377,6 +379,35 @@ function wireDouble(p) {
       <p class="cap">${p.fair} × ${q.fair}${lift !== 1 ? ` ÷ ${lift} (same-game link: ${lift === 1.01 ? "same team" : lift === 1.075 ? "direct opponents" : "opposite teams"})` : " (different games, independent)"}. ${edge != null && edge < 0.15 ? "Not value as a double." : ""}</p>`;
   };
   s.onchange = calc; i.oninput = calc; calc();
+}
+
+// ---------- foul matchups: A commits + B (direct opponent) is fouled; one foul can land both legs ----------
+const COMBO_NAMES = {"11": "1+ & 1+", "21": "2+ & 1+", "12": "1+ & 2+", "22": "2+ & 2+"};
+function foulPairsBlock(g, commitSide) {
+  const team = commitSide === "H" ? 0 : 1;
+  const fp = (g.foul_pairs || []).filter(x => x.a_team === team).slice(0, 8);
+  if (!fp.length) return "";
+  const rows = fp.map((x, i) => {
+    const cells = Object.keys(COMBO_NAMES).map(k => { const c = x.combos[k];
+      const v = c.edge != null && c.edge >= 0.25;
+      return `<div class="fc${v ? " v" : ""}"><span>${COMBO_NAMES[k]}</span><b>${c.fair ?? "–"}</b>${c.price ? `<small>${c.price} multiplied${c.edge != null ? ` · ${c.edge > 0 ? "+" : ""}${Math.round(c.edge * 100)}%` : ""}</small>` : ""}</div>`; }).join("");
+    const la = x.la && x.la["1"] ? ` · fouls 1+ ${od(x.la["1"])}${x.la["2"] ? `, 2+ ${od(x.la["2"])}` : ""}` : "";
+    return `<li><div class="fph"><b>${esc(x.a)}</b> commits <small style="display:inline">${x.a_f90} a game${la}</small><br>→ <b>${esc(x.b)}</b> is fouled <small style="display:inline">${x.b_fw90} a game</small></div>
+      <div class="fgrid">${cells}</div>
+      <div class="fchk"><select data-i="${i}">${Object.keys(COMBO_NAMES).map(k => `<option value="${k}">${COMBO_NAMES[k]}</option>`).join("")}</select>
+      <input data-i="${i}" inputmode="decimal" placeholder="builder price"><span class="fres"></span></div></li>`;
+  }).join("");
+  return `<h3>Foul matchups</h3><p class="cap">Builder of "commits a foul" + their direct opponent "is fouled". Bookies price the two legs as if they were unrelated, but one foul can land both, so the fair price (big number) is shorter than the legs multiplied. Type the bookie's builder price to check it. Best spot in testing: 2+ & 2+ at 25%+ over fair.</p><ul class="fpairs">${rows}</ul>`;
+}
+function wireFoulPairs(g, commitSide) {
+  const team = commitSide === "H" ? 0 : 1, fp = (g.foul_pairs || []).filter(x => x.a_team === team).slice(0, 8);
+  out.querySelectorAll(".fchk").forEach(box => {
+    const sel = box.querySelector("select"), inp = box.querySelector("input"), res = box.querySelector(".fres");
+    const calc = () => { const x = fp[+sel.dataset.i], c = x.combos[sel.value], pr = parseFloat(inp.value);
+      if (!pr || !c.p) { res.textContent = ""; return; }
+      const e = pr * c.p - 1; res.innerHTML = `<b class="${e >= 0.25 ? "pos" : e < 0 ? "neg" : ""}">${e > 0 ? "+" : ""}${Math.round(e * 100)}%</b> v fair ${c.fair}`; };
+    sel.onchange = calc; inp.oninput = calc;
+  });
 }
 function statsTable(p) {
   const a = p.stats90 || {}, b = p.opp_stats90 || {};
