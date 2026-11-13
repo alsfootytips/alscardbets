@@ -126,6 +126,9 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     }
     const vals = P.log.map(r => val(st, r));
     const top = Math.max(5, Math.ceil(Math.max(...vals, proj) * 1.2));
+    // keep the sideways scroll of the button rows (and the page) where they were when redrawing
+    const keep = ["#stat .chips:not(.range)", "#stat .chips.range", "#stat .rungs"].map(q => (document.querySelector(q) || {}).scrollLeft || 0);
+    const pageY = window.scrollY;
     document.getElementById("stat").innerHTML =
       `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
       + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; const so = (T.star_out || []).map(n => n.split(" ").slice(-1)[0] + " out").join(", "); return m && (Math.abs(m - 1) >= 0.03 || so) ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">${so ? so + " · " : ""}${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
@@ -134,6 +137,8 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
       + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
       + (rungs.length ? `<div class=rungs>${rungs.map(r => `<button data-k="${r[0]}">${r[0]}+ @ ${r[1].toFixed(2)}<small></small></button>`).join("")}</div>` : "")
       + `<div class=hr id=hitrates></div></div>`;
+    ["#stat .chips:not(.range)", "#stat .chips.range", "#stat .rungs"].forEach((q, i) => { const el = document.querySelector(q); if (el) el.scrollLeft = keep[i]; });
+    window.scrollTo(0, pageY);
     document.querySelectorAll("#stat .chips:not(.range) button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
     document.querySelectorAll("#stat .chips.range button").forEach(b => b.onclick = () => { S.n = +b.dataset.n; render(); });
     document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; draw(); });
