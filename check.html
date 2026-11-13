@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=1d64e943"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=a3d33db3"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game for its foul heatmap, or search any player with a card price.</p>
@@ -234,14 +234,19 @@ function foulGrid(players, mode) {
   const mx = Math.max(...G.flat()) || 1;
   return G.map(row => row.map(v => v / mx));
 }
-const SHADES = ["transparent", "rgba(229,72,77,.10)", "rgba(229,72,77,.22)", "rgba(229,72,77,.38)", "rgba(229,72,77,.56)", "rgba(229,72,77,.75)"];
-const shade = v => SHADES[Math.min(5, Math.floor(v * 5.999))];
+// Only the hottest spots get colour: top 3 squares solid red, next 5 faint red, everything else blank.
+const HOT = 3, WARM = 5;
+function shadeGrid(grid) {
+  const flat = grid.flat().filter(v => v > 0).sort((a, b) => b - a);
+  const hot = flat[HOT - 1] ?? Infinity, warm = flat[HOT + WARM - 1] ?? Infinity;
+  return grid.map(row => row.map(v => v > 0 && v >= hot ? "rgba(255,59,64,.9)" : v > 0 && v >= warm ? "rgba(255,59,64,.28)" : "transparent"));
+}
 function boxes(vals) {           // last-5 numbers, most recent first
   return `<span class="l5">${(vals || []).slice(0, 5).map(v => v == null ? `<i class="na">–</i>` : `<i class="b${Math.min(v, 4)}">${v}</i>`).join("")}</span>`;
 }
 function gridPitch(players, grid, opts) {
   const {confirmed, cardOf, statOf, focus} = opts;
-  const cells = grid.map(row => row.map(v => `<i style="background:${shade(v)}"></i>`).join("")).join("");
+  const cells = shadeGrid(grid).map(row => row.map(c => `<i style="background:${c}"></i>`).join("")).join("");
   const cards = players.map(x => {
     const [l, t] = vpos(x), c = cardOf ? cardOf(x) : null, faded = focus && !focus.has(x.pid);
     return `<a class="pc ${x.side === "H" ? "h" : "a"}${faded ? " dim" : ""}" href="?p=${encodeURIComponent(x.name)}" style="left:${(l * 100).toFixed(1)}%;top:${(t * 100).toFixed(1)}%">
@@ -270,7 +275,7 @@ function gameView(g, mode = 0) {
     <button class="sharebtn" id="swap" type="button">Swap ⇄</button></div>
     <p class="legend"><span><i class="kh"></i>${esc(commitTeam)}: fouls committed</span><span><i class="ka"></i>${esc(winTeam)}: fouls won</span></p>
     ${pitch}
-    <p class="cap">Brighter red squares = where ${esc(commitTeam)} commit fouls and ${esc(winTeam)} win them. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
+    <p class="cap">Red = the 3 spots where ${esc(commitTeam)} foul and ${esc(winTeam)} get fouled most. Faint red = the next 5. Boxes under each player: their last 5 games, most recent first. Number next to the shirt = best card price (green = value).</p>
     ${magnets ? `<h3>${esc(winTeam)} players who win the most fouls</h3><ul class="facts">${magnets}</ul>` : ""}
     ${foulPairsBlock(g, commitSide)}
   </div>`;
@@ -317,7 +322,7 @@ function matchupGrid(p) {
     ov != null && !me.est && !opp.est ? `They share <b>${ov}%</b> of the same space` : null].filter(Boolean) : [];
   const est = [me.est && last(p.player), opp && opp.est && last(p.opp)].filter(Boolean);
   return `<h3>Matchup: ${esc(p.player)} v ${esc(p.opp || "no direct opponent")}</h3>${pitch}
-    <p class="cap">Brighter red squares = where they meet most. Boxes: ${esc(last(p.player))}'s fouls committed and ${esc(last(p.opp || ""))}'s fouls won, last 5 games, most recent first.</p>
+    <p class="cap">Red = the 3 spots where they meet most. Faint red = the next 5. Boxes: ${esc(last(p.player))}'s fouls committed and ${esc(last(p.opp || ""))}'s fouls won, last 5 games, most recent first.</p>
     ${facts.length ? `<ul class="facts">${facts.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}
     ${est.length ? `<p class="cap">No tracking data for ${est.join(" or ")}: position estimated.</p>` : ""}
     <p class="cap"><a href="?g=${p.gid}">See the whole game's foul heatmap</a></p>`;

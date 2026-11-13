@@ -229,6 +229,7 @@ footer.foot i{display:none}
 .pc .odds{background:#111;border-color:#333;color:#F5F5F5}
 .l5 i{background:#111;color:#DDD;border-color:#2E2E2E}
 .l5 i.b1{background:#3A1A1B}.l5 i.b2{background:#6B2427}.l5 i.b3{background:#A8333A;color:#fff;border-color:#A8333A}.l5 i.b4{background:#E5484D;color:#fff;border-color:#E5484D}
+.vpitch .l5 i.b1{background:#262626;border-color:#333}.vpitch .l5 i.b2{background:#4A4A4A;border-color:#4A4A4A;color:#fff}.vpitch .l5 i.b3{background:#A3A3A3;border-color:#A3A3A3;color:#000}.vpitch .l5 i.b4{background:#fff;border-color:#fff;color:#000}
 .grow em{background:rgba(74,222,128,.12)}
 #sharebox .send{background:#F5F5F5;color:#000;border-color:#F5F5F5}
 .pc .odds.v{color:#000;background:var(--accent);border-color:var(--accent)}
