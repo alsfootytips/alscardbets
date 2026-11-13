@@ -74,8 +74,12 @@ const STATS = [
   {k:"pra", label:"PRA", parts:[2, 4, 3], mk:"Points, Assists & Rebounds", proj:["pts", "ast", "reb"]},
   {k:"stl", label:"Steals", parts:[15], mk:"Steals", proj:["stl"]},
   {k:"blk", label:"Blocks", parts:[16], mk:"Blocks", proj:["blk"]},
-  {k:"stk", label:"Stl+Blk", parts:[15, 16], mk:"Steals & Blocks", proj:["stl", "blk"]}];
-const val = (st, r) => st.parts ? st.parts.reduce((a, c) => a + (r[c] || 0), 0) : r[st.col];
+  {k:"stk", label:"Stl+Blk", parts:[15, 16], mk:"Steals & Blocks", proj:["stl", "blk"]},
+  // double / triple double: bars = categories that reached 10 (pts, reb, ast, stl, blk); line fixed at 2 / 3
+  {k:"dd", label:"Double Double", dd:2, mk:"Double Double"}, {k:"td", label:"Triple Double", dd:3, mk:"Triple Double"}];
+const DDC = [2, 3, 4, 15, 16];
+const val = (st, r) => st.dd ? DDC.filter(c => (r[c] || 0) >= 10).length
+  : st.parts ? st.parts.reduce((a, c) => a + (r[c] || 0), 0) : r[st.col];
 const pid = new URLSearchParams(location.search).get("p");
 // model chance of k+ for any line (mirrors nba_props.prob / q1_prob)
 function erfc(x) { const z = Math.abs(x), t = 1 / (1 + 0.5 * z);
@@ -91,7 +95,7 @@ function tailP(k, mu, cal) {
   else { pj = Math.exp(-mu); for (let j = 0; j < k; j++) { cdf += pj; pj *= mu / (j + 1); } }
   return Math.max(0, 1 - cdf); }
 // same rules as the Tonight list: projection 1.2x the line, 5%+ EV, odds 15 or shorter
-const isValue = (r, proj, q1) => r[3] >= 5 && r[1] <= (q1 ? 6 : 15) && proj / (r[0] - 0.5) >= 1.2;
+const isValue = (r, proj, q1) => !!r && r[3] >= 5 && r[1] <= (q1 ? 6 : 15) && (q1 === "dd" || proj / (r[0] - 0.5) >= 1.2);
 let S = {stat: "pts", k: null, n: 15};
 
 Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
@@ -104,8 +108,9 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
   if (!P) { app.innerHTML = "<p class=none>Player not in tonight's games. <a class=fmap href='nba_players.html'>All players</a></p>"; return; }
   document.title = `${P.name} · Al's NBA Bets`;
   const tip = new Date(G.tip).toLocaleString("en-GB", {weekday:"short", hour:"2-digit", minute:"2-digit", timeZone:"Europe/London"});
-  const rungsFor = st => st.q1 ? (P.q1.mk || {})[st.mk] || [] : st.mk ? P.mk[st.mk] || [] : [];
-  const projFor = st => st.q1 ? P.q1.proj[st.q1] : st.k === "min" ? P.exp_m : st.k === "q1min" ? P.q1.exp
+  const rungsFor = st => st.dd ? ((P.mk || {})[st.mk] || []).map(r => [st.dd, r[1], r[2], r[3]]) : st.q1 ? (P.q1.mk || {})[st.mk] || [] : st.mk ? P.mk[st.mk] || [] : [];
+  const catP = (s, mu) => tailP(10, mu || 0, CAL[s] || XCAL[s]) || 0;
+  const projFor = st => st.dd ? ["pts", "reb", "ast", "stl", "blk"].reduce((a, s) => a + catP(s, P.proj[s]), 0) : st.q1 ? P.q1.proj[st.q1] : st.k === "min" ? P.exp_m : st.k === "q1min" ? P.q1.exp
     : st.proj ? st.proj.reduce((a, s) => a + (P.proj[s] || 0), 0) : P.proj[st.k];
   // default stat: the market with the best value rung
   let best = null;
@@ -120,6 +125,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
   function render() {
     const st = STATS.find(s => s.k === S.stat);
     const rungs = rungsFor(st), proj = projFor(st);
+    if (st.dd) S.k = st.dd;                                // double/triple double: line is fixed
     if (S.k == null) {
       const near = rungs.length ? rungs.reduce((a, b) => Math.abs(b[0] - 0.5 - proj) < Math.abs(a[0] - 0.5 - proj) ? b : a) : null;
       S.k = near ? near[0] : Math.max(1, Math.round(proj));
@@ -134,7 +140,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
       + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; const so = (T.star_out || []).map(n => n.split(" ").slice(-1)[0] + " out").join(", "); return m && (Math.abs(m - 1) >= 0.03 || so) ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">${so ? so + " · " : ""}${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
       + `<div class="chips range">${RANGES.map(([n, l]) => `<button data-n="${n}" class="${n === S.n ? "on" : ""}">${l}</button>`).join("")}</div>`
       + `<div class=chead><span id=linetag></span><span id=legend></span></div><div id=chartbox></div>`
-      + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
+      + (st.dd ? "" : `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`)
       + (rungs.length ? `<div class=rungs>${rungs.map(r => `<button data-k="${r[0]}">${r[0]}+ @ ${r[1].toFixed(2)}<small></small></button>`).join("")}</div>` : "")
       + `<div class=hr id=hitrates></div></div>`;
     ["#stat .chips:not(.range)", "#stat .chips.range", "#stat .rungs"].forEach((q, i) => { const el = document.querySelector(q); if (el) el.scrollLeft = keep[i]; });
@@ -143,9 +149,11 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     document.querySelectorAll("#stat .chips.range button").forEach(b => b.onclick = () => { S.n = +b.dataset.n; render(); });
     document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; draw(); });
     const sl = document.getElementById("kslide");
-    sl.oninput = () => { S.k = +sl.value; draw(); };
-    document.getElementById("kdown").onclick = () => { S.k = Math.max(1, S.k - 1); draw(); };
-    document.getElementById("kup").onclick = () => { S.k = Math.min(top, S.k + 1); draw(); };
+    if (sl) {
+      sl.oninput = () => { S.k = +sl.value; draw(); };
+      document.getElementById("kdown").onclick = () => { S.k = Math.max(1, S.k - 1); draw(); };
+      document.getElementById("kup").onclick = () => { S.k = Math.min(top, S.k + 1); draw(); };
+    }
     draw();
   }
 
@@ -195,7 +203,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     const ly = y(k - 0.5);
     const tag = rung ? `${k}+ · ${rung[1].toFixed(2)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? `${k}+ · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : `${k}+`;
     const tagW = tag.length * 4.3 + 8;
-    const good = rung && isValue(rung, proj, st.q1), bad = rung && ev < 0;
+    const good = rung && isValue(rung, proj, st.dd ? "dd" : st.q1), bad = rung && ev < 0;
     const col = good ? "#4ADE80" : bad ? "#F87171" : "#F27A1A";
     document.getElementById("chartbox").innerHTML = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">`
       + `<line x1="${pad}" x2="${W - padR}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width=".6" opacity=".2"/>${bars}${mins}`
@@ -203,9 +211,9 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
       + `<text x="${pad - 3}" y="${ly + 3}" text-anchor="end" font-size="7.5" font-weight="600" fill="${col}">${k}+</text></svg>`;
     document.getElementById("linetag").innerHTML = `<b style="color:${col}">${tag}</b>`;
     document.getElementById("legend").innerHTML = `<i class=lg-bar></i>${esc(st.label.toLowerCase())} <i class=lg-line></i>${q1m ? "Q1 mins" : "mins"} · tonight ${proj.toFixed(1)} / ${expM.toFixed(0)}m`;
-    document.getElementById("kslide").value = k;
+    if (document.getElementById("kslide")) document.getElementById("kslide").value = k;
     document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
-      b.className = (isValue(r, proj, st.q1) ? "val " : "") + (+b.dataset.k === k ? "on" : "");
+      b.className = (isValue(r, proj, st.dd ? "dd" : st.q1) ? "val " : "") + (+b.dataset.k === k ? "on" : "");
       b.querySelector("small").textContent = `${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV`; });
     const hit = xs => xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0;
     const prevVals = PREV.map(r => val(st, r));
