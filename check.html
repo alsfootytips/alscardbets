@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=edb75990"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
+<title>Games · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=959ae2d0"><link rel=icon href="logo.jpg"><style>main{max-width:680px}</style></head><body>
 <header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Picks</a><a href="ranked.html">Ranked</a><a class=on href="check.html">Games</a><a href="referees.html">Referees</a><a href="index.html">Results</a></nav></div></header><main>
 <h1>Games</h1>
 <p class="meta">Tap a game or search a player</p>
@@ -320,7 +320,7 @@ function gameView(g, mode = 0) {
 // ---------- games list (default view) ----------
 function gameBadges(g) {
   const [h, a] = g.game.split(" v "), t = g.team_ids || [];
-  return `${badge(t[0], "badge sm")}${esc(h)} <span class="vs">v</span> ${badge(t[1], "badge sm")}${esc(a)}`;
+  return `${badge(t[0], "badge sm")}${esc(h)} <em class="vsep">v</em> ${badge(t[1], "badge sm")}${esc(a)}`;
 }
 function gamesList() {
   // only games with a card market: at least one player with a bookie card price

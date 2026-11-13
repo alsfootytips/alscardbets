@@ -339,7 +339,7 @@ details.pl>summary .nm{display:inline-flex;align-items:center}
 .badge{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:5px}
 .badge.sm{width:15px;height:15px}
 .name .badge.sm{width:22px;height:22px;vertical-align:-4px}
-.vs{color:var(--muted);font-weight:400;margin:0 2px}
+.vsep{font-style:normal;color:var(--muted);font-weight:400;margin:0 3px}
 .who .face{float:left;margin:2px 10px 0 0}
 .ranked .who .face{float:none;width:22px;height:22px;margin:0 6px 0 0}.ranked .leg .face{width:22px;height:22px;margin-right:6px}
 .game header h3 .badge.sm{width:18px;height:18px}
