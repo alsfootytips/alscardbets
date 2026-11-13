@@ -20,6 +20,9 @@
 .rungs button small{color:var(--muted)}
 .rungs button.val{border-color:#1F4D2E;background:#0E2215}.rungs button.val small{color:var(--accent);font-weight:600}
 .rungs button.on{outline:2px solid #F27A1A;outline-offset:-1px}
+.mover{display:flex;align-items:center;gap:8px;margin:4px 0 6px}
+.mover input{flex:1;accent-color:#F27A1A;height:28px}
+.mover button{width:36px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 18px var(--body);cursor:pointer}
 .hr{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
 .hr div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
 .hr b{display:block;font-size:17px}.hr span{font-size:11px;color:var(--muted)}
@@ -56,11 +59,25 @@ const STATS = [
   {k:"q1reb", label:"1Q Rebounds", col:12, mk:"1st Quarter Rebounds", q1:"reb"}, {k:"q1ast", label:"1Q Assists", col:13, mk:"1st Quarter Assists", q1:"ast"},
   {k:"q1min", label:"1Q Minutes", col:7}];
 const pid = new URLSearchParams(location.search).get("p");
+// model chance of k+ for any line (mirrors nba_props.prob / q1_prob)
+function erfc(x) { const z = Math.abs(x), t = 1 / (1 + 0.5 * z);
+  const r = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))));
+  return x >= 0 ? r : 2 - r; }
+function tailP(k, mu, cal) {
+  if (!cal || mu <= 0) return null;
+  mu *= cal.b || 1;
+  if (cal.dist === "normal") return 0.5 * erfc((k - 0.5 - mu) / (cal.c * Math.sqrt(mu) * Math.SQRT2));
+  let pj, cdf = 0;
+  if (cal.dist === "negbin") { const r = cal.r, q = mu / (r + mu); pj = Math.pow(r / (r + mu), r);
+    for (let j = 0; j < k; j++) { cdf += pj; pj *= (j + r) / (j + 1) * q; } }
+  else { pj = Math.exp(-mu); for (let j = 0; j < k; j++) { cdf += pj; pj *= mu / (j + 1); } }
+  return Math.max(0, 1 - cdf); }
 // same rules as the Tonight list: projection 1.2x the line, 5%+ EV, odds 15 or shorter
 const isValue = (r, proj, q1) => r[3] >= 5 && r[1] <= (q1 ? 6 : 15) && proj / (r[0] - 0.5) >= 1.2;
 let S = {stat: "pts", k: null};
 
 fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
+  const CAL = (data.settings || {}).cal || {}, Q1CAL = (data.settings || {}).q1cal || {};
   let P, T, G, O;
   for (const g of data.games) for (const t of g.teams) for (const p of t.players)
     if (p.pid === pid) { P = p; T = t; G = g; O = g.teams.find(x => x !== t); }
@@ -78,42 +95,70 @@ fetch("nba_data.json?v=" + Date.now()).then(r => r.json()).then(data => {
   function render() {
     const st = STATS.find(s => s.k === S.stat);
     const rungs = rungsFor(st), proj = projFor(st);
-    if (S.k == null || !rungs.find(r => r[0] === S.k)) {
+    if (S.k == null) {
       const near = rungs.length ? rungs.reduce((a, b) => Math.abs(b[0] - 0.5 - proj) < Math.abs(a[0] - 0.5 - proj) ? b : a) : null;
       S.k = near ? near[0] : Math.max(1, Math.round(proj));
     }
-    const k = S.k, vals = P.log.map(r => r[st.col]);
-    const hit = xs => xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0;
-    const hrs = [["L5", vals.slice(-5)], ["L10", vals.slice(-10)], ["Season", vals]];
+    const vals = P.log.map(r => r[st.col]);
+    const top = Math.max(5, Math.ceil(Math.max(...vals, proj) * 1.2));
+    document.getElementById("stat").innerHTML =
+      `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
+      + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}</h2>`
+      + `<p class=meta>Last ${Math.min(15, vals.length)} · faded = bench · grey = projection</p>`
+      + `<div id=chartbox></div>`
+      + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
+      + (rungs.length ? `<div class=rungs>${rungs.map(r => `<button data-k="${r[0]}">${r[0]}+ @ ${r[1].toFixed(2)}<small></small></button>`).join("")}</div>` : "")
+      + `<div id=verdict></div><div class=hr id=hitrates></div></div>`;
+    document.querySelectorAll("#stat .chips button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
+    document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; draw(); });
+    const sl = document.getElementById("kslide");
+    sl.oninput = () => { S.k = +sl.value; draw(); };
+    document.getElementById("kdown").onclick = () => { S.k = Math.max(1, S.k - 1); draw(); };
+    document.getElementById("kup").onclick = () => { S.k = Math.min(top, S.k + 1); draw(); };
+    draw();
+  }
+
+  function draw() {
+    const st = STATS.find(s => s.k === S.stat);
+    const rungs = rungsFor(st), proj = projFor(st), k = S.k;
+    const vals = P.log.map(r => r[st.col]), last = P.log.slice(-15);
     const rung = rungs.find(r => r[0] === k);
-    const last = P.log.slice(-15);
-    // bar chart
-    const W = 340, H = 170, pad = 22, bw = (W - pad) / Math.max(last.length, 1);
-    const mx = Math.max(k * 1.4, ...last.map(r => r[st.col]), 1);
-    const y = v => H - 22 - (H - 40) * v / mx;
+    const cal = st.q1 ? Q1CAL[st.q1] : CAL[st.k];
+    const pm = rung ? rung[2] / 100 : tailP(k, proj, cal);
+    const ev = rung ? rung[3] : null;
+    // chart
+    const W = 340, H = 180, pad = 22, bw = (W - pad) / Math.max(last.length, 1);
+    const mx = Math.max(k * 1.3, ...last.map(r => r[st.col]), 1);
+    const y = v => H - 22 - (H - 46) * v / mx;
     let bars = "";
     last.forEach((r, i) => {
-      const v = r[st.col], x = pad + i * bw + 2, ok = v >= k;
-      bars += `<rect x="${x}" y="${y(v)}" width="${bw - 4}" height="${Math.max(1, H - 22 - y(v))}" rx="3" fill="${ok ? "#4ADE80" : "#F87171"}" opacity="${r[6] ? 1 : .7}"/>`
+      const v = r[st.col], x = pad + i * bw + 2;
+      bars += `<rect x="${x}" y="${y(v)}" width="${bw - 4}" height="${Math.max(1, H - 22 - y(v))}" rx="3" fill="${v >= k ? "#4ADE80" : "#F87171"}" opacity="${r[6] ? 1 : .6}"/>`
             + `<text x="${x + (bw - 4) / 2}" y="${y(v) - 4}" text-anchor="middle" font-size="10" fill="#F5F5F5">${v}</text>`
             + `<text x="${x + (bw - 4) / 2}" y="${H - 8}" text-anchor="middle" font-size="8" fill="#9A9A9A">${r[0].slice(3)}</text>`;
     });
-    const line = `<line x1="${pad}" x2="${W}" y1="${y(k - 0.5)}" y2="${y(k - 0.5)}" stroke="#F27A1A" stroke-width="1.5" stroke-dasharray="4 3"/>`
-               + `<text x="2" y="${y(k - 0.5) + 3}" font-size="10" fill="#F27A1A">${k}+</text>`;
-    const projLine = `<line x1="${pad}" x2="${W}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width="1" opacity=".35"/>`;
-    const chart = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">${projLine}${bars}${line}</svg>`;
-    const rungBtns = rungs.map(r => `<button data-k="${r[0]}" class="${isValue(r, proj, st.q1) ? "val" : ""} ${r[0] === k ? "on" : ""}">${r[0]}+ @ ${r[1].toFixed(2)}<small>${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV</small></button>`).join("");
-    const verdict = rung ? `<p class=meta>bet365 ${rung[1].toFixed(2)} (${(100 / rung[1]).toFixed(0)}%) · model ${rung[2].toFixed(0)}% · `
-                         + `<b class="${isValue(rung, proj, st.q1) ? "pos" : rung[3] < 0 ? "neg" : ""}">${rung[3] > 0 ? "+" : ""}${rung[3].toFixed(0)}% EV</b>${isValue(rung, proj, st.q1) ? " · value" : ""}${st.q1 ? "<span class=untested>untested</span>" : ""}</p>` : "";
-    document.getElementById("stat").innerHTML =
-      `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
-      + `<div class=panel><h2>${esc(st.label)}: projection ${proj.toFixed(1)}</h2>`
-      + `<p class=meta>Last ${last.length} · faded = bench · grey = projection</p>`
-      + chart + (rungs.length ? `<div class=rungs>${rungBtns}</div>` : `<p class=meta>No bet365 props for this yet.</p>`) + verdict
-      + `<div class=hr>${hrs.map(([l, xs]) => { const h = hit(xs); return `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l} ${k}+</span></div>`; }).join("")}`
-      + `<div><b>${(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>season avg</span></div></div></div>`;
-    document.querySelectorAll("#stat .chips button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
-    document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; render(); });
+    const ly = y(k - 0.5);
+    const tag = rung ? `${k}+ · ${rung[1].toFixed(2)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? `${k}+ · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : `${k}+`;
+    const tagW = tag.length * 5.6 + 10;
+    const good = rung && isValue(rung, proj, st.q1), bad = rung && ev < 0;
+    const col = good ? "#4ADE80" : bad ? "#F87171" : "#F27A1A";
+    document.getElementById("chartbox").innerHTML = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">`
+      + `<line x1="${pad}" x2="${W}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width="1" opacity=".3"/>${bars}`
+      + `<line x1="${pad}" x2="${W}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-width="2" stroke-dasharray="5 3"/>`
+      + `<rect x="${W - tagW}" y="${ly - 17}" width="${tagW}" height="14" rx="4" fill="#000" stroke="${col}" stroke-width=".8"/>`
+      + `<text x="${W - tagW / 2}" y="${ly - 7}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${tag}</text></svg>`;
+    document.getElementById("kslide").value = k;
+    document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
+      b.className = (isValue(r, proj, st.q1) ? "val " : "") + (+b.dataset.k === k ? "on" : "");
+      b.querySelector("small").textContent = `${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV`; });
+    const chance = pm != null ? `model ${(100 * pm).toFixed(0)}%` : "";
+    document.getElementById("verdict").innerHTML = rung
+      ? `<p class=meta>bet365 ${rung[1].toFixed(2)} (${(100 / rung[1]).toFixed(0)}%) · ${chance} · <b class="${good ? "pos" : bad ? "neg" : ""}">${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV</b>${st.q1 ? "<span class=untested>1Q</span>" : ""}</p>`
+      : `<p class=meta>No bet365 price for ${k}+${chance ? ` · ${chance} · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : ""}</p>`;
+    const hit = xs => xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0;
+    document.getElementById("hitrates").innerHTML = [["L5", vals.slice(-5)], ["L10", vals.slice(-10)], ["Season", vals]].map(([l, xs]) => {
+      const h = hit(xs); return `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l} ${k}+</span></div>`; }).join("")
+      + `<div><b>${(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(1)}</b><span>avg</span></div>`;
   }
 
   // minutes + quarters
