@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-14T21:30:58.074365+00:00",
+ "updated": "2026-11-14T21:41:00.310588+00:00",
  "picks": [
   {
    "id": 4,
@@ -644,8 +644,8 @@
    "odds": 5.5,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "V",
+   "pl": 0,
    "close": 5.5,
    "hist": [
     [
@@ -672,8 +672,8 @@
    "odds": 7.0,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "close": 7.0,
    "hist": [
     [
@@ -700,8 +700,8 @@
    "odds": 4.6,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "close": 4.6,
    "hist": [
     [
@@ -722,8 +722,8 @@
    "odds": 6.5,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "close": 6.5,
    "hist": [
     [
@@ -750,8 +750,8 @@
    "odds": 27.5,
    "bookie": "BetMGM",
    "stake": 0.5,
-   "result": null,
-   "pl": null
+   "result": "L",
+   "pl": -0.5
   }
  ]
 }
