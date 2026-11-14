@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-14T18:53:47.807116+00:00",
+ "updated": "2026-11-14T19:04:37.596016+00:00",
  "picks": [
   {
    "id": 4,
@@ -634,6 +634,124 @@
     ]
    ],
    "ko": "2026-11-13T19:45:00+00:00"
+  },
+  {
+   "id": 89,
+   "date": "2026-11-14",
+   "player": "Diogo Dalot",
+   "game": "Portugal v Denmark",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-14T14:05:15+00:00",
+     5.5,
+     "BetMGM",
+     4.64
+    ],
+    [
+     "2026-11-14T18:52:17+00:00",
+     5.5,
+     "BetMGM",
+     4.56
+    ]
+   ],
+   "ko": "2026-11-14T19:45:00+00:00"
+  },
+  {
+   "id": 90,
+   "date": "2026-11-14",
+   "player": "Mykola Matviyenko",
+   "game": "Northern Ireland v Ukraine",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-13T17:41:04+00:00",
+     7.0,
+     "BetMGM",
+     5.59
+    ],
+    [
+     "2026-11-14T18:52:17+00:00",
+     7.0,
+     "BetMGM",
+     5.77
+    ]
+   ],
+   "ko": "2026-11-14T19:45:00+00:00"
+  },
+  {
+   "id": 91,
+   "date": "2026-11-14",
+   "player": "Kevin Danso",
+   "game": "Austria v Ireland",
+   "kind": "single",
+   "odds": 4.6,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 4.6,
+   "hist": [
+    [
+     "2026-11-14T18:52:17+00:00",
+     4.6,
+     "BetMGM",
+     3.81
+    ]
+   ],
+   "ko": "2026-11-14T19:45:00+00:00"
+  },
+  {
+   "id": 92,
+   "date": "2026-11-14",
+   "player": "Phillipp Mwene",
+   "game": "Austria v Ireland",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 6.5,
+   "hist": [
+    [
+     "2026-11-14T17:12:31+00:00",
+     6.5,
+     "BetMGM",
+     5.14
+    ],
+    [
+     "2026-11-14T18:52:17+00:00",
+     6.5,
+     "BetMGM",
+     5.52
+    ]
+   ],
+   "ko": "2026-11-14T19:45:00+00:00"
+  },
+  {
+   "id": 93,
+   "date": "2026-11-14",
+   "player": "Danso + Mwene",
+   "game": "Austria v Ireland",
+   "kind": "double",
+   "odds": 27.5,
+   "bookie": "BetMGM",
+   "stake": 0.5,
+   "result": null,
+   "pl": null
   }
  ]
 }
