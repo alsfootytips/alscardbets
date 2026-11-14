@@ -419,3 +419,7 @@ details.gfold>summary::-webkit-details-marker{display:none}
 details.gfold[open]>summary>header:after{content:"▴"}
 .posf{font:500 12px var(--body);color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
 .seg #subs.tgl[disabled]{opacity:.4}
+/* NBA player search */
+#list li a{display:flex;align-items:center;gap:4px;text-decoration:none;font-weight:500}
+#list li a small{display:inline;margin-left:6px;color:var(--muted);font-weight:400}
+#q{margin:10px 0 0}

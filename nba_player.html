@@ -2,7 +2,7 @@
 <title>Player · Al's NBA Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=6222f8aa"><link rel=icon href="nba_logo.jpg">
+<link rel=stylesheet href="brand.css?v=fd27727c"><link rel=icon href="nba_logo.jpg">
 <style>
 .ph{display:flex;gap:14px;align-items:center;margin:20px 0 6px}
 .ph .face{width:84px;height:62px;object-fit:cover;object-position:top;border-radius:10px;background:var(--soft);flex:none}
@@ -99,15 +99,30 @@ const isValue = (r, proj, q1) => !!r && r[3] >= 5 && r[1] <= (q1 ? 6 : 15) && (q
 let S = {stat: "pts", k: null, n: 15};
 
 Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
-             fetch("nba_prev.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([data, prevAll]) => {
+             fetch("nba_prev.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(async ([data, prevAll]) => {
   const CAL = (data.settings || {}).cal || {}, Q1CAL = (data.settings || {}).q1cal || {}, XCAL = (data.settings || {}).xcal || {};
   let P, T, G, O;
   for (const g of data.games) for (const t of g.teams) for (const p of t.players)
     if (p.pid === pid) { P = p; T = t; G = g; O = g.teams.find(x => x !== t); }
   const app = document.getElementById("app");
-  if (!P) { app.innerHTML = "<p class=none>Player not in tonight's games. <a class=fmap href='nba_players.html'>All players</a></p>"; return; }
+  if (!P) {
+    // not playing tonight: build the page from this season's games (nba_all.json), no prices or tonight bar
+    let all = {};
+    try { all = await (await fetch("nba_all.json?d=" + new Date().toISOString().slice(0, 13))).json(); } catch (e) {}
+    const A = all[pid];
+    if (!A) { app.innerHTML = "<p class=none>Player not found. <a class=fmap href='nba_players.html'>Search players</a></p>"; return; }
+    const L = A.log, n = L.length, av = (c, xs) => xs.reduce((a, r) => a + (r[c] || 0), 0) / Math.max(xs.length, 1);
+    const cols = {min: 1, pts: 2, reb: 3, ast: 4, fg3m: 5, stl: 15, blk: 16};
+    const seas = {}, l5 = {}, proj = {};
+    for (const [k, c] of Object.entries(cols)) { seas[k] = av(c, L); l5[k] = av(c, L.slice(-5)); proj[k] = seas[k]; }
+    P = {pid, name: A.n, log: L, proj, exp_m: seas.min, season: seas, l5, mk: {}, mult: {}, boost: 0, boost_for: [], adj: 1, b2b: 0,
+         inj: "", delta: 0, gp: A.gp, starts: L.filter(r => r[6]).length, q_avg: A.q, q_share: A.qs, shots: null,
+         q1: {exp: av(7, L), basis: "average", season: av(7, L), proj: {pts: av(11, L), reb: av(12, L), ast: av(13, L)}, mk: {}}};
+    T = {abbr: A.t, full: A.t, star_out: []}; G = null; O = null;
+  }
+  const NOGAME = !G;
   document.title = `${P.name} · Al's NBA Bets`;
-  const tip = new Date(G.tip).toLocaleString("en-GB", {weekday:"short", hour:"2-digit", minute:"2-digit", timeZone:"Europe/London"});
+  const tip = NOGAME ? "" : new Date(G.tip).toLocaleString("en-GB", {weekday:"short", hour:"2-digit", minute:"2-digit", timeZone:"Europe/London"});
   const rungsFor = st => st.dd ? ((P.mk || {})[st.mk] || []).map(r => [st.dd, r[1], r[2], r[3]]) : st.q1 ? (P.q1.mk || {})[st.mk] || [] : st.mk ? P.mk[st.mk] || [] : [];
   const catP = (s, mu) => tailP(10, mu || 0, CAL[s] || XCAL[s]) || 0;
   const projFor = st => st.dd ? ["pts", "reb", "ast", "stl", "blk"].reduce((a, s) => a + catP(s, P.proj[s]), 0) : st.q1 ? P.q1.proj[st.q1] : st.k === "min" ? P.exp_m : st.k === "q1min" ? P.q1.exp
@@ -137,7 +152,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     const pageY = window.scrollY;
     document.getElementById("stat").innerHTML =
       `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
-      + `<div class=panel><h2>${esc(st.label)} · proj ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; const so = (T.star_out || []).map(n => n.split(" ").slice(-1)[0] + " out").join(", "); return m && (Math.abs(m - 1) >= 0.03 || so) ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">${so ? so + " · " : ""}${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
+      + `<div class=panel><h2>${esc(st.label)} · ${NOGAME ? "avg" : "proj"} ${proj.toFixed(1)}${(() => { const m = (P.mult || {})[st.k]; const so = (T.star_out || []).map(n => n.split(" ").slice(-1)[0] + " out").join(", "); return m && (Math.abs(m - 1) >= 0.03 || so) ? ` <span class="nba-tag ${m > 1 ? "up" : "out"}">${so ? so + " · " : ""}${m > 1 ? "+" : ""}${Math.round(100 * (m - 1))}%</span>` : ""; })()}</h2>`
       + `<div class="chips range">${RANGES.map(([n, l]) => `<button data-n="${n}" class="${n === S.n ? "on" : ""}">${l}</button>`).join("")}</div>`
       + `<div class=chead><span id=linetag></span><span id=legend></span></div><div id=chartbox></div>`
       + (st.dd ? "" : `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`)
@@ -194,8 +209,8 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
     const tonight = `<rect x="${tx}" y="${y(proj)}" width="${tw}" height="${Math.max(1, base - y(proj))}" rx="${Math.min(3, tw / 3)}" fill="none" stroke="#F5F5F5" stroke-width="1" stroke-dasharray="3 2" opacity=".7"><title>Tonight: projection ${proj.toFixed(1)}</title></rect>`
       + (lastPt ? `<line x1="${lastPt.split(",")[0]}" y1="${lastPt.split(",")[1]}" x2="${tcx}" y2="${ym(expM)}" stroke="#60A5FA" stroke-width="1" stroke-dasharray="2 2" opacity=".75"/>` : "")
       + `<circle cx="${tcx}" cy="${ym(expM)}" r="2.4" fill="#000" stroke="#60A5FA" stroke-width="1.1"><title>Expected ${expM.toFixed(1)} min${q1m ? " in Q1" : ""} tonight</title></circle>`
-      + `<image href="${LOGO(O.abbr)}" x="${tcx - Math.min(12, tw) / 2}" y="${base + 4}" width="${Math.min(12, tw)}" height="${Math.min(12, tw)}"><title>v ${O.abbr} tonight</title></image>`
-      + `<text x="${tcx}" y="${H - 4}" text-anchor="middle" font-size="7.5" fill="#F27A1A">Tonight</text>`;
+      + (NOGAME ? "" : `<image href="${LOGO(O.abbr)}" x="${tcx - Math.min(12, tw) / 2}" y="${base + 4}" width="${Math.min(12, tw)}" height="${Math.min(12, tw)}"><title>v ${O.abbr} tonight</title></image>`)
+      + `<text x="${tcx}" y="${H - 4}" text-anchor="middle" font-size="7.5" fill="#F27A1A">${NOGAME ? "Avg" : "Tonight"}</text>`;
     const minsLine = tonight + `<polyline points="${pts.join(" ")}" fill="none" stroke="#60A5FA" stroke-width="1" stroke-linejoin="round" opacity=".75"/>${dots}`
       + `<text x="${W - 2}" y="${ym(mMax) + 3}" text-anchor="end" font-size="6.5" fill="#60A5FA" opacity=".6">${mMax}</text><text x="${W - 2}" y="${ym(mMax / 2) + 3}" text-anchor="end" font-size="6.5" fill="#60A5FA" opacity=".6">${mMax / 2}</text>`
       ;
@@ -210,7 +225,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
       + `<line x1="${pad}" x2="${W - padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-width="1" stroke-dasharray="3 2"/>`
       + `<text x="${pad - 3}" y="${ly + 3}" text-anchor="end" font-size="7.5" font-weight="600" fill="${col}">${k}+</text></svg>`;
     document.getElementById("linetag").innerHTML = `<b style="color:${col}">${tag}</b>`;
-    document.getElementById("legend").innerHTML = `<i class=lg-bar></i>${esc(st.label.toLowerCase())} <i class=lg-line></i>${q1m ? "Q1 mins" : "mins"} · tonight ${proj.toFixed(1)} / ${expM.toFixed(0)}m`;
+    document.getElementById("legend").innerHTML = `<i class=lg-bar></i>${esc(st.label.toLowerCase())} <i class=lg-line></i>${q1m ? "Q1 mins" : "mins"} · ${NOGAME ? "avg" : "tonight"} ${proj.toFixed(1)} / ${expM.toFixed(0)}m`;
     if (document.getElementById("kslide")) document.getElementById("kslide").value = k;
     document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
       b.className = (isValue(r, proj, st.dd ? "dd" : st.q1) ? "val " : "") + (+b.dataset.k === k ? "on" : "");
@@ -227,7 +242,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
   const qbars = P.q_avg.map((v, i) => `<div style="height:${100 * v / qmax}%"><span>${v.toFixed(1)}</span></div>`).join("");
   const extra = [P.boost >= 0.5 ? `+${P.boost.toFixed(0)} (${esc(P.boost_for[0].split(" ").slice(-1)[0])} out)` : "", P.adj < 1 ? "blowout cut" : "", P.b2b ? "B2B" : ""].filter(Boolean).join(" · ");
   const minsHtml = `<div class=panel><h2>Minutes</h2>
-    <div class=hr><div><b>${P.exp_m.toFixed(1)}</b><span>tonight</span></div><div><b>${P.season.min.toFixed(1)}</b><span>season</span></div>
+    <div class=hr><div><b>${P.exp_m.toFixed(1)}</b><span>${NOGAME ? "avg" : "tonight"}</span></div><div><b>${P.season.min.toFixed(1)}</b><span>season</span></div>
     <div><b>${P.l5.min.toFixed(1)}</b><span>last 5</span></div><div><b>${P.q1.exp.toFixed(1)}</b><span>Q1 tonight</span></div></div>
     ${extra ? `<p class=meta>${extra}</p>` : ""}
     <div class=qbars>${qbars}</div>
@@ -263,7 +278,7 @@ Promise.all([fetch("nba_data.json?v=" + Date.now()).then(r => r.json()),
              + (P.start ? `<span class="nba-tag st">Starting</span>` : "")
              + (P.delta >= 4 ? `<span class="nba-tag up">+${P.delta.toFixed(0)} min</span>` : "");
   app.innerHTML = `<div class=ph><img class=face src="${ESPN_FACE(P.pid)}" alt="" onerror="this.style.visibility='hidden'">
-    <div><h1>${esc(P.name)}</h1><div class=tm><img src="${LOGO(T.abbr)}" alt="">${esc(T.full || T.abbr)} · vs ${esc(O.abbr)} · ${tip}${tags}</div></div></div>
+    <div><h1>${esc(P.name)}</h1><div class=tm><img src="${LOGO(T.abbr)}" alt="">${esc(T.full || T.abbr)}${NOGAME ? " · no game today" : ` · vs ${esc(O.abbr)} · ${tip}`}${tags}</div></div></div>
     <div class=kv style="margin-top:12px"><div><b>${P.exp_m.toFixed(1)}</b><span>exp min</span></div><div><b>${P.proj.pts.toFixed(1)}</b><span>pts</span></div>
     <div><b>${P.proj.reb.toFixed(1)}</b><span>reb</span></div><div><b>${P.proj.ast.toFixed(1)}</b><span>ast</span></div><div><b>${P.proj.fg3m.toFixed(1)}</b><span>3pm</span></div></div>
     ${["Double Double", "Triple Double"].map(m => { const r = (P.mk[m] || [])[0]; if (!r) return "";
