@@ -617,3 +617,55 @@ details.fx-li .c{text-align:left}details.fx-li .c b{display:block;font-size:15px
 details.fx-li>.fx-card{border:0;border-top:1px solid var(--line);border-radius:0;max-width:560px}
 details.fx-li>.fx-card .fx-ch{display:none}
 @media (max-width:700px){details.fx-li>summary{grid-template-columns:auto 1fr 52px 56px 48px}.fx-lt10{display:none}}
+.fx-ctl button.ss.on{background:#A78BFA;border-color:#A78BFA;color:#000}
+.fx-lt10 i.s{box-shadow:inset 0 -4px 0 #A78BFA}
+/* Super Sub on football streak cards: off = normal; on = replacement's part in purple, rescued tiles count as hits */
+.stile .ssv{display:none;font-style:normal;color:#A78BFA;font-size:10px;margin-left:1px}
+.ss1{display:none}.ss-on .ss1{display:inline}.ss-on .ss0{display:none}
+.ss-on .stile .ssv{display:inline}.ss-on .stile.ssr{border-bottom-color:#A78BFA}.ss-on .stile.ssr b{color:#A78BFA}
+.sstog{display:inline-flex;align-items:center;gap:6px;font-size:13px;margin:4px 0 10px;cursor:pointer}.sstog small{color:var(--muted)}
+.sstog input{accent-color:#A78BFA}
+/* football Fixtures landing: compact today's-picks strip; market chips on Props */
+.tpicks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px;margin:4px 0 8px}
+.tpick{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--fg);text-decoration:none;min-width:0}
+.tpick>span:nth-child(2){flex:1;min-width:0}.tpick b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpick small{color:var(--muted);font-size:12px}.tpick .nface.fm{width:30px;height:30px;border-radius:50%;background:var(--soft);flex:none}
+.tpo{font-weight:700;color:var(--accent);text-align:right}.tpo small{display:block;font-weight:500}
+.mchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.mchips button{font:500 13px var(--body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.mchips button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tstrip{margin:6px 0 4px}.tlab{margin:0 0 6px;font-weight:600}.tlab span{color:var(--accent)}.tlab small{color:var(--muted);font-weight:400;margin-left:4px}
+.tstrip .tpicks{display:flex;overflow-x:auto;gap:8px;scrollbar-width:none;padding-bottom:4px}.tstrip .tpicks::-webkit-scrollbar{display:none}
+.tstrip .tpick{flex:0 0 230px}
+/* Fixtures: injuries */
+.fx-inj{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin:6px 0 4px}
+.fx-ij{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:10px;padding:8px 10px;color:var(--fg);text-decoration:none}
+.fx-ij b{font-size:15px}.fx-ij small{display:flex;align-items:center;gap:4px}
+.fx-ij .fx-ijt{color:var(--fg);opacity:.85}
+.fx-ijs{font-size:12px;font-weight:600;border-radius:6px;padding:2px 8px;white-space:nowrap}
+.fx-ij.out{border-left-color:var(--bad)}.fx-ij.out .fx-ijs{color:var(--bad);background:#2A1212}
+.fx-ij.dbt{border-left-color:#F27A1A}.fx-ij.dbt .fx-ijs{color:#F27A1A;background:#2A1A0E}
+.fx-ij.q .fx-ijs{color:var(--amber);background:#2A220E}
+.fx-ij.ok{border-left-color:var(--accent)}.fx-ij.ok .fx-ijs{color:var(--accent);background:#0E2215}
+.fx-key{margin:4px 0 8px}
+/* Fixtures: opened player = graph left, prices / EV right */
+.fx-body{display:block}
+details.fx-li>.fx-card{max-width:none}
+details.fx-li .fx-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:24px;align-items:start}
+.fx-rng{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+.fx-rng button,.fx-mv button{font:500 13px var(--body);color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.fx-rng button.on{background:var(--fg);border-color:var(--fg);color:#000}
+.fx-mv{display:flex;align-items:center;gap:8px;margin:4px 0}
+.fx-mv button{width:34px;padding:5px 0;font-size:16px}
+.fx-mv input{flex:1;accent-color:#F27A1A}
+.fx-mv span{min-width:44px;font-weight:600;color:#F27A1A}
+.fx-big{display:flex;align-items:baseline;gap:10px;margin:2px 0 8px}.fx-big span{color:var(--muted);font-size:14px}.fx-big b{font-size:26px}
+.fx-kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.fx-kv div{background:var(--soft);border-radius:8px;padding:8px}.fx-kv b{display:block;font-size:18px}.fx-kv span{font-size:11px;color:var(--muted)}
+.fx-rt table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px}
+.fx-rt th{color:var(--muted);font-weight:500;text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.fx-rt td{padding:6px;border-bottom:1px solid var(--line);text-align:left}
+.fx-rt tr[data-k]{cursor:pointer}.fx-rt tr[data-k]:hover{background:var(--soft)}
+.fx-rt tr.val td:first-child{color:var(--accent);font-weight:600}
+.fx-rt tr.on{background:var(--soft);outline:1px solid var(--fg);outline-offset:-1px}
+@media (max-width:800px){details.fx-li .fx-body{display:block}}

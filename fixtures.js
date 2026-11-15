@@ -18,7 +18,7 @@ fetch(root.dataset.src + "?v=" + Date.now()).then(r => r.json()).then(d => {
   const g = params.get("g") && D.games.find(x => String(x.id) === params.get("g"));
   const top = document.getElementById("fxtop"); if (top && g) top.style.display = "none";
   g ? game(g) : list();
-}).catch(() => { root.innerHTML = "<p class=none>No fixtures with player props right now.</p>"; });
+}).catch(err => { console.error(err); root.innerHTML = "<p class=none>No fixtures with player props right now.</p>"; });
 
 // ---------- list ----------
 function list() {
@@ -70,10 +70,30 @@ function list() {
 }
 
 // ---------- one game ----------
+const ORDER = {out: 0, suspension: 0, "injured reserve": 0, doubtful: 1, questionable: 2, "day-to-day": 2, "game-time decision": 2, probable: 3};
+function injuries(g) {
+  const L = (g.injuries || []).slice().sort((a, b) => (ORDER[(a.status || "").toLowerCase()] ?? 2) - (ORDER[(b.status || "").toLowerCase()] ?? 2));
+  if (!L.length) return "";
+  const cls = s => { s = (s || "").toLowerCase(); return s === "out" || s.includes("reserve") || s.includes("susp") ? "out" : s === "probable" ? "ok" : s === "doubtful" ? "dbt" : "q"; };
+  const ret = d => d ? `back ~${new Date(d + "T12:00Z").toLocaleDateString("en-GB", {day: "numeric", month: "short"})}` : "";
+  return `<details class="rsec fx-injs" id="inj${esc(g.id)}" open><summary><h2>Injuries</h2><b>${L.length}</b></summary><div class=fx-inj>`
+    + L.map(i => { const t = g[i.team] || {};
+      return `<${i.link ? `a href="${esc(i.link)}"` : "div"} class="fx-ij ${cls(i.status)}">${img(i.face, "fx-face")}<div><b>${esc(i.name)}</b>`
+        + `<small>${img(t.logo, "fx-mini")}${esc(t.abbr || t.name || "")}</small>`
+        + `<small class=fx-ijt>${esc(i.type || "Injury")}${i.ret ? ` · ${ret(i.ret)}` : ""}</small></div><span class=fx-ijs>${esc(i.status || "")}</span></${i.link ? "a" : "div"}>`; }).join("")
+    + `</div></details>`;
+}
 function game(g) {
-  const st = {team: "all", market: "best", q: params.get("q") || "", priced: false};
+  let ss0 = false; try { ss0 = localStorage.getItem("fxss") === "1"; } catch (e) {}
+  const st = {team: "all", market: "best", q: params.get("q") || "", priced: false, ss: ss0};
+  // Super Sub (football): a market may carry "vs" = what the player who replaced him added that game, and
+  // "rungs_ss" = model/EV with Super Sub. With the toggle on, bars stack that part on top in purple.
+  const SS_COL = "#A78BFA";
+  const tot = M => st.ss && M.vs ? M.v.map((v, i) => v + (M.vs[i] || 0)) : M.v;
+  const RG = M => (st.ss && M.rungs_ss) || M.rungs || [];
   const SRX = window.SR || {score: (a, b) => String(b).toLowerCase().includes(String(a).toLowerCase()) ? 1 : 0};
   const P = g.players || [];
+  const hasSS = P.some(p => Object.values(p.m || {}).some(M => (M.vs || []).some(x => x)));
   const markets = [...new Set(P.flatMap(p => Object.keys(p.m || {})))];
   const order = D.markets || markets;
   markets.sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
@@ -85,6 +105,7 @@ function game(g) {
   root.innerHTML = `<a class=fx-back href="?d=${gday(g)}">‹ Fixtures</a>`
     + `<div class=fx-head>${team("away")}<div class=fx-mid><b>${when}</b>${g.info ? `<small>${esc(g.info)}</small>` : ""}${g.comp ? `<small>${esc(g.comp)}</small>` : ""}</div>${team("home")}</div>`
     + ((g.notes || []).length ? `<div class=fx-notes>${g.notes.map(n => `<span>${esc(n)}</span>`).join("")}</div>` : "")
+    + injuries(g)
     + `<h2>Picks <span>${(g.picks || []).length || "none yet"}</span></h2>`
     + ((g.picks || []).length ? `<div class=fx-picks>${g.picks.map((k, i) => {
         const p = P.find(x => String(x.pid) === String(k.pid)) || {};
@@ -92,7 +113,8 @@ function game(g) {
           + `<div class=c><b>${(+k.odds).toFixed(2)}</b><small>${k.stake ? esc(k.stake) + "u" : ""}</small></div><div class=c><b class=pos>${k.ev > 0 ? "+" : ""}${(+k.ev).toFixed(0)}%</b><small>${(+k.model).toFixed(0)}% model</small></div></button>`;
       }).join("")}</div>` : `<p class=meta>${esc(D.no_picks || "No model picks in this game.")}</p>`)
     + `<h2>Players</h2><div class=fx-ctl><div class=fx-seg>${[["all", "Both"], ["away", g.away?.abbr || g.away?.name || "Away"], ["home", g.home?.abbr || g.home?.name || "Home"]].map(([k, l]) => `<button data-t="${k}" class="${k === st.team ? "on" : ""}">${esc(l)}</button>`).join("")}</div>`
-    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxpr>Priced only</button><button id=fxview>Show all graphs</button></div>`
+    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxpr>Priced only</button><button id=fxview>Show all graphs</button>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}" title="Count what his replacement adds if he is subbed off (bet365 Super Sub)">Super Sub</button>` : ""}</div>`
+    + `<p class="meta fx-key">EV colours: <b class=pos>green</b> = value (${D.min_model ? `${D.min_model}%+ model chance and ` : ""}${D.value_ev ?? 5}%+ EV) · <b style="color:#F27A1A">orange</b> = positive EV but a long shot or below the value bar · <b class=neg>red</b> = bet365 price is worse than the model's</p>`
     + `<div class="chips fx-mk"><button data-m="best" class=on>Best value</button>${markets.map(m => `<button data-m="${esc(m)}">${esc(D.short?.[m] || m)}</button>`).join("")}</div>`
     + `<div id=fxcards class=fx-cards></div>`;
   root.querySelectorAll(".fx-seg button").forEach(b => b.onclick = () => { st.team = b.dataset.t; root.querySelectorAll(".fx-seg button").forEach(x => x.classList.toggle("on", x === b)); cards(); });
@@ -100,6 +122,8 @@ function game(g) {
   root.querySelector("#fxq").value = st.q;
   root.querySelector("#fxq").oninput = e => { st.q = e.target.value; cards(); };
   root.querySelector("#fxpr").onclick = e => { st.priced = !st.priced; e.target.classList.toggle("on", st.priced); cards(); };
+  const ssb = root.querySelector("#fxss");
+  if (ssb) ssb.onclick = () => { st.ss = !st.ss; ssb.classList.toggle("on", st.ss); try { localStorage.setItem("fxss", st.ss ? "1" : "0"); } catch (e) {} for (const k in cardState) cardState[k].k = null; cards(); };
   root.querySelector("#fxview").onclick = e => { st.graphs = !st.graphs; e.target.classList.toggle("on", st.graphs); cards(); };
   root.querySelectorAll(".fx-pick").forEach(b => b.onclick = () => {
     const k = g.picks[+b.dataset.i];
@@ -116,15 +140,15 @@ function game(g) {
     const pk = pickOf(p);
     if (pk) { cardState[p.pid] = cardState[p.pid] || {m: pk.market, k: parseFloat(pk.line)}; return pk.market; }
     let best = null;
-    for (const m of ms) for (const r of p.m[m].rungs || []) if (isVal(r) && (!best || r[3] > best.ev)) best = {m, ev: r[3]};
+    for (const m of ms) for (const r of RG(p.m[m])) if (isVal(r) && (!best || r[3] > best.ev)) best = {m, ev: r[3]};
     if (best) return best.m;
-    return ms.find(m => (p.m[m].rungs || []).length) || ms[0];
+    return ms.find(m => RG(p.m[m]).length) || ms[0];
   }
   function defLine(M) {
-    const rs = M.rungs || [];
+    const rs = RG(M);
     const v = rs.filter(isVal).sort((a, b) => b[3] - a[3])[0];
     if (v) return v[0];
-    const pr = M.proj ?? (M.v.length ? M.v.reduce((a, b) => a + b, 0) / M.v.length : 1);
+    const tv = tot(M), pr = M.proj ?? (tv.length ? tv.reduce((a, b) => a + b, 0) / tv.length : 1);
     if (rs.length) return rs.reduce((a, b) => Math.abs(lineAt(M, b[0]) - pr) < Math.abs(lineAt(M, a[0]) - pr) ? b : a)[0];
     return M.under ? Math.round(pr) + 0.5 : Math.max(1, Math.round(pr));
   }
@@ -137,10 +161,10 @@ function game(g) {
     const qs = p => st.q ? SRX.score(st.q, p.name) : 1;
     let ps = P.filter(p => (st.team === "all" || p.team === st.team) && qs(p) > 0);
     ps = ps.map(p => ({p, m: (cardState[p.pid] || {}).m || pickMarket(p)})).filter(x => x.m && x.p.m[x.m]);
-    if (st.priced) ps = ps.filter(x => (x.p.m[x.m].rungs || []).length);
+    if (st.priced) ps = ps.filter(x => RG(x.p.m[x.m]).length);
     // most EV first, on the line each card shows (unpriced players last)
     for (const x of ps) { const s = cardState[x.p.pid] = cardState[x.p.pid] || {m: x.m}; if (s.m !== x.m) { s.m = x.m; s.k = null; } if (s.k == null) s.k = defLine(x.p.m[x.m]); }
-    const curEv = x => { const r = (x.p.m[x.m].rungs || []).find(r => r[0] === cardState[x.p.pid].k); return r ? r[3] : -999; };
+    const curEv = x => { const r = RG(x.p.m[x.m]).find(r => r[0] === cardState[x.p.pid].k); return r ? r[3] : -999; };
     ps.sort((a, b) => (st.q ? qs(b.p) - qs(a.p) : 0) || (curEv(b) - curEv(a)) || ((b.p.sort || 0) - (a.p.sort || 0)));
     box.className = st.graphs ? "fx-cards" : "fx-list";
     box.innerHTML = ps.length ? ps.map(x => st.graphs ? card(x.p, x.m)
@@ -157,7 +181,8 @@ function game(g) {
     return `<div class=fx-card id="c${esc(p.pid)}"><div class=fx-ch>${img(p.face, "fx-face")}<div class=fx-who>`
       + `${p.link ? `<a href="${esc(p.link)}"><b>${esc(p.name)}</b></a>` : `<b>${esc(p.name)}</b>`}<small>${img(tm.logo, "fx-mini")}${esc(tm.abbr || tm.name || "")}${p.pos ? " · " + esc(p.pos) : ""}${p.tag ? ` <span class="fx-tag ${esc(p.tag_cls || "")}">${esc(p.tag)}</span>` : ""}</small></div></div>`
       + (ms.length > 1 ? `<select class=fx-sel aria-label="Market">${ms.map(x => `<option${x === m ? " selected" : ""}>${esc(x)}</option>`).join("")}</select>` : `<div class=fx-one>${esc(m)}</div>`)
-      + `<div class=fx-chart></div><div class="rungs fx-rungs"></div><div class=fx-hr></div></div>`;
+      + `<div class=fx-body><div class=fx-left><div class=fx-chart></div><div class=fx-ctl2></div></div>`
+      + `<div class=fx-right><div class=fx-sum></div><div class=fx-rt></div><div class=fx-hr></div></div></div></div>`;
   }
   function wire(p) {
     const el = document.getElementById("c" + p.pid); if (!el) return;
@@ -168,11 +193,13 @@ function game(g) {
   function draw(p) {
     const el = document.getElementById("c" + p.pid), s = cardState[p.pid], M = p.m[s.m];
     if (s.k == null) s.k = defLine(M);
-    const k = s.k, G = p.g || [], n = Math.min(M.v.length, D.last_n || 15);
-    const vals = M.v.slice(-n), gs = G.slice(-n);
-    const proj = M.proj;
+    const k = s.k, G = p.g || [], n = Math.min(M.v.length, s.n || D.last_n || 15);
+    const wide = !!el.closest("details.fx-li");                 // opened row: wider, shorter chart
+    if (s.proj == null) s.proj = true;
+    const vals = tot(M).slice(-n), gs = G.slice(-n), subs = st.ss && M.vs ? M.vs.slice(-n) : null;
+    const proj = s.proj ? M.proj : null;
     // NBA-style chart: newest on the left after a dashed "next" bar, minutes line on a right-hand scale
-    const W = 340, H = 196, pad = 24, padR = 14, cols = n + (proj != null ? 1 : 0), bw = (W - pad - padR) / Math.max(cols, 1), gap = Math.min(4, bw * .25);
+    const W = wide ? 560 : 340, H = wide ? 230 : 196, pad = 24, padR = 14, cols = n + (proj != null ? 1 : 0), bw = (W - pad - padR) / Math.max(cols, 1), gap = Math.min(4, bw * .25);
     const base = H - 32, topY = 10;
     const mx = Math.max(lineAt(M, k) * 1.3, (proj || 0) * 1.1, ...vals, 1);
     const y = v => base - (base - topY) * v / mx;
@@ -183,8 +210,9 @@ function game(g) {
     const off = proj != null ? 1 : 0;
     for (let j = 0; j < n; j++) {
       const i = n - 1 - j, v = vals[i], r = gs[i] || [], x = pad + (j + off) * bw + gap / 2, w = bw - gap, cx = x + w / 2;
-      const ok = hitOf(M, v, k);
-      bars += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, base - y(v))}" rx="${Math.min(3, w / 3)}" fill="${ok ? "#4ADE80" : "#F87171"}" opacity="${r[4] === 0 ? .5 : .95}"><title>${esc(r[0] || "")} v ${esc(r[1] || "")}: ${v}${r[3] != null ? ` in ${r[3]} min` : ""}${r[4] === 0 ? " (bench)" : ""}</title></rect>`
+      const ok = hitOf(M, v, k), sb = subs ? (subs[i] || 0) : 0;
+      if (sb) bars += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, y(v - sb) - y(v))}" fill="${SS_COL}"><title>Super Sub: +${sb} from his replacement</title></rect>`;
+      bars += `<rect x="${x}" y="${y(v - sb)}" width="${w}" height="${Math.max(1, base - y(v - sb))}" rx="${Math.min(3, w / 3)}" fill="${ok ? "#4ADE80" : "#F87171"}" opacity="${r[4] === 0 ? .5 : .95}"><title>${esc(r[0] || "")} v ${esc(r[1] || "")}: ${v}${r[3] != null ? ` in ${r[3]} min` : ""}${r[4] === 0 ? " (bench)" : ""}</title></rect>`
         + (bw >= 13 ? (base - y(v) >= 14 ? `<text x="${cx}" y="${y(v) + 10}" text-anchor=middle font-size=9 font-weight=600 fill="#000" opacity=".7">${v}</text>` : `<text x="${cx}" y="${y(v) - 3}" text-anchor=middle font-size=9 fill="#F5F5F5">${v}</text>`) : "");
       if (hasMin && r[3] != null) pts.push(`${cx.toFixed(1)},${ym(r[3]).toFixed(1)}`);
       const ls = Math.min(12, w);
@@ -201,30 +229,55 @@ function game(g) {
       if (hasMin && p.exp_min != null) pts.unshift(`${cx.toFixed(1)},${ym(p.exp_min).toFixed(1)}`);
     }
     const mins = hasMin && pts.length > 1 ? `<polyline points="${pts.join(" ")}" fill=none stroke="#60A5FA" stroke-width="1" opacity=".7"/>` : "";
-    const rung = (M.rungs || []).find(r => r[0] === k);
+    const rung = RG(M).find(r => r[0] === k);
     const col = rung ? (isVal(rung) ? "#4ADE80" : rung[3] < 0 ? "#F87171" : "#F27A1A") : "#F27A1A";
     const ly = y(lineAt(M, k));
-    el.querySelector(".fx-chart").innerHTML = `<div class=fx-lt><b style="color:${col}">${kLabel(M, k)}${rung ? ` · ${rung[1].toFixed(2)} · ${rung[3] > 0 ? "+" : ""}${rung[3].toFixed(0)}% EV` : " · no bet365 price"}</b><span>${proj != null ? `proj ${(+proj).toFixed(1)}` : ""}${hasMin && p.exp_min != null ? ` · ${(+p.exp_min).toFixed(0)}m` : ""}</span></div>`
+    el.querySelector(".fx-chart").innerHTML = `<div class=fx-lt><b style="color:${col}">${kLabel(M, k)}${rung ? ` · ${rung[1].toFixed(2)} · ${rung[3] > 0 ? "+" : ""}${rung[3].toFixed(0)}% EV` : " · no bet365 price"}</b><span>${proj != null ? `proj ${(+proj).toFixed(1)}` : ""}${hasMin && p.exp_min != null ? ` · ${(+p.exp_min).toFixed(0)}m` : ""}${subs ? ` · <b style="color:${SS_COL}">■</b> super sub` : ""}</span></div>`
       + `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(s.m)} last ${n}">${bars}${next}${mins}${labels}`
       + `<line x1="${pad}" x2="${W - padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-dasharray="3 2"/><text x="${pad - 3}" y="${ly + 3}" text-anchor=end font-size=7.5 font-weight=600 fill="${col}">${esc(kLabel(M, k))}</text></svg>`;
-    el.querySelector(".fx-rungs").innerHTML = (M.rungs || []).length
-      ? (M.rungs || []).map(r => `<button data-k="${r[0]}" class="${isVal(r) ? "val " : ""}${r[0] === k ? "on" : ""}">${kLabel(M, r[0])} @ ${r[1].toFixed(2)}<small>${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV · ${r[2].toFixed(0)}%</small></button>`).join("")
-      : `<span class=meta>No bet365 price for ${esc(s.m)}</span>`;
-    el.querySelectorAll(".fx-rungs button").forEach(b => b.onclick = () => { s.k = +b.dataset.k; draw(p); });
+    const TV = tot(M), RV = TV.slice(-n);
     const hr = xs => xs.length ? Math.round(100 * xs.filter(v => hitOf(M, v, k)).length / xs.length) : null;
-    const avg = M.v.length ? M.v.reduce((a, b) => a + b, 0) / M.v.length : 0;
+    const hrK = (xs, kk) => xs.length ? Math.round(100 * xs.filter(v => hitOf(M, v, kk)).length / xs.length) : null;
+    const avg = RV.length ? RV.reduce((a, b) => a + b, 0) / RV.length : 0;
+    // controls under the graph: games shown, move the line, projection on/off
+    const ranges = [5, 10, 15, 20, 30].filter(x => x < M.v.length).concat([M.v.length]);
+    const kmax = Math.max(5, Math.ceil(Math.max(...TV, M.proj || 0) * 1.3));
+    el.querySelector(".fx-ctl2").innerHTML = `<div class=fx-rng>${ranges.map(x => `<button data-n="${x}" class="${x === n ? "on" : ""}">${x === M.v.length ? `All ${x}` : `L${x}`}</button>`).join("")}`
+      + (M.proj != null ? `<button data-p=1 class="${s.proj ? "on" : ""}">Projection</button>` : "") + `</div>`
+      + `<div class=fx-mv><button data-d=-1 aria-label="Lower the line">−</button><input type=range min="${M.under ? 0.5 : 1}" max="${kmax + (M.under ? 0.5 : 0)}" step=1 value="${k}" aria-label="Move the line"><button data-d=1 aria-label="Raise the line">+</button><span>${kLabel(M, k)}</span></div>`;
+    el.querySelectorAll(".fx-rng button[data-n]").forEach(b => b.onclick = () => { s.n = +b.dataset.n; draw(p); });
+    const pb = el.querySelector(".fx-rng button[data-p]"); if (pb) pb.onclick = () => { s.proj = !s.proj; draw(p); };
+    el.querySelectorAll(".fx-mv button").forEach(b => b.onclick = () => { s.k = Math.max(M.under ? 0.5 : 1, s.k + +b.dataset.d); draw(p); });
+    el.querySelector(".fx-mv input").oninput = e => { s.k = +e.target.value; draw(p); };
+    // right-hand panel: the line being looked at, its price and EV, then every bet365 line
+    const fair = rung ? 100 / Math.max(rung[2], 0.1) : null, h = hr(RV);
+    el.querySelector(".fx-sum").innerHTML = `<div class=fx-big><span>${esc(D.short?.[s.m] || s.m)}</span><b>${kLabel(M, k)}</b></div>`
+      + `<div class=fx-kv>`
+      + `<div><b>${rung ? rung[1].toFixed(2) : "–"}</b><span>${rung ? "bet365" : "no price"}</span></div>`
+      + `<div><b style="color:${col}">${rung ? (rung[3] > 0 ? "+" : "") + rung[3].toFixed(0) + "%" : "–"}</b><span>EV</span></div>`
+      + `<div><b>${rung ? rung[2].toFixed(0) + "%" : "–"}</b><span>model</span></div>`
+      + `<div><b>${fair ? fair.toFixed(2) : "–"}</b><span>fair odds</span></div>`
+      + `<div><b class="${h >= 60 ? "pos" : h < 40 ? "neg" : ""}">${h ?? "–"}%</b><span>hit L${RV.length}</span></div>`
+      + `<div><b>${M.proj != null ? (+M.proj).toFixed(1) : avg.toFixed(1)}</b><span>${M.proj != null ? "projected" : "average"}</span></div>`
+      + `</div>`;
+    el.querySelector(".fx-rt").innerHTML = RG(M).length
+      ? `<table><tr><th>Line</th><th>Odds</th><th>Model</th><th>EV</th><th>Hit L${RV.length}</th></tr>`
+        + RG(M).map(r => { const hk = hrK(RV, r[0]); return `<tr data-k="${r[0]}" class="${isVal(r) ? "val " : ""}${r[0] === k ? "on" : ""}"><td>${kLabel(M, r[0])}</td><td>${r[1].toFixed(2)}</td><td>${r[2].toFixed(0)}%</td>`
+          + `<td class="${r[3] >= 0 ? "pos" : "neg"}">${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}%</td><td>${hk}%</td></tr>`; }).join("") + `</table>`
+      : `<p class=meta>No bet365 price for ${esc(s.m)}. Move the line to see hit rates.</p>`;
+    el.querySelectorAll(".fx-rt tr[data-k]").forEach(t => t.onclick = () => { s.k = +t.dataset.k; draw(p); });
     const sm = document.getElementById("s" + p.pid);
     if (sm) {
-      const tm = g[p.team] || {}, l10 = M.v.slice(-10), h10 = l10.filter(v => hitOf(M, v, k)).length;
+      const tm = g[p.team] || {}, l10 = TV.slice(-10), h10 = l10.filter(v => hitOf(M, v, k)).length, s10 = st.ss && M.vs ? M.vs.slice(-10) : [];
       sm.innerHTML = `${img(p.face, "fx-face sm")}<div class=fx-lw><b>${esc(p.name)}</b><small>${img(tm.logo, "fx-mini")}${esc(tm.abbr || "")} · ${esc(D.short?.[s.m] || s.m)} ${kLabel(M, k)}${p.tag ? ` <span class="fx-tag ${esc(p.tag_cls || "")}">${esc(p.tag)}</span>` : ""}</small></div>`
-        + `<div class=fx-lt10>${l10.slice().reverse().map(v => `<i class="${hitOf(M, v, k) ? "h" : "m"}">${v}</i>`).join("")}</div>`
+        + `<div class=fx-lt10>${l10.map((v, i) => `<i class="${hitOf(M, v, k) ? "h" : "m"}${s10[i] ? " s" : ""}"${s10[i] ? ` title="+${s10[i]} Super Sub"` : ""}>${v}</i>`).reverse().join("")}</div>`
         + `<div class=c><b>${h10}/${l10.length}</b><small>L10</small></div>`
         + `<div class=c><b>${rung ? rung[1].toFixed(2) : "–"}</b><small>${rung ? rung[2].toFixed(0) + "%" : "no price"}</small></div>`
         + `<div class=c><b style="color:${col}">${rung ? (rung[3] > 0 ? "+" : "") + rung[3].toFixed(0) + "%" : "–"}</b><small>EV</small></div>`;
     }
-    el.querySelector(".fx-hr").innerHTML = [["L5", M.v.slice(-5)], ["L10", M.v.slice(-10)], [M.v.length > 10 ? `L${M.v.length}` : "All", M.v]].map(([l, xs]) => {
+    el.querySelector(".fx-hr").innerHTML = [["L5", TV.slice(-5)], ["L10", TV.slice(-10)], [`All ${TV.length}`, TV]].map(([l, xs]) => {
       const h = hr(xs); return h == null ? "" : `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l}</span></div>`; }).join("")
-      + `<div><b>${avg.toFixed(1)}</b><span>avg</span></div>`;
+      + `<div><b>${avg.toFixed(1)}</b><span>avg L${RV.length}</span></div>`;
   }
   cards();
 }
