@@ -55,7 +55,7 @@ details.day[open]>summary h2:after{content:"Hide"}
 .row .who a{font-weight:500;text-decoration:none}
 .row .who small{margin-top:1px}
 .row .why{margin:4px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
-.row .c{text-align:right;white-space:nowrap}
+.row .c{text-align:left;white-space:nowrap}
 .row .c b{display:block;font-size:16px;font-weight:600}
 .row .c small{font-size:12px}
 .row .v b{font-weight:500;color:var(--muted)}
@@ -74,7 +74,7 @@ details.day[open]>summary h2:after{content:"Hide"}
 /* tables (results, referees, combos) */
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px}
-td,th{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
+td,th{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:top}
 th{font-size:12px;font-weight:500;color:var(--muted)}
 td.pl,th:nth-child(2),td.rf,td.gm,td.pk{text-align:left;white-space:normal;min-width:140px}
 td.pl a{text-decoration:none;font-weight:500}
@@ -118,7 +118,7 @@ input#q:focus{outline:2px solid var(--fg);outline-offset:1px}
 .pitch{width:100%;display:block;background:var(--pitch);border-radius:10px;margin:6px 0}
 .pitch .ln{stroke:var(--pitchline);stroke-width:.35}
 .pitch .pl{fill:#fff;font-weight:600;font-family:var(--body)}
-table.st td,table.st th{padding:7px 6px;text-align:right}
+table.st td,table.st th{padding:7px 6px;text-align:left}
 table.st td:first-child,table.st th:first-child{text-align:left;color:var(--muted)}
 .predicted{margin:12px 0 0;font-size:13px;color:var(--amber)}
 .example{padding:10px 0;color:var(--fg)}
