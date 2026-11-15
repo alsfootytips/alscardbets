@@ -682,3 +682,10 @@ details.fx-li .fx-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax
 .fx-bk{width:24px;height:24px;border-radius:5px;object-fit:contain}
 .fx-cards .fx-side{margin-top:8px}
 .fx-card .fx-hr b{display:inline;font-size:inherit}
+/* football player page: NBA-style card, bet365 lines on the right on wide screens */
+#app{max-width:1040px}
+.pcardx .fx-body{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:24px;align-items:start}
+@media (max-width:800px){.pcardx .fx-body{display:block}.pcardx .fx-side{margin-top:8px}}
+/* football Fixtures landing: the 4 best picks as cards, one row (scrolls sideways on phones) */
+.topcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 6px}
+@media (max-width:1000px){.topcards{display:flex;overflow-x:auto;scrollbar-width:none}.topcards::-webkit-scrollbar{display:none}.topcards>.scard{flex:0 0 300px}}
