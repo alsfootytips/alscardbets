@@ -2,7 +2,7 @@
 <title>Player · Al's Card Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=1471d7d2"><link rel=icon href="logo.jpg"></head><body>
+<link rel=stylesheet href="brand.css?v=c26985f9"><link rel=icon href="logo.jpg"></head><body>
 <header class=top><div class=in><a class=logo href="football.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="football.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="football.html">Fixtures</a><a href="props.html">Props</a><a href="picks.html">Cards</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
 <main class=wide><div id=app><p class=meta>Loading…</p></div>
 <p class=meta style="margin-top:28px">Not betting advice.</p>
@@ -91,7 +91,7 @@ function statCard(d){
 }
 function wireCard(d){
   const box=document.getElementById("pchart"), redraw=()=>{box.innerHTML=statCard(d);wireCard(d)};
-  box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw()});
+  box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw();drawPanel()});
   const ss=document.getElementById("pss"); if(ss)ss.onclick=()=>{CH.ss=!CH.ss;CH.k=null;try{localStorage.setItem("fxss",CH.ss?"1":"0")}catch(e){};redraw()};
   box.querySelectorAll(".fx-rng button[data-n]").forEach(b=>b.onclick=()=>{CH.n=+b.dataset.n;redraw()});
   const pb=box.querySelector(".fx-rng button[data-p]"); if(pb)pb.onclick=()=>{CH.proj=!CH.proj;redraw()};
@@ -115,7 +115,7 @@ function clashCell(a,b,fa,fb){ if(!a||!b)return null; let best=null;
   for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){const ai=fa?NX-1-i:i,aj=fa?NY-1-j:j,bi=fb?NX-1-i:i,bj=fb?NY-1-j:j;
     const v=Math.min(a[ai][aj],b[bi][bj]); if(!best||v>best.v)best={v,x:(i+.5)*L/NX,y:(j+.5)*W/NY};}
   return best;}
-function matchupSvg(p){
+function matchupSvg(p,noFacts){
   const C=PC, LN=C.line, PL='fill="#fff" font-weight="600" font-family="Inter,Helvetica,Arial,sans-serif"';
   const pl=p.pitch||[]; const me=pl.find(x=>x.pid===p.pid); if(!me)return"";
   const opp=pl.find(x=>x.side!==me.side&&x.name===p.opp&&!x.bench);
@@ -134,13 +134,11 @@ function matchupSvg(p){
   const lines=`<rect x="0" y="0" width="${L}" height="${W}" fill="none" ${LN}/><line x1="52.5" y1="0" x2="52.5" y2="${W}" ${LN}/><circle cx="52.5" cy="34" r="9.15" fill="none" ${LN}/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/><rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>`;
   const svg=`<svg class="pitch" role="img" viewBox="-2 -2 ${L+4} ${W+4}" aria-label="${esc(p.player)} and ${esc(p.opp||"")} heatmaps"><defs><filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>${lines}${heat}${clash}${dots}${link}${opp2?tag(opp2,px,py,C.ora):""}${opp?tag(opp,ox,oy,C.red):""}${tag(me,mx,my,C.yel)}<text x="${L-1}" y="${W-1.5}" font-size="3" text-anchor="end" fill="${C.ink}" opacity=".7" font-family="Inter,Helvetica,Arial,sans-serif">attacking →</text></svg>`;
   const ov=p.opp_overlap!=null?Math.round(p.opp_overlap*100):null, fw=p.opp_fouls_won_raw90??p.opp_fouls_won90;
-  const facts=opp?[fw!=null?`${lastN(p.opp)} wins <b>${(+fw).toFixed(1)}</b> fouls a game`:null, ov!=null&&!me.est&&!opp.est?`They share <b>${ov}%</b> of the same space`:null, p.fouls90?`${lastN(p.player)} commits <b>${(+p.fouls90).toFixed(1)}</b> fouls a game`:null].filter(Boolean):[];
+  const facts=opp&&!noFacts?[fw!=null?`${lastN(p.opp)} wins <b>${(+fw).toFixed(1)}</b> fouls a game`:null, ov!=null&&!me.est&&!opp.est?`They share <b>${ov}%</b> of the same space`:null, p.fouls90?`${lastN(p.player)} commits <b>${(+p.fouls90).toFixed(1)}</b> fouls a game`:null].filter(Boolean):[];
   const est=[me.est&&lastN(p.player),opp&&opp.est&&lastN(p.opp)].filter(Boolean);
   return `<div class="vs"><span><i style="background:${C.yel}"></i>${esc(p.player)}</span><b>v</b><span><i style="background:${C.red}"></i>${esc(p.opp||"no direct opponent")}</span>${opp2?`<span class="also"><i style="background:${C.ora}"></i>also ${esc(opp2.name)}</span>`:""}</div>${svg}`
     +(facts.length?`<ul class="facts">${facts.map(x=>`<li>${x}</li>`).join("")}</ul>`:"")
-    +(clash?`<p class="meta">Dashed ring: where they meet most.</p>`:"")
-    +(me.bench?`<p class="meta">Not in the predicted XI: drawn at his usual position, as if he starts.</p>`:"")
-    +(est.length?`<p class="meta">No tracking data for ${est.join(" or ")}: heatmap estimated from their position.</p>`:"");
+    ;
 }
 function cardDetail(x,G){
   const ref=G.referee||{}, f=x.factors||[];
@@ -151,6 +149,45 @@ function cardDetail(x,G){
     +(x.role&&x.usual_role&&x.role!==x.usual_role?`<li>Plays ${esc(x.role)} today (usually ${esc(x.usual_role)})</li>`:"")
     +f.map(r=>`<li>${esc(Array.isArray(r)?r[1]:r)}</li>`).join("")
     +`<li>Referee: ${ref.name?`<b>${esc(ref.name)}</b>${ref.cards_pg?` · ${(+ref.cards_pg).toFixed(1)} cards a game`:""}`:"not announced"}</li></ul>`;
+}
+
+// ---------- panel under the graph: changes with the market chip, only shown when there is data ----------
+let DD=null, G=null; const OPP={};
+const PANEL={fouls:["fouled","Fouls won"], fouled:["fouls","Fouls committed"], tackles:["disp","Dispossessed"], cards:["fouled","Fouls won"]};
+function meRow(){return G&&G.pitch.find(x=>x.pid===Number(DD.pid))}
+function oppRows(){const me=meRow(); if(!me)return[]; const x=G.cards[String(DD.pid)]||{}, other=G.pitch.filter(r=>r.side!==me.side&&!r.bench);
+  const names=[x.opp,...((x.zone_opps||[]).map(z=>z[0]))].filter(Boolean); const out=[];
+  for(const n of names){const r=other.find(o=>o.name===n); if(r&&!out.includes(r))out.push(r); if(out.length>=2)break}
+  return out}
+function oppBox(r,stat,label){
+  const o=OPP[r.pid]; if(o===undefined){OPP[r.pid]=null;fetch(`p/${r.pid}.json`).then(x=>x.json()).then(j=>{OPP[r.pid]=j;drawPanel()}).catch(()=>{OPP[r.pid]=false})}
+  const rows=(o&&o.rows)||[]; if(!rows.length)return"";
+  const l10=rows.slice(0,10), mins=l10.reduce((a,x)=>a+x[3],0), tot=l10.reduce((a,x)=>a+(x[5][stat]||0),0);
+  const tiles=l10.map(x=>`<div class="stile ${(x[5][stat]||0)>0?"hit":"miss"}" title="${esc(x[0])} v ${esc(x[1])}"><b>${x[5][stat]||0}</b>${logo(x[2])}</div>`).join("");
+  return `<div class=oppbox><a class=swho href="player.html?p=${r.pid}"><img class="nface fm" src="${IMG}playerimages/${r.pid}.png" alt="" onerror="this.style.visibility='hidden'"><span><b>${esc(r.name)}</b><small class=smk>${label}</small></span><span class=sodds><b>${mins?(tot/mins*90).toFixed(1):"–"}</b><small>per 90</small></span></a><div class=stiles>${tiles}</div></div>`;
+}
+function refBox(){const r=G&&G.referee; if(!r||!r.name)return"";
+  const last=(r.last10||[]).slice(0,5), boxes=last.map(c=>`<i class=b${Math.min(4,c>>1)}>${c}</i>`).join("");
+  return `<div class=oppbox><div class=swho><span><b>${esc(r.name)}</b><small class=smk>Referee</small></span><span class=sodds><b>${r.cards_pg?(+r.cards_pg).toFixed(1):"–"}</b><small>cards a game</small></span></div>${last.length?`<div class=refl5><span class=l5>${boxes}</span><small>last 5</small></div>`:""}</div>`}
+function drawPanel(){
+  const box=document.getElementById("ppanel"); if(!box||!DD)return; const key=CH.key; let h="";
+  if(key==="shots"||key==="sot"){ if((DD.rows||[]).some(r=>(r[6]||[]).length)) h=`<div class=ppan>${shotmap(DD.rows)}</div>`; }
+  else if(PANEL[key]&&meRow()){
+    const [stat,label]=PANEL[key], x=G.cards[String(DD.pid)]||{};
+    const P={...x,pid:Number(DD.pid),pitch:G.pitch,player:x.player||DD.name};
+    const opps=oppRows().map(r=>oppBox(r,stat,label)).join("");
+    const pitch=key==="cards"?"":matchupSvg(P,key==="tackles");
+    const extra=key==="cards"?refBox():"";
+    if(pitch||opps||extra)h=`<div class=ppan>${extra}${pitch}${opps?`<div class=oppgrid>${opps}</div>`:""}</div>`;
+  }
+  box.innerHTML=h; wireShots();
+}
+function wireShots(){
+  const sf=document.getElementById("sf");
+  if(sf)sf.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;
+    sf.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    document.querySelectorAll(".smap circle").forEach(c=>c.style.display=(b.dataset.t==="A"||c.dataset.t===b.dataset.t)?"":"none")};
+  document.querySelectorAll(".smap circle").forEach(c=>c.onclick=()=>{const i=document.getElementById("sinfo");if(i)i.textContent=c.querySelector("title").textContent});
 }
 
 function shotmap(rows){
@@ -170,7 +207,7 @@ function shotmap(rows){
   window._shots=all;
   return `<div class=seg id=sf>${[["A","All"],["R","Right"],["L","Left"],["H","Header"]].map(([t,l])=>`<button data-t="${t}"${t==="A"?" class=on":""}>${l} ${cnt(t)}</button>`).join("")}</div>`+
     `<p class=meta>${all.length} shots · ${on} on target · ${all.filter(s=>s.g).length} goals · <span style="color:#4ADE80">●</span> on target <span style="color:#9CA3AF">●</span> off <span style="color:#FBBF24">●</span> goal</p>`+
-    svg+`<p class=meta id=sinfo>Tap a shot for details.</p>`}
+    svg+`<p class=meta id=sinfo></p>`}
 
 function draw(d){
   document.title=`${d.name} · Al's Card Bets`;
@@ -181,26 +218,10 @@ function draw(d){
     `</div></div>`;
   const pr=(nx&&nx.lines)||{}, firstPriced=STATS.find(([kk])=>(pr[kk]||[]).length);
   if(firstPriced)CH.key=firstPriced[0];
-  h+=`<div id=pchart>${statCard(d)}</div>`;
-  if(d.card_game)h+=`<details class=rsec id=pmatch open><summary><h2>Matchup</h2></summary><div id=pmatchup><p class=meta>Loading…</p></div></details>`;
-  h+=`<details class=rsec id=pshots open><summary><h2>Shot map</h2></summary>${shotmap(rows)}</details>`;
-  if(d.card_game)h+=`<details class=rsec id=pcardd><summary><h2>Cards & referee</h2></summary><div id=pcarddet></div></details>`;
-  h+=`<details class=rsec id=ptack><summary><h2>Tackled & dribbled past</h2></summary><h3 class=sub3>Tackled (dispossessed) per game</h3><div class=chart>${bars(rows,"disp",1)}</div><h3 class=sub3>Dribbled past per game</h3><div class=chart>${bars(rows,"dribbled",1)}</div></details>`;
-  h+=`<details class=rsec id=pgames><summary><h2>Games</h2><b>${rows.length}</b></summary><div class=tw><table class=gtab><tr><th>Date</th><th>Opponent</th>${STATS.map(s=>`<th>${s[1].replace("Shots on target","SOT").replace("Fouls won","Won")}</th>`).join("")}</tr>`+
-    rows.map(r=>`<tr><td>${r[0]}</td><td>${logo(r[2])}${esc(r[1])}</td>${STATS.map(s=>`<td>${r[5][s[0]]??0}</td>`).join("")}</tr>`).join("")+`</table></div></details>`;
+  h+=`<div id=pchart>${statCard(d)}</div><div id=ppanel></div>`;
   app.innerHTML=h;
-  wireCard(d);
-  if(d.card_game)fetch(`pg/${d.card_game}.json`).then(r=>r.json()).then(G=>{
-    const x=G.cards[String(d.pid)]||{}, P={...x, pid:Number(d.pid), pitch:G.pitch, player:x.player||d.name};
-    document.getElementById("pmatchup").innerHTML=`<p class=meta>${esc(G.game)} · ${new Date(G.kickoff).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})}${G.predicted?" · predicted lineups":""}</p>`+(matchupSvg(P)||"<p class=meta>No heatmap for him in this game.</p>");
-    document.getElementById("pcarddet").innerHTML=cardDetail(x,G);
-  }).catch(()=>{const m=document.getElementById("pmatchup");if(m)m.innerHTML="<p class=meta>Matchup not available.</p>"});
-  const sf=document.getElementById("sf");
-  if(sf)sf.addEventListener("click",ev=>{const b=ev.target.closest("button");if(!b)return;
-    sf.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
-    app.querySelectorAll(".smap circle").forEach(c=>c.style.display=(b.dataset.t==="A"||c.dataset.t===b.dataset.t)?"":"none")});
-  app.querySelectorAll(".smap circle").forEach(c=>c.addEventListener("click",()=>{
-    document.getElementById("sinfo").textContent=c.querySelector("title").textContent}));
+  DD=d; wireCard(d); drawPanel();
+  if(d.card_game)fetch(`pg/${d.card_game}.json`).then(r=>r.json()).then(g=>{G=g;drawPanel()}).catch(()=>{});
   const K="openFb";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
   app.querySelectorAll("details[id]").forEach(dd=>{if(o.includes(dd.id))dd.open=true;dd.addEventListener("toggle",()=>{
     let s=new Set(o);dd.open?s.add(dd.id):s.delete(dd.id);o=[...s];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}})});

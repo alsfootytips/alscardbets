@@ -689,3 +689,11 @@ details.fx-li .fx-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax
 /* football Fixtures landing: the 4 best picks as cards, one row (scrolls sideways on phones) */
 .topcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 6px}
 @media (max-width:1000px){.topcards{display:flex;overflow-x:auto;scrollbar-width:none}.topcards::-webkit-scrollbar{display:none}.topcards>.scard{flex:0 0 300px}}
+.sgrid.small{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}.sgrid.small .scard{padding:12px 14px}.sgrid.small .swho b{font-size:15px}.sgrid.small .sstats b{font-size:17px}
+/* football player page: market panel under the graph */
+.ppan{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.oppgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:10px}
+.oppbox{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.oppbox .swho .nface.fm{width:38px;height:38px;border-radius:50%;flex:none}.oppbox .stiles{margin-top:8px}
+.refl5{display:flex;align-items:center;gap:8px;margin-top:8px}.refl5 small{color:var(--muted)}
+.ppan ul.facts{display:block;columns:auto}.ppan ul.facts li{display:block}
