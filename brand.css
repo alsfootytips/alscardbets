@@ -494,3 +494,4 @@ details.rsec>summary .sup{font-size:12px}
 .vrow .who small.vmk{color:#60A5FA;font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:.02em}
 .seg.rungs,#sf{flex-wrap:wrap;gap:4px}.seg.rungs button,#sf button{flex:none;padding:4px 11px;margin:0}
 .sgl{color:var(--bad);font-weight:600;background:#261212;border-radius:6px;padding:2px 8px}
+details.rsec.lg>summary h2{font-size:16px}details.rsec.lg{margin-top:10px}
