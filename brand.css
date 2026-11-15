@@ -465,3 +465,32 @@ body:has(main.wide) .top .in,body:has(main.wide) footer.foot{max-width:1480px}
 .ggrid>.game{margin:0}
 @media(max-width:680px){.ggrid{grid-template-columns:1fr}}
 th.pl{text-align:left}
+/* football sections: sub-tabs under the header */
+.top .subnav{max-width:1480px;margin:0 auto;padding:0 24px 8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.top .subnav::-webkit-scrollbar{display:none}
+.top .subnav a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.top .subnav a.on{color:var(--bg);background:var(--fg);border-color:var(--fg)}
+@media(max-width:600px){.top .subnav{padding:0 12px 8px}}
+img.bk{width:16px;height:16px;border-radius:4px;vertical-align:-3px;margin-right:4px}
+/* football props: value rows, players, player page */
+.vrow{grid-template-columns:1fr auto 64px;align-items:center}
+.vrow .who{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);min-width:0}
+.vrow .who>span{min-width:0}.vrow .who b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vrow .who small{display:block;color:var(--muted);font-size:12px}
+.vrow .nface.fm{width:34px;height:34px;border-radius:50%;background:var(--soft);flex:none}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2px 12px;padding:6px 14px 12px}
+.plist a{display:flex;align-items:center;gap:8px;padding:6px 0;color:var(--fg);text-decoration:none;min-width:0}
+.plist a span{min-width:0}.plist b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plist small{color:var(--muted);font-size:12px}.plist .nface.fm{width:30px;height:30px;border-radius:50%;background:var(--soft);flex:none}
+.phead{display:flex;gap:16px;align-items:center;margin-bottom:6px}.phead h1{margin:0}.phead p{margin:2px 0}
+.nface.fm.big{width:72px;height:72px;border-radius:50%;background:var(--soft);flex:none}
+.pchart{width:100%;max-width:640px;height:auto;display:block;margin:6px 0 10px}
+.pchart text{font-size:11px;fill:var(--muted);font-family:var(--body)}.pchart text.bv{fill:var(--fg);font-weight:600;font-size:12px}
+.seg.rungs{justify-content:flex-start;margin:4px 0 0}.seg.rungs button,#sf button{border:1px solid var(--line);border-radius:999px;margin-right:4px}
+#sf{justify-content:flex-start;flex-wrap:wrap;margin:8px 0}
+.smap{width:100%;max-width:420px;height:auto;display:block;margin:6px 0}.smap circle{cursor:pointer}
+.sub3{font-size:14px;font-weight:600;margin:16px 0 4px}
+details.rsec>summary .sup{font-size:12px}
+.vrow .who small.vmk{color:#60A5FA;font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:.02em}
+.seg.rungs,#sf{flex-wrap:wrap;gap:4px}.seg.rungs button,#sf button{flex:none;padding:4px 11px;margin:0}
+.sgl{color:var(--bad);font-weight:600;background:#261212;border-radius:6px;padding:2px 8px}

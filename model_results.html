@@ -1,0 +1,11 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=refresh content=300><title>Model results · Al's Card Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=90375264"><link rel=icon href="logo.jpg"></head><body>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Cards</a><a href="fouls_props.html">Fouls</a><a href="shots.html">Shots</a><a href="players.html">Players</a><a class=on href="index.html">Results</a></nav></div><div class=subnav><a href="index.html">Group cards</a><a href="props_results.html">Group props</a><a class=on href="model_results.html">Model</a></div></header><main class=wide>
+<h1>Model</h1><p class=meta>Every +EV prop the model flagged, 1u at the first price seen · graded from FotMob</p><p class=none>No model bets logged yet.</p><details class=rsec id=mall><summary><h2>All bets</h2><b>0</b></summary><div class=tw><table class=gtab><tr><th>Date</th><th>Player</th><th>Bet</th><th>Odds</th><th>EV</th><th>Result</th></tr></table></div></details>
+<p class=meta style="margin-top:28px">Not betting advice.</p>
+<footer class=foot><i></i>Al's Card Bets</footer></main>
+<script>
+const K="openFb";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
+document.querySelectorAll("details[id]").forEach(d=>{if(o.includes(d.id))d.open=true;d.addEventListener("toggle",()=>{
+let s=new Set(o);d.open?s.add(d.id):s.delete(d.id);o=[...s];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}})});
+</script></body></html>

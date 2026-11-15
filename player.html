@@ -1,0 +1,99 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Player · Al's Card Bets</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
+<link rel=stylesheet href="brand.css?v=90375264"><link rel=icon href="logo.jpg"></head><body>
+<header class=top><div class=in><a class=logo href="picks.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="picks.html">Football</a><a href="nba.html">NBA</a></div><nav><a href="picks.html">Cards</a><a href="fouls_props.html">Fouls</a><a href="shots.html">Shots</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
+<main class=wide><div id=app><p class=meta>Loading…</p></div>
+<p class=meta style="margin-top:28px">Not betting advice.</p>
+<footer class=foot><i></i>Al's Card Bets</footer></main>
+<script>
+const IMG="https://images.fotmob.com/image_resources/";
+const STATS=[["shots","Shots"],["sot","Shots on target"],["fouls","Fouls"],["fouled","Fouls won"],["tackles","Tackles"],["cards","Booked"]];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pid=new URLSearchParams(location.search).get("p");
+const app=document.getElementById("app");
+const logo=tid=>tid?`<img class=tlogo src="${IMG}logo/teamlogo/${tid}_small.png" alt="" loading=lazy onerror="this.remove()">`:"";
+const B365='<img class=bk src="books/bet365.png" alt="bet365">';
+fetch(`p/${encodeURIComponent(pid)}.json`).then(r=>{if(!r.ok)throw 0;return r.json()}).then(draw).catch(()=>{
+  app.innerHTML="<h1>Player</h1><p class=none>No stats for this player yet. They appear once they're in a game with bet365 props.</p><p><a class=fmap href='players.html'>All players</a></p>"});
+
+function bars(rows,key,k){ // oldest left, newest right
+  const R=rows.slice().reverse(), n=R.length, W=600, H=150, pad=6, bw=(W-2*pad)/Math.max(n,1);
+  const vals=R.map(r=>r[5][key]??0), mx=Math.max(k+1,...vals,1), Y=v=>H-24-(H-44)*v/mx;
+  let s=`<svg class=pchart viewBox="0 0 ${W} ${H}" role=img aria-label="Last ${n} games">`;
+  R.forEach((r,i)=>{const v=vals[i],x=pad+i*bw+bw*.15,w=bw*.7,hit=v>=k;
+    s+=`<g><title>${esc(r[0])} v ${esc(r[1])} · ${v} in ${r[3]} min</title><rect x="${x.toFixed(1)}" y="${Y(v).toFixed(1)}" width="${w.toFixed(1)}" height="${(H-24-Y(v)).toFixed(1)}" rx="3" fill="${hit?"#4ADE80":"#F87171"}" opacity="${hit?1:.75}"/>`+
+       `<text x="${(x+w/2).toFixed(1)}" y="${(Y(v)-4).toFixed(1)}" text-anchor="middle" class=bv>${v}</text>`+
+       `<text x="${(x+w/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${r[3]}'</text></g>`});
+  const ly=Y(k-.5);
+  s+=`<line x1="${pad}" x2="${W-pad}" y1="${ly.toFixed(1)}" y2="${ly.toFixed(1)}" stroke="#888" stroke-dasharray="4 4"/></svg>`;
+  return s}
+
+function hitTable(rows,key){
+  const ks=key==="cards"?[1]:[1,2,3,4,5];
+  return `<div class=tw><table class=gtab><tr><th>Line</th><th>Last 5</th><th>Last 10</th><th>Last 20</th></tr>`+ks.map(k=>{
+    const f=n=>{const v=rows.slice(0,n).map(r=>r[5][key]??0);if(!v.length)return"–";const h=v.filter(x=>x>=k).length;return `${h}/${v.length} <small class=sub>${Math.round(100*h/v.length)}%</small>`};
+    return `<tr><td>${key==="cards"?"Booked":k+"+"}</td><td>${f(5)}</td><td>${f(10)}</td><td>${f(20)}</td></tr>`}).join("")+"</table></div>"}
+
+function lines(nx,key){
+  const rs=(nx&&nx.lines&&nx.lines[key])||[];
+  if(!rs.length)return"";
+  return `<div class=tw><table class=gtab><tr><th>bet365</th><th>Odds</th><th>Model</th><th>EV</th><th>Last 10</th></tr>`+rs.map(r=>
+    `<tr><td>${key==="cards"?"Booked":r[0]+"+"}</td><td>${B365}${r[1].toFixed(2)}</td><td>${Math.round(100*r[2])}%</td><td class=${r[3]>=0?"pos":"neg"}>${r[3]>=0?"+":""}${Math.round(100*r[3])}%</td><td>${r[4]}/${r[5]}</td></tr>`).join("")+"</table></div>"}
+
+function shotmap(rows){
+  const all=[];rows.forEach(r=>(r[6]||[]).forEach(s=>all.push({x:s[0],y:s[1],t:s[2],on:s[3],g:s[4],xg:s[5],m:s[6],d:r[0],o:r[1]})));
+  if(!all.length)return"<p class=meta>No shots in his last games.</p>";
+  const T={R:"Right foot",L:"Left foot",H:"Header",O:"Other"}, k=8, W=68*k, H=52.5*k;
+  const P=s=>[(s.y*k).toFixed(1),((105-s.x)*k).toFixed(1)];
+  let svg=`<svg class=smap viewBox="0 0 ${W} ${H}" role=img aria-label="Shot map"><rect width="${W}" height="${H}" fill="#0E2215" rx="8"/>`+
+    `<g fill="none" stroke="#2F5A3C" stroke-width="2"><rect x="${13.84*k}" y="0" width="${40.32*k}" height="${16.5*k}"/><rect x="${24.84*k}" y="0" width="${18.32*k}" height="${5.5*k}"/>`+
+    `<line x1="0" y1="${H-1}" x2="${W}" y2="${H-1}"/><path d="M ${(34-9.15)*k} ${H} A ${9.15*k} ${9.15*k} 0 0 1 ${(34+9.15)*k} ${H}"/><path d="M ${(34-7.3)*k} ${16.5*k} A ${9.15*k} ${9.15*k} 0 0 0 ${(34+7.3)*k} ${16.5*k}"/></g>`+
+    `<rect x="${30.34*k}" y="-4" width="${7.32*k}" height="8" fill="#ddd"/>`;
+  all.forEach((s,i)=>{const [cx,cy]=P(s),r=5+Math.sqrt(s.xg||0)*18,col=s.g?"#FBBF24":s.on?"#4ADE80":"#9CA3AF";
+    svg+=`<circle data-i="${i}" data-t="${s.t}" cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="${col}" fill-opacity="${s.g||s.on?.9:.45}" stroke="#000" stroke-width="1"><title>${T[s.t]} · ${s.g?"Goal":s.on?"On target":"Off target"} · xG ${s.xg} · v ${esc(s.o)} ${s.d} ${s.m??""}'</title></circle>`});
+  svg+="</svg>";
+  const cnt=t=>all.filter(s=>t==="A"||s.t===t).length;
+  const on=all.filter(s=>s.on).length;
+  window._shots=all;
+  return `<div class=seg id=sf>${[["A","All"],["R","Right"],["L","Left"],["H","Header"]].map(([t,l])=>`<button data-t="${t}"${t==="A"?" class=on":""}>${l} ${cnt(t)}</button>`).join("")}</div>`+
+    `<p class=meta>${all.length} shots · ${on} on target · ${all.filter(s=>s.g).length} goals · <span style="color:#4ADE80">●</span> on target <span style="color:#9CA3AF">●</span> off <span style="color:#FBBF24">●</span> goal</p>`+
+    svg+`<p class=meta id=sinfo>Tap a shot for details.</p>`}
+
+function draw(d){
+  document.title=`${d.name} · Al's Card Bets`;
+  const rows=d.rows||[], nx=d.next;
+  const mins=rows.slice(0,10).reduce((a,r)=>a+r[3],0);
+  let h=`<div class=phead><img class="nface fm big" src="${IMG}playerimages/${d.pid}.png" alt="" onerror="this.style.visibility='hidden'"><div><h1>${esc(d.name)}</h1>`+
+    `<p class=meta>${logo(d.tid)}${esc(d.team)}${d.pos?" · "+esc(d.pos):""}</p>`+
+    (nx?`<p class=meta>Next: ${logo(nx.team.id)}${esc(nx.team.name)} v ${logo(nx.opp.id)}${esc(nx.opp.name)} · ${new Date(nx.ko).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})} · ${nx.exp_min} exp min</p>`:"")+
+    `</div></div>`;
+  STATS.forEach(([key,label],i)=>{
+    const v10=rows.slice(0,10).map(r=>r[5][key]??0), avg=v10.reduce((a,b)=>a+b,0)/Math.max(v10.length,1);
+    const p90=mins?v10.reduce((a,b)=>a+b,0)/mins*90:0;
+    const rs=(nx&&nx.lines&&nx.lines[key])||[], best=rs.filter(r=>r[3]>=0).sort((a,b)=>b[3]-a[3])[0];
+    const k0=key==="cards"?1:(rs.length?rs[Math.min(1,rs.length-1)][0]:(avg>=1.5?2:1));
+    h+=`<details class=rsec id="ps_${key}"${i<1||best?" open":""}><summary><h2>${label}</h2><b>${key==="cards"?v10.filter(x=>x).length+"/"+v10.length+" booked":avg.toFixed(1)+" avg · "+p90.toFixed(1)+" /90"}</b>${best?`<span class=sup>+EV ${key==="cards"?"":best[0]+"+ "}${best[1].toFixed(2)}</span>`:""}</summary>`+
+      (key==="cards"?"":`<div class="seg rungs" data-k="${key}">${[1,2,3,4,5].map(k=>`<button data-r="${k}"${k===k0?" class=on":""}>${k}+</button>`).join("")}</div>`)+
+      `<div class=chart id="c_${key}">${bars(rows,key,k0)}</div>`+lines(nx,key)+hitTable(rows,key)+
+      (key==="shots"?`<h3 class=sub3>Shot map</h3>`+shotmap(rows):"")+
+      (key==="tackles"?`<h3 class=sub3>Tackled (dispossessed) per game</h3><div class=chart>${bars(rows,"disp",1)}</div><h3 class=sub3>Dribbled past per game</h3><div class=chart>${bars(rows,"dribbled",1)}</div>`:"")+
+      `</details>`});
+  h+=`<details class=rsec id=pgames><summary><h2>Games</h2><b>${rows.length}</b></summary><div class=tw><table class=gtab><tr><th>Date</th><th>Opponent</th><th>Min</th>${STATS.map(s=>`<th>${s[1].replace("Shots on target","SOT").replace("Fouls won","Won")}</th>`).join("")}</tr>`+
+    rows.map(r=>`<tr><td>${r[0]}</td><td>${logo(r[2])}${esc(r[1])}</td><td>${r[3]}</td>${STATS.map(s=>`<td>${r[5][s[0]]??0}</td>`).join("")}</tr>`).join("")+`</table></div></details>`;
+  app.innerHTML=h;
+  app.querySelectorAll(".rungs").forEach(g=>g.addEventListener("click",ev=>{const b=ev.target.closest("button");if(!b)return;
+    g.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    document.getElementById("c_"+g.dataset.k).innerHTML=bars(rows,g.dataset.k,+b.dataset.r)}));
+  const sf=document.getElementById("sf");
+  if(sf)sf.addEventListener("click",ev=>{const b=ev.target.closest("button");if(!b)return;
+    sf.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    app.querySelectorAll(".smap circle").forEach(c=>c.style.display=(b.dataset.t==="A"||c.dataset.t===b.dataset.t)?"":"none")});
+  app.querySelectorAll(".smap circle").forEach(c=>c.addEventListener("click",()=>{
+    document.getElementById("sinfo").textContent=c.querySelector("title").textContent}));
+  const K="openFb";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
+  app.querySelectorAll("details[id]").forEach(dd=>{if(o.includes(dd.id))dd.open=true;dd.addEventListener("toggle",()=>{
+    let s=new Set(o);dd.open?s.add(dd.id):s.delete(dd.id);o=[...s];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}})});
+}
+</script></body></html>
