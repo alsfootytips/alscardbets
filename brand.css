@@ -526,3 +526,10 @@ footer.foot.nfl{color:#D50A0A}
 .top.cricket{border-bottom-color:#3BA55C}
 .top.cricket nav a.on{border-bottom-color:#3BA55C}
 .top.cricket .sport a.on{background:#3BA55C;color:#fff}
+.dstrip{padding:2px 0 12px}.dstrip>small{display:block;font-size:11px;color:var(--muted);margin:0 0 4px}.dstrip>small b{font-weight:600}
+.stiles.dmini{gap:4px}.stiles.dmini .stile{padding:3px 0 2px;border-radius:6px}.stiles.dmini .stile b{font-size:13px}.stiles.dmini .stile small{font-size:9px}
+.stile:not(.hit):not(.miss){border-bottom-color:var(--line)}.stile:not(.hit):not(.miss) b{color:var(--fg)}
+a.rface{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:500}a.rface .nface.fm{width:26px;height:26px;border-radius:50%;background:var(--soft);flex:none}
+.dface{width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:top;background:var(--soft);margin-right:8px;flex:none}
+.swho .dface{width:46px;height:46px}
+details.dcred{margin-top:22px}details.dcred summary{cursor:pointer;color:var(--muted);font-size:12px}details.dcred p{font-size:11px;line-height:1.6}details.dcred a{color:inherit}
