@@ -522,3 +522,7 @@ footer.foot.darts{border-top-color:#3D1416;color:#F2999C}
 /* NFL (nfl.html, nfl_streaks.html, nfl_results.html) */
 .top.nfl{border-bottom-color:#D50A0A}.top.nfl nav a.on{border-bottom-color:#D50A0A}.top.nfl .sport a.on{background:#D50A0A;color:#fff}
 footer.foot.nfl{color:#D50A0A}
+/* cricket */
+.top.cricket{border-bottom-color:#3BA55C}
+.top.cricket nav a.on{border-bottom-color:#3BA55C}
+.top.cricket .sport a.on{background:#3BA55C;color:#fff}
