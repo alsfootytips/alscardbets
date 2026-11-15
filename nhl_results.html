@@ -1,0 +1,11 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>NHL results · Al's NHL Bets</title><link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href="brand.css?v=aba832a6"><link rel=icon href="nhl_logo.svg"></head><body>
+<header class="top nhl"><div class=in><a class=logo href="nhl.html"><img src="nhl_logo.svg" alt="Al's NHL Bets"></a><div class=sport role=group aria-label=Sport><a href="picks.html">Football</a><a href="nba.html">NBA</a><a class=on aria-current=page href="nhl.html">NHL</a><a href="nfl.html">NFL</a></div><nav><a href="nhl.html">Tonight</a><a href="nhl_streaks.html">Streaks</a><a href="nhl_players.html">Players</a><a class=on href="nhl_results.html">Results</a></nav></div></header><main>
+<h1>Results</h1><p class=none>First results the morning after the first slate.</p><h3>Backtest</h3><p class=meta>Backtest (2026-27 to 15 Nov, 279 games, bet365 price 60 min before puck drop): this rule made +10.6% over 461 bets (Oct +8.3%, Nov +15.2%; +12.9% at closing prices). Shots and goalscorer picks lost; &quot;ice time up&quot; players did worse across all markets; ladder steps lost 33%.</p>
+<p class=meta style="margin-top:28px">Not betting advice.</p>
+<footer class="foot nhl"><i></i>Al's NHL Bets</footer></main>
+<script>
+const K="openNhl";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
+document.querySelectorAll("details[id]").forEach(d=>{if(o.includes(d.id))d.open=true;d.addEventListener("toggle",()=>{
+let s=new Set(o);d.open?s.add(d.id):s.delete(d.id);o=[...s];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}})});
+</script></body></html>

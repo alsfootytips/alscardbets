@@ -495,3 +495,30 @@ details.rsec>summary .sup{font-size:12px}
 .seg.rungs,#sf{flex-wrap:wrap;gap:4px}.seg.rungs button,#sf button{flex:none;padding:4px 11px;margin:0}
 .sgl{color:var(--bad);font-weight:600;background:#261212;border-radius:6px;padding:2px 8px}
 details.rsec.lg>summary h2{font-size:16px}details.rsec.lg{margin-top:10px}
+/* NHL (nhl/nhl_props.py + pricer/nhl_page.py): ice-blue accents */
+.top.nhl{border-bottom-color:#38BDF8}
+.top.nhl nav a.on{border-bottom-color:#38BDF8}
+.top.nhl .sport a.on{background:#38BDF8;color:#04121B}
+.top.nhl .logo img{height:36px}
+footer.foot.nhl{border-top-color:#0B2A3D;color:#7DD3FC}
+.lrow{display:grid;grid-template-columns:1fr auto 64px;gap:12px;align-items:center;padding:6px 14px 6px 58px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.lrow .c b{font-size:14px}.lrow small{font-size:11px}
+details.bfold{border-top:1px solid var(--line)}details.bfold>summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:14px;list-style:none}
+details.bfold>summary::-webkit-details-marker{display:none}details.bfold>summary::after{content:" ▾";color:var(--muted)}
+.bld{padding:4px 14px 10px}.bld>a{color:var(--fg);text-decoration:none;font-size:14px}
+.btab{width:100%}.btab td,.btab th{padding:6px 4px;font-size:13px}.btab td:first-child{color:var(--muted);width:34px}
+.top.darts{border-bottom-color:#E5484D}
+.top.darts nav a.on{border-bottom-color:#E5484D}
+.top.darts .sport a.on{background:#E5484D;color:#fff}
+footer.foot.darts{border-top-color:#3D1416;color:#F2999C}
+/* centred reading column: player page + props results */
+#app,.narrow{max-width:760px;margin-left:auto;margin-right:auto}
+#app .pchart,#app .smap,.narrow .plc{margin-left:auto;margin-right:auto}
+#app .seg.rungs,#app #sf{justify-content:center}
+#app table td,#app table th{text-align:center}#app table td:first-child,#app table th:first-child{text-align:left}
+#app .btab td:nth-child(2){text-align:left}
+#app details.rsec>summary{flex-wrap:wrap}
+#app .phead{justify-content:center;text-align:left}
+/* NFL (nfl.html, nfl_streaks.html, nfl_results.html) */
+.top.nfl{border-bottom-color:#D50A0A}.top.nfl nav a.on{border-bottom-color:#D50A0A}.top.nfl .sport a.on{background:#D50A0A;color:#fff}
+footer.foot.nfl{color:#D50A0A}
