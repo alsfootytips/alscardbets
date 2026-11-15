@@ -602,3 +602,18 @@ details.swhy>summary::before{content:"▸ "}details.swhy[open]>summary::before{c
 .scard .sstats:has(>div:nth-child(4)){grid-template-columns:repeat(4,1fr)}
 h2.fx-h{font-size:22px;margin:34px 0 4px}
 .fx-cards>.fx-card{min-width:0}
+#fxs{flex:1;min-width:180px;font:15px var(--body);background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--fg);padding:7px 14px}
+.fx-teams small.fx-hp{color:var(--accent);font-size:12px}.fx-teams small.fx-when{font-size:12px}
+/* Fixtures players: compact list (default); tap a row for its graph */
+.fx-list{display:grid;gap:6px}
+details.fx-li{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+details.fx-li>summary{display:grid;grid-template-columns:auto minmax(120px,1fr) auto 52px 64px 52px;gap:12px;align-items:center;padding:8px 12px;cursor:pointer;list-style:none}
+details.fx-li>summary::-webkit-details-marker{display:none}
+details.fx-li[open]>summary{background:var(--soft)}
+details.fx-li .c{text-align:left}details.fx-li .c b{display:block;font-size:15px}
+.fx-lw b{font-size:15px}.fx-lw small{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.fx-lt10{display:flex;gap:2px}.fx-lt10 i{font-style:normal;font-size:11px;font-weight:600;width:20px;text-align:center;border-radius:4px;padding:3px 0;color:#000}
+.fx-lt10 i.h{background:var(--accent)}.fx-lt10 i.m{background:var(--bad);opacity:.85}
+details.fx-li>.fx-card{border:0;border-top:1px solid var(--line);border-radius:0;max-width:560px}
+details.fx-li>.fx-card .fx-ch{display:none}
+@media (max-width:700px){details.fx-li>summary{grid-template-columns:auto 1fr 52px 56px 48px}.fx-lt10{display:none}}
