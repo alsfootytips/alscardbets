@@ -1,0 +1,207 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Player · Al's NFL Bets</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
+<link rel=stylesheet href="brand.css?v=00a78648"><link rel=icon href="logo.jpg">
+<style>
+.ph{display:flex;gap:14px;align-items:center;margin:20px 0 6px}
+.ph .face{width:84px;height:62px;object-fit:cover;object-position:top;border-radius:10px;background:var(--soft);flex:none}
+.ph h1{margin:0;font-size:22px}
+.ph .tm{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-top:3px;flex-wrap:wrap}
+.ph .tm img{width:20px;height:20px}.ph .tm .nba-tag{margin-left:0}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:14px 0 8px;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{font:500 13px var(--body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap;cursor:pointer}
+.chips button.on{background:#D50A0A;border-color:#D50A0A;color:#fff}
+.chips.range{margin:4px 0 2px}.chips.range button{font-size:12px;padding:4px 10px}
+.chips.range button.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.rungs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px 0;justify-content:safe center}
+.rungs::-webkit-scrollbar{display:none}
+.rungs button{flex:none;font:500 13px var(--body);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;color:var(--fg);cursor:pointer;text-align:center;min-width:64px}
+.rungs button small{display:block;font-size:11px;color:var(--muted)}
+.rungs button.val{border-color:#1F4D2E;background:#0E2215}.rungs button.val small{color:var(--accent);font-weight:600}
+.rungs button.on{outline:2px solid #D50A0A;outline-offset:-1px}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;margin:6px 0 2px;flex-wrap:wrap}
+.chead #legend{color:var(--muted);font-size:11px;white-space:nowrap}
+.lg-bar,.lg-line{display:inline-block;vertical-align:middle;margin:0 4px 0 6px}
+.lg-bar{width:8px;height:8px;border-radius:2px;background:#4ADE80}
+.lg-line{width:12px;height:0;border-top:1.5px solid #A78BFA}
+.mover{display:flex;align-items:center;gap:8px;margin:4px 0 6px}
+.mover input{flex:1;accent-color:#D50A0A;height:28px}
+.mover button{width:36px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 18px var(--body);cursor:pointer}
+.hr{display:flex;gap:6px;margin:10px 0}.hr div{flex:1;min-width:0}
+.hr div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.hr b{display:block;font-size:17px}.hr span{font-size:10px;color:var(--muted);white-space:nowrap}
+.hr .good b{color:var(--accent)}.hr .bad b{color:var(--bad)}
+.chart{width:100%;display:block}.chart text{font-family:var(--body)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 12px 8px;margin:12px 0}
+.panel h2{margin:0 0 4px;font-size:15px}.panel .meta{margin:0 0 6px}
+.rink{width:100%;max-width:440px;display:block;margin:6px auto;background:#0B1A24;border-radius:10px}
+.rink .ln{fill:none;stroke:#2B4A5E;stroke-width:.5}.rink .red{fill:none;stroke:#7F2D2D;stroke-width:.6}
+.rink .blue{stroke:#1E4E79;stroke-width:1.2}
+.zt{width:100%;font-size:13px}.zt th:first-child,.zt td:first-child{text-align:left}.zt td,.zt th{padding:6px 4px}
+.qbars{display:grid;align-items:end;height:110px;margin:26px 0 4px}
+.qbars div{border-radius:5px 5px 0 0;position:relative;min-height:2px}
+.qbars div span{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-weight:600}
+.gl{width:100%;font-size:13px}.gl td,.gl th{padding:5px 4px;text-align:center}.gl td:first-child,.gl th:first-child{text-align:left}
+</style></head><body>
+<header class="top nfl"><div class=in><a class=logo href="nfl.html"><img src="logo.jpg" alt="Al's NFL Bets"></a><div class=sport role=group aria-label=Sport><a href="picks.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a class=on aria-current=page href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="nfl.html">Picks</a><a href="nfl_fixtures.html">Fixtures</a><a href="nfl_streaks.html">Streaks</a><a class=on href="nfl_players.html">Players</a><a href="nfl_results.html">Results</a></nav></div></header>
+<main id=app><p class=none>Loading…</p></main>
+<footer class="foot nfl"><i></i>Al's NFL Bets</footer>
+<script>
+const FACE = id => `https://a.espncdn.com/i/headshots/nfl/players/full/${id}.png`;
+const LOGO = ab => `https://a.espncdn.com/i/teamlogos/nfl/500/${String(ab).toLowerCase()}.png`;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// log row: [date, opp, tgt, rec, recy, car, ry, pa, py, tk, td, sack, long, pc, home]
+const STATS = [
+  {k:"recy", label:"Rec yds", cols:[4], mk:["Receiving Yards"], step:10},
+  {k:"rec", label:"Receptions", cols:[3], mk:["Receptions"]},
+  {k:"ry", label:"Rush yds", cols:[6], mk:["Rushing Yards"], step:10},
+  {k:"rry", label:"Rush+rec yds", cols:[4, 6], mk:["Rushing and Receiving Yards"], step:10},
+  {k:"car", label:"Carries", cols:[5], mk:["Rushing Attempts"]},
+  {k:"py", label:"Pass yds", cols:[8], mk:["Passing Yards"], step:25},
+  {k:"pa", label:"Pass att", cols:[7], mk:["Passing Attempts"]},
+  {k:"pc", label:"Completions", cols:[13], mk:["Passing Completions"]},
+  {k:"td", label:"TDs", cols:[10], mk:["Touchdown Scorers"]},
+  {k:"tk", label:"Tackles", cols:[9], mk:["Tackles and Assists"]},
+  {k:"tgt", label:"Targets", cols:[2]},
+  {k:"long", label:"Longest rec", cols:[12], mk:["Longest Reception"], step:10}];
+const val = (st, r) => st.cols.reduce((a, c) => a + (+r[c] || 0), 0);
+const pid = new URLSearchParams(location.search).get("p");
+let DIST = {};
+function erfc(x) { const z = Math.abs(x), t = 1 / (1 + 0.5 * z);
+  const r = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))));
+  return x >= 0 ? r : 2 - r; }
+function pAtLeast(k, mu, stat) {                       // mirrors nfl/model.py prob()
+  if (k <= 0) return 1; if (!(mu > 0)) return 0;
+  const d = DIST[stat];
+  if (stat === "td") return 1 - Math.exp(-mu);
+  if (d && d.c != null) { const m = Math.log(mu + d.c) - d.s * d.s / 2; if (k + d.c <= 0) return 1;
+    return 0.5 * erfc((Math.log(k + d.c) - m) / (d.s * Math.SQRT2)); }
+  if (d && d.r != null) { const r = +d.r, p = r / (r + mu); let term = Math.pow(p, r), cdf = term;
+    for (let i = 1; i < k; i++) { term *= (i - 1 + r) / i * (1 - p); cdf += term; } return Math.max(0, Math.min(1, 1 - cdf)); }
+  return null; }
+let S = {stat: null, k: null, n: 10};
+
+const day = new Date().toISOString().slice(0, 13);
+Promise.all([fetch("nfl_data.json?v=" + Date.now()).then(r => r.json()).catch(() => ({games: []})),
+             fetch("nfl_all.json?d=" + day).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([data, all]) => {
+  DIST = data.dist || {};
+  let P = null, T = null, G = null, O = null, home = false;
+  for (const g of data.games || []) g.teams.forEach((t, i) => { for (const p of t.players)
+    if (p.pid === pid) { P = p; T = t; G = g; O = g.teams[1 - i]; home = i === 1; } });
+  const A = all[pid];
+  const app = document.getElementById("app");
+  if (!P && !A) { app.innerHTML = "<p class=none>Player not found. <a class=fmap href='nfl_players.html'>Search players</a></p>"; return; }
+  const SEASON = A ? A.log : [];
+  const LOG = (P && P.log && P.log.length > SEASON.length) ? P.log : (SEASON.length ? SEASON : (P ? P.log : []));
+  const av = (st, xs) => xs.reduce((a, r) => a + val(st, r), 0) / Math.max(xs.length, 1);
+  const NOGAME = !G || new Date(G.ko) < new Date();
+  if (!P) P = {pid, name: A.n, pos: A.pos, mu: {}, mk: {}, inj: "", boost: {}};
+  if (!T) T = {abbr: A.t, name: A.t};
+  document.title = `${P.name} · Al's NFL Bets`;
+  const ko = G ? new Date(G.ko).toLocaleString("en-GB", {weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/London"}) : "";
+  const rungsFor = st => !st.mk ? [] : st.mk.flatMap(m => (P.mk || {})[m] || []).sort((a, b) => a[0] - b[0]);
+  const projFor = st => (!NOGAME && P.mu && P.mu[st.k] != null) ? P.mu[st.k] : av(st, LOG.slice(-8));
+  const DEF = {QB: "py", RB: "ry", FB: "ry", WR: "recy", TE: "recy"}[P.pos] || "tk";
+  let best = null;
+  for (const st of STATS) for (const r of rungsFor(st)) if (r[2] >= 55 && r[1] <= 4 && r[3] >= 5 && (!best || r[3] > best.r[3])) best = {st, r};
+  S.stat = best ? best.st.k : DEF; if (best) S.k = best.r[0];
+  const shown = STATS.filter(st => st.k === S.stat || rungsFor(st).length || LOG.some(r => val(st, r) > 0));
+  const games = () => S.n === 0 ? SEASON : LOG.slice(-S.n);
+  const RANGES = [[5, "L5"], [10, "L10"], [17, "L17"], [0, "This season"]];
+
+  function render() {
+    const st = STATS.find(s => s.k === S.stat);
+    const rungs = rungsFor(st), proj = projFor(st), stp = st.step || 1;
+    if (S.k == null) {
+      const near = rungs.length ? rungs.reduce((a, b) => Math.abs(b[0] - proj) < Math.abs(a[0] - proj) ? b : a) : null;
+      S.k = near ? near[0] : Math.max(1, Math.round(proj / stp) * stp || 1);
+    }
+    const vals = LOG.map(r => val(st, r));
+    const top = Math.max(stp * 5, Math.ceil(Math.max(...vals, proj, 1) * 1.3 / stp) * stp);
+    const pageY = window.scrollY;
+    document.getElementById("stat").innerHTML =
+      `<div class=chips>${shown.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
+      + `<div class=panel><h2>${esc(st.label)} · ${NOGAME ? "avg" : "proj"} ${proj.toFixed(1)}</h2>`
+      + `<div class="chips range">${RANGES.map(([n, l]) => `<button data-n="${n}" class="${n === S.n ? "on" : ""}">${l}</button>`).join("")}</div>`
+      + `<div class=chead><span id=linetag></span><span id=legend></span></div><div id=chartbox></div>`
+      + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=${stp} max=${top} step=${stp} value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
+      + (rungs.length ? `<div class=rungs>${rungs.map(r => `<button data-k="${r[0]}">${r[0]}+ @ ${r[1].toFixed(2)}<small></small></button>`).join("")}</div>` : "")
+      + `<div class=hr id=hitrates></div></div>`;
+    window.scrollTo(0, pageY);
+    document.querySelectorAll("#stat .chips:not(.range) button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
+    document.querySelectorAll("#stat .chips.range button").forEach(b => b.onclick = () => { S.n = +b.dataset.n; render(); });
+    document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; draw(); });
+    const sl = document.getElementById("kslide");
+    sl.oninput = () => { S.k = +sl.value; draw(); };
+    document.getElementById("kdown").onclick = () => { S.k = Math.max(stp, S.k - stp); draw(); };
+    document.getElementById("kup").onclick = () => { S.k = Math.min(top, S.k + stp); draw(); };
+    draw();
+  }
+
+  function draw() {
+    const st = STATS.find(s => s.k === S.stat);
+    const rungs = rungsFor(st), proj = projFor(st), k = S.k;
+    const vals = LOG.map(r => val(st, r)), last = games();
+    const rung = rungs.find(r => r[0] === k);
+    const pm = rung ? rung[2] / 100 : (NOGAME ? null : pAtLeast(k, proj, st.k));
+    const ev = rung ? rung[3] : null;
+    const n = last.length + 1, W = 340, H = 212, pad = 22, padR = 10, bw = (W - pad - padR) / n, gap = Math.min(4, bw * 0.25);
+    const base = H - 34, topY = 10;
+    const mx = Math.max(k * 1.3, proj * 1.1, ...last.map(r => val(st, r)), 1);
+    const y = v => base - (base - topY) * Math.max(v, 0) / mx;
+    const showVals = bw >= 13, every = Math.ceil(n / 6);
+    const dm = d => { const [m, dd] = d.slice(-5).split("-"); return `${+dd}/${+m}`; };
+    let bars = "", labels = "";
+    last.forEach((r, i) => {
+      const v = val(st, r), x = pad + (last.length - i) * bw + gap / 2, w = bw - gap, cx = x + w / 2;
+      bars += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, base - y(v))}" rx="${Math.min(3, w / 3)}" fill="${v >= k ? "#4ADE80" : "#F87171"}" opacity=".9"><title>${r[0]} ${r[14] ? "v" : "@"} ${r[1]}: ${v}</title></rect>`
+            + (showVals ? (base - y(v) >= 14
+                ? `<text x="${cx}" y="${y(v) + 10}" text-anchor="middle" font-size="9" font-weight="600" fill="#000" opacity=".7">${v}</text>`
+                : `<text x="${cx}" y="${y(v) - 3}" text-anchor="middle" font-size="9" fill="#F5F5F5">${v}</text>`) : "");
+      if (i % every === 0) labels += `<text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="7.5" fill="#9A9A9A">${dm(r[0])}</text>`;
+      const ls = Math.min(12, w);
+      if (r[1]) labels += `<image href="${LOGO(r[1])}" x="${cx - ls / 2}" y="${base + 4}" width="${ls}" height="${ls}"><title>${r[14] ? "v" : "@"} ${r[1]}</title></image>`;
+    });
+    const tx = pad + gap / 2, tw = bw - gap, tcx = tx + tw / 2;
+    const nxt = `<rect x="${tx}" y="${y(proj)}" width="${tw}" height="${Math.max(1, base - y(proj))}" rx="${Math.min(3, tw / 3)}" fill="none" stroke="#F5F5F5" stroke-width="1" stroke-dasharray="3 2" opacity=".7"><title>${NOGAME ? "Average" : "Next game: projection"} ${proj.toFixed(1)}</title></rect>`
+      + (!NOGAME && O ? `<image href="${LOGO(O.abbr)}" x="${tcx - Math.min(12, tw) / 2}" y="${base + 4}" width="${Math.min(12, tw)}" height="${Math.min(12, tw)}"><title>v ${O.abbr}</title></image>` : "")
+      + `<text x="${tcx}" y="${H - 4}" text-anchor="middle" font-size="7.5" fill="#D50A0A">${NOGAME ? "Avg" : "Next"}</text>`;
+    const ly = y(k - 0.5);
+    const tag = rung ? `${k}+ · ${rung[1].toFixed(2)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV · model ${rung[2].toFixed(0)}%` : pm != null ? `${k}+ · model ${(100 * pm).toFixed(0)}% · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : `${k}+`;
+    const good = rung && ev >= 5, bad = rung && ev < 0;
+    const col = good ? "#4ADE80" : bad ? "#F87171" : "#D50A0A";
+    document.getElementById("chartbox").innerHTML = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">`
+      + `${bars}${nxt}${labels}<line x1="${pad}" x2="${W - padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-width="1" stroke-dasharray="3 2"/>`
+      + `<text x="${pad - 3}" y="${ly + 3}" text-anchor="end" font-size="7.5" font-weight="600" fill="${col}">${k}+</text></svg>`;
+    document.getElementById("linetag").innerHTML = `<b style="color:${col}">${tag}</b>`;
+    document.getElementById("legend").textContent = `last ${last.length} games · ${NOGAME ? "avg" : "proj"} ${proj.toFixed(1)}`;
+    document.getElementById("kslide").value = k;
+    document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
+      b.className = (r[3] >= 5 ? "val " : "") + (+b.dataset.k === k ? "on" : "");
+      b.querySelector("small").textContent = `${r[2].toFixed(0)}% · ${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}%`; });
+    const hit = xs => xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0;
+    const sv = SEASON.map(r => val(st, r));
+    document.getElementById("hitrates").innerHTML = [["L5", vals.slice(-5)], ["L10", vals.slice(-10)], ["Season", sv.length ? sv : vals]].map(([l, xs]) => {
+      const h = hit(xs); return `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l} ${k}+</span></div>`; }).join("")
+      + `<div><b>${av(st, SEASON.length ? SEASON : LOG).toFixed(1)}</b><span>season avg</span></div>`;
+  }
+
+  // season averages
+  const avRows = shown.map(st => `<tr><td>${st.label}</td><td>${av(st, SEASON).toFixed(1)}</td><td>${av(st, LOG.slice(-5)).toFixed(1)}</td><td>${NOGAME || P.mu[st.k] == null ? "–" : P.mu[st.k].toFixed(1)}</td></tr>`).join("");
+  const avHtml = `<div class=panel><h2>Averages</h2><div class=tw><table class=gl><tr><th>Stat</th><th>Season</th><th>Last 5</th><th>Next proj</th></tr>${avRows}</table></div></div>`;
+  const glRows = LOG.slice().reverse().map(r => `<tr><td>${r[0].slice(5).split("-").reverse().join("/")}</td><td>${r[14] ? "v" : "@"} ${esc(r[1])}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[13]}/${r[7]}</td><td>${r[8]}</td><td>${r[10]}</td><td>${r[9]}</td></tr>`).join("");
+  const logHtml = `<div class=panel><h2>Game log</h2><div class=tw><table class=gl><tr><th>Date</th><th>Opp</th><th>Tgt</th><th>Rec</th><th>Rec yds</th><th>Car</th><th>Rush yds</th><th>Cmp/Att</th><th>Pass yds</th><th>TD</th><th>Tkl</th></tr>${glRows}</table></div></div>`;
+  const b = P.boost || {}, bk = Object.keys(b).sort((x, y) => b[y] - b[x])[0];
+  const tags = (P.inj ? `<span class="nba-tag ${/^(out|injured|doubtful)/i.test(P.inj) ? "out" : "dtd"}">${esc(P.inj)}</span>` : "")
+             + (bk && b[bk] >= 0.5 && !NOGAME ? `<span class="nba-tag up">usage up +${b[bk].toFixed(1)} ${({tgt: "targets", car: "carries", pa: "att", tk: "tackles"})[bk] || bk}</span>` : "");
+  const sh = P.sh || {};
+  const use = !NOGAME && (sh.tgt || sh.car) ? `<div class=kv style="margin-top:12px"><div><b>${Math.round(100 * (sh.tgt || 0))}%</b><span>target share</span></div><div><b>${Math.round(100 * (sh.car || 0))}%</b><span>carry share</span></div><div><b>${(P.mu.tgt || 0).toFixed(1)}</b><span>exp targets</span></div><div><b>${(P.mu.car || 0).toFixed(1)}</b><span>exp carries</span></div></div>` : "";
+  app.innerHTML = `<div class=ph><img class=face src="${FACE(pid)}" alt="" onerror="this.style.visibility='hidden'">
+    <div><h1>${esc(P.name)}</h1><div class=tm><img src="${LOGO(T.abbr)}" alt="">${esc(T.name || T.abbr)} · ${esc(P.pos || "")}${!NOGAME && O ? ` · ${home ? "v" : "@"} ${esc(O.abbr)} · ${ko}` : " · no game priced"}${tags}</div></div></div>
+    ${use}<div id=stat></div>${avHtml}${logHtml}
+    <p class=meta>Green rungs: EV 5%+ by the model · bet365 prices via MoviOdds · photos and logos: ESPN · not betting advice</p>`;
+  render();
+}).catch(e => { document.getElementById("app").innerHTML = "<p class=none>Couldn't load player data.</p>"; });
+</script></body></html>
