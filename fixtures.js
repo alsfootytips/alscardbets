@@ -44,7 +44,7 @@ function list() {
       c.games.push(g);
     }
     const npk = D.games.filter(g => gday(g) === sel).reduce((a, g) => a + (g.picks || []).length, 0);
-    root.innerHTML = `${root.dataset.sub ? "<h2 class=fx-h>Fixtures</h2>" : "<h1>Fixtures</h1>"}<p class=meta>${esc(D.note || "Every game with player props. Open a game for its picks and every player's stats, with bet365 prices and EV under each graph.")}${D.updated ? ` · updated ${hhmm(D.updated)}` : ""}</p>`
+    root.innerHTML = `${root.dataset.sub ? "<h2 class=fx-h>Fixtures</h2>" : "<h1>Fixtures</h1>"}${D.updated ? `<p class=meta>Updated ${hhmm(D.updated)}</p>` : ""}`
       + `<div class=fx-days>${days.map(d => `<button data-d="${d}" class="${d === sel ? "on" : ""}">${label(d)} <span>${D.games.filter(g => gday(g) === d).length}</span></button>`).join("")}</div>`
       + `<div class=fx-tools><input id=fxs type=search placeholder="Search teams or players" autocomplete=off value="${esc(q)}"><button id=fxup class="${upcoming ? "on" : ""}">Upcoming only</button><span class=meta>${gs.length} game${gs.length === 1 ? "" : "s"} · ${npk} pick${npk === 1 ? "" : "s"}</span></div>`
       + (comps.length ? comps.map(c => `<details class=fx-comp open><summary>${img(c.logo, "fx-clogo")}<div><b>${esc(c.name)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ""}</div><span class=fx-n>${c.games.length}</span></summary>`
@@ -92,7 +92,9 @@ function game(g) {
   const tot = M => st.ss && M.vs ? M.v.map((v, i) => v + (M.vs[i] || 0)) : M.v;
   const RG = M => (st.ss && M.rungs_ss) || M.rungs || [];
   const SRX = window.SR || {score: (a, b) => String(b).toLowerCase().includes(String(a).toLowerCase()) ? 1 : 0};
-  const P = g.players || [];
+  // only markets bet365 actually prices: drop unpriced markets, then players left with none
+  const P = (g.players || []).map(p => ({...p, m: Object.fromEntries(Object.entries(p.m || {})
+    .filter(([, M]) => (M.rungs || []).length || (M.rungs_ss || []).length))})).filter(p => Object.keys(p.m).length);
   const hasSS = P.some(p => Object.values(p.m || {}).some(M => (M.vs || []).some(x => x)));
   const markets = [...new Set(P.flatMap(p => Object.keys(p.m || {})))];
   const order = D.markets || markets;
@@ -106,22 +108,21 @@ function game(g) {
     + `<div class=fx-head>${team("away")}<div class=fx-mid><b>${when}</b>${g.info ? `<small>${esc(g.info)}</small>` : ""}${g.comp ? `<small>${esc(g.comp)}</small>` : ""}</div>${team("home")}</div>`
     + ((g.notes || []).length ? `<div class=fx-notes>${g.notes.map(n => `<span>${esc(n)}</span>`).join("")}</div>` : "")
     + injuries(g)
-    + `<h2>Picks <span>${(g.picks || []).length || "none yet"}</span></h2>`
+    + ((g.picks || []).length ? `<h2>Picks <span>${g.picks.length}</span></h2>` : "")
     + ((g.picks || []).length ? `<div class=fx-picks>${g.picks.map((k, i) => {
         const p = P.find(x => String(x.pid) === String(k.pid)) || {};
         return `<button class=fx-pick data-i="${i}">${img(p.face, "fx-face sm")}<div><b>${esc(k.player)}</b><small>${esc(k.line)} ${esc(k.market)}${k.tag ? ` · ${esc(k.tag)}` : ""}</small></div>`
           + `<div class=c><b>${(+k.odds).toFixed(2)}</b><small>${k.stake ? esc(k.stake) + "u" : ""}</small></div><div class=c><b class=pos>${k.ev > 0 ? "+" : ""}${(+k.ev).toFixed(0)}%</b><small>${(+k.model).toFixed(0)}% model</small></div></button>`;
-      }).join("")}</div>` : `<p class=meta>${esc(D.no_picks || "No model picks in this game.")}</p>`)
+      }).join("")}</div>` : "")
     + `<h2>Players</h2><div class=fx-ctl><div class=fx-seg>${[["all", "Both"], ["away", g.away?.abbr || g.away?.name || "Away"], ["home", g.home?.abbr || g.home?.name || "Home"]].map(([k, l]) => `<button data-t="${k}" class="${k === st.team ? "on" : ""}">${esc(l)}</button>`).join("")}</div>`
-    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxpr>Priced only</button><button id=fxview>Show all graphs</button>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}" title="Count what his replacement adds if he is subbed off (bet365 Super Sub)">Super Sub</button>` : ""}</div>`
-    + `<p class="meta fx-key">EV colours: <b class=pos>green</b> = value (${D.min_model ? `${D.min_model}%+ model chance and ` : ""}${D.value_ev ?? 5}%+ EV) · <b style="color:#F27A1A">orange</b> = positive EV but a long shot or below the value bar · <b class=neg>red</b> = bet365 price is worse than the model's</p>`
+    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxview>Show all graphs</button>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}" title="Count what his replacement adds if he is subbed off (bet365 Super Sub)">Super Sub</button>` : ""}</div>`
+    + `<p class="meta fx-key"><b class=pos>green</b> value · <b style="color:#F27A1A">orange</b> +EV long shot · <b class=neg>red</b> −EV</p>`
     + `<div class="chips fx-mk"><button data-m="best" class=on>Best value</button>${markets.map(m => `<button data-m="${esc(m)}">${esc(D.short?.[m] || m)}</button>`).join("")}</div>`
     + `<div id=fxcards class=fx-cards></div>`;
   root.querySelectorAll(".fx-seg button").forEach(b => b.onclick = () => { st.team = b.dataset.t; root.querySelectorAll(".fx-seg button").forEach(x => x.classList.toggle("on", x === b)); cards(); });
   root.querySelectorAll(".fx-mk button").forEach(b => b.onclick = () => { st.market = b.dataset.m; root.querySelectorAll(".fx-mk button").forEach(x => x.classList.toggle("on", x === b)); for (const k in cardState) delete cardState[k]; cards(); });
   root.querySelector("#fxq").value = st.q;
   root.querySelector("#fxq").oninput = e => { st.q = e.target.value; cards(); };
-  root.querySelector("#fxpr").onclick = e => { st.priced = !st.priced; e.target.classList.toggle("on", st.priced); cards(); };
   const ssb = root.querySelector("#fxss");
   if (ssb) ssb.onclick = () => { st.ss = !st.ss; ssb.classList.toggle("on", st.ss); try { localStorage.setItem("fxss", st.ss ? "1" : "0"); } catch (e) {} for (const k in cardState) cardState[k].k = null; cards(); };
   root.querySelector("#fxview").onclick = e => { st.graphs = !st.graphs; e.target.classList.toggle("on", st.graphs); cards(); };
@@ -180,14 +181,15 @@ function game(g) {
     const tm = g[p.team] || {};
     return `<div class=fx-card id="c${esc(p.pid)}"><div class=fx-ch>${img(p.face, "fx-face")}<div class=fx-who>`
       + `${p.link ? `<a href="${esc(p.link)}"><b>${esc(p.name)}</b></a>` : `<b>${esc(p.name)}</b>`}<small>${img(tm.logo, "fx-mini")}${esc(tm.abbr || tm.name || "")}${p.pos ? " · " + esc(p.pos) : ""}${p.tag ? ` <span class="fx-tag ${esc(p.tag_cls || "")}">${esc(p.tag)}</span>` : ""}</small></div></div>`
-      + (ms.length > 1 ? `<select class=fx-sel aria-label="Market">${ms.map(x => `<option${x === m ? " selected" : ""}>${esc(x)}</option>`).join("")}</select>` : `<div class=fx-one>${esc(m)}</div>`)
-      + `<div class=fx-body><div class=fx-left><div class=fx-chart></div><div class=fx-ctl2></div></div>`
-      + `<div class=fx-right><div class=fx-sum></div><div class=fx-rt></div><div class=fx-hr></div></div></div></div>`;
+      + `<div class=fx-mks>${ms.map(x => `<button data-m="${esc(x)}" class="${x === m ? "on" : ""}">${esc(D.short?.[x] || x)}</button>`).join("")}</div>`
+      + `<div class=fx-body><div class=fx-left><div class=fx-chart></div><div class=fx-hr></div><div class=fx-ctl2></div></div>`
+      + `<div class=fx-side><div class=fx-sum></div><div class=fx-rt></div></div></div></div>`;
   }
   function wire(p) {
     const el = document.getElementById("c" + p.pid); if (!el) return;
-    const sel = el.querySelector(".fx-sel");
-    if (sel) sel.onchange = () => { const s = cardState[p.pid]; s.m = sel.value; s.k = defLine(p.m[s.m]); draw(p); };
+    el.querySelectorAll(".fx-mks button").forEach(b => b.onclick = () => {
+      const s = cardState[p.pid]; s.m = b.dataset.m; s.k = defLine(p.m[s.m]);
+      el.querySelectorAll(".fx-mks button").forEach(x => x.classList.toggle("on", x === b)); draw(p); });
     draw(p);
   }
   function draw(p) {
@@ -251,21 +253,11 @@ function game(g) {
     el.querySelector(".fx-mv input").oninput = e => { s.k = +e.target.value; draw(p); };
     // right-hand panel: the line being looked at, its price and EV, then every bet365 line
     const fair = rung ? 100 / Math.max(rung[2], 0.1) : null, h = hr(RV);
-    el.querySelector(".fx-sum").innerHTML = `<div class=fx-big><span>${esc(D.short?.[s.m] || s.m)}</span><b>${kLabel(M, k)}</b></div>`
-      + `<div class=fx-kv>`
-      + `<div><b>${rung ? rung[1].toFixed(2) : "–"}</b><span>${rung ? "bet365" : "no price"}</span></div>`
-      + `<div><b style="color:${col}">${rung ? (rung[3] > 0 ? "+" : "") + rung[3].toFixed(0) + "%" : "–"}</b><span>EV</span></div>`
-      + `<div><b>${rung ? rung[2].toFixed(0) + "%" : "–"}</b><span>model</span></div>`
-      + `<div><b>${fair ? fair.toFixed(2) : "–"}</b><span>fair odds</span></div>`
-      + `<div><b class="${h >= 60 ? "pos" : h < 40 ? "neg" : ""}">${h ?? "–"}%</b><span>hit L${RV.length}</span></div>`
-      + `<div><b>${M.proj != null ? (+M.proj).toFixed(1) : avg.toFixed(1)}</b><span>${M.proj != null ? "projected" : "average"}</span></div>`
-      + `</div>`;
-    el.querySelector(".fx-rt").innerHTML = RG(M).length
-      ? `<table><tr><th>Line</th><th>Odds</th><th>Model</th><th>EV</th><th>Hit L${RV.length}</th></tr>`
-        + RG(M).map(r => { const hk = hrK(RV, r[0]); return `<tr data-k="${r[0]}" class="${isVal(r) ? "val " : ""}${r[0] === k ? "on" : ""}"><td>${kLabel(M, r[0])}</td><td>${r[1].toFixed(2)}</td><td>${r[2].toFixed(0)}%</td>`
-          + `<td class="${r[3] >= 0 ? "pos" : "neg"}">${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}%</td><td>${hk}%</td></tr>`; }).join("") + `</table>`
-      : `<p class=meta>No bet365 price for ${esc(s.m)}. Move the line to see hit rates.</p>`;
-    el.querySelectorAll(".fx-rt tr[data-k]").forEach(t => t.onclick = () => { s.k = +t.dataset.k; draw(p); });
+    el.querySelector(".fx-sum").innerHTML = "";
+    el.querySelector(".fx-rt").innerHTML = RG(M).map(r => `<button data-k="${r[0]}" class="fx-pr${isVal(r) ? " val" : ""}${r[0] === k ? " on" : ""}">`
+      + `<img class=fx-bk src="${esc(D.book_logo || "books/bet365.png")}" alt="bet365"><span>${kLabel(M, r[0])}</span><b>${r[1].toFixed(2)}</b>`
+      + `<b class=fx-ev style="color:${isVal(r) ? "#4ADE80" : r[3] < 0 ? "#F87171" : "#F27A1A"}">${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}%</b></button>`).join("");
+    el.querySelectorAll(".fx-rt button[data-k]").forEach(t => t.onclick = () => { s.k = +t.dataset.k; draw(p); });
     const sm = document.getElementById("s" + p.pid);
     if (sm) {
       const tm = g[p.team] || {}, l10 = TV.slice(-10), h10 = l10.filter(v => hitOf(M, v, k)).length, s10 = st.ss && M.vs ? M.vs.slice(-10) : [];
@@ -275,9 +267,7 @@ function game(g) {
         + `<div class=c><b>${rung ? rung[1].toFixed(2) : "–"}</b><small>${rung ? rung[2].toFixed(0) + "%" : "no price"}</small></div>`
         + `<div class=c><b style="color:${col}">${rung ? (rung[3] > 0 ? "+" : "") + rung[3].toFixed(0) + "%" : "–"}</b><small>EV</small></div>`;
     }
-    el.querySelector(".fx-hr").innerHTML = [["L5", TV.slice(-5)], ["L10", TV.slice(-10)], [`All ${TV.length}`, TV]].map(([l, xs]) => {
-      const h = hr(xs); return h == null ? "" : `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l}</span></div>`; }).join("")
-      + `<div><b>${avg.toFixed(1)}</b><span>avg L${RV.length}</span></div>`;
+    el.querySelector(".fx-hr").innerHTML = `Hit ${kLabel(M, k)} in <b>${RV.filter(v => hitOf(M, v, k)).length}/${RV.length}</b> · avg ${avg.toFixed(1)}${M.proj != null ? ` · proj ${(+M.proj).toFixed(1)}` : ""}`;
   }
   cards();
 }
