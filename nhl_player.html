@@ -1,0 +1,243 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Player · Al's NHL Bets</title>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
+<link rel=stylesheet href="brand.css?v=609debb4"><link rel=icon href="nhl_logo.svg">
+<style>
+.ph{display:flex;gap:14px;align-items:center;margin:20px 0 6px}
+.ph .face{width:84px;height:62px;object-fit:cover;object-position:top;border-radius:10px;background:var(--soft);flex:none}
+.ph h1{margin:0;font-size:22px}
+.ph .tm{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-top:3px;flex-wrap:wrap}
+.ph .tm img{width:20px;height:20px}.ph .tm .nba-tag{margin-left:0}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:14px 0 8px;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{font:500 13px var(--body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap;cursor:pointer}
+.chips button.on{background:#38BDF8;border-color:#38BDF8;color:#04121B}
+.chips.range{margin:4px 0 2px}.chips.range button{font-size:12px;padding:4px 10px}
+.chips.range button.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.rungs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px 0;justify-content:safe center}
+.rungs::-webkit-scrollbar{display:none}
+.rungs button{flex:none;font:500 13px var(--body);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;color:var(--fg);cursor:pointer;text-align:center;min-width:64px}
+.rungs button small{display:block;font-size:11px;color:var(--muted)}
+.rungs button.val{border-color:#1F4D2E;background:#0E2215}.rungs button.val small{color:var(--accent);font-weight:600}
+.rungs button.on{outline:2px solid #38BDF8;outline-offset:-1px}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;margin:6px 0 2px;flex-wrap:wrap}
+.chead #legend{color:var(--muted);font-size:11px;white-space:nowrap}
+.lg-bar,.lg-line{display:inline-block;vertical-align:middle;margin:0 4px 0 6px}
+.lg-bar{width:8px;height:8px;border-radius:2px;background:#4ADE80}
+.lg-line{width:12px;height:0;border-top:1.5px solid #A78BFA}
+.mover{display:flex;align-items:center;gap:8px;margin:4px 0 6px}
+.mover input{flex:1;accent-color:#38BDF8;height:28px}
+.mover button{width:36px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 18px var(--body);cursor:pointer}
+.hr{display:flex;gap:6px;margin:10px 0}.hr div{flex:1;min-width:0}
+.hr div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.hr b{display:block;font-size:17px}.hr span{font-size:10px;color:var(--muted);white-space:nowrap}
+.hr .good b{color:var(--accent)}.hr .bad b{color:var(--bad)}
+.chart{width:100%;display:block}.chart text{font-family:var(--body)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 12px 8px;margin:12px 0}
+.panel h2{margin:0 0 4px;font-size:15px}.panel .meta{margin:0 0 6px}
+.rink{width:100%;max-width:440px;display:block;margin:6px auto;background:#0B1A24;border-radius:10px}
+.rink .ln{fill:none;stroke:#2B4A5E;stroke-width:.5}.rink .red{fill:none;stroke:#7F2D2D;stroke-width:.6}
+.rink .blue{stroke:#1E4E79;stroke-width:1.2}
+.zt{width:100%;font-size:13px}.zt th:first-child,.zt td:first-child{text-align:left}.zt td,.zt th{padding:6px 4px}
+.qbars{display:grid;align-items:end;height:110px;margin:26px 0 4px}
+.qbars div{border-radius:5px 5px 0 0;position:relative;min-height:2px}
+.qbars div span{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-weight:600}
+.gl{width:100%;font-size:13px}.gl td,.gl th{padding:5px 4px;text-align:center}.gl td:first-child,.gl th:first-child{text-align:left}
+</style></head><body>
+<header class="top nhl"><div class=in><a class=logo href="nhl.html"><img src="nhl_logo.svg" alt="Al's NHL Bets"></a><div class=sport role=group aria-label=Sport><a href="picks.html">Football</a><a href="nba.html">NBA</a><a class=on aria-current=page href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="nhl.html">Tonight</a><a href="nhl_streaks.html">Streaks</a><a class=on href="nhl_players.html">Players</a><a href="nhl_results.html">Results</a></nav></div></header>
+<main id=app><p class=none>Loading…</p></main>
+<footer class="foot nhl"><i></i>Al's NHL Bets</footer>
+<script>
+const FACE = id => `https://a.espncdn.com/i/headshots/nhl/players/full/${id}.png`;
+const LOGO = ab => `https://a.espncdn.com/i/teamlogos/nhl/500/${String(ab).toLowerCase()}.png`;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// log row: [date, opp, toi, pp, sog, g, a, bs, ppp, home]
+const STATS = [
+  {k:"sog", label:"Shots", cols:[4], mk:["Shots on Goal"]},
+  {k:"pts", label:"Points", cols:[5, 6], mk:["Points"]},
+  {k:"g", label:"Goals", cols:[5], mk:["Goalscorers", "Multi Goalscorers"]},
+  {k:"a", label:"Assists", cols:[6], mk:["Assists"]},
+  {k:"bs", label:"Blocks", cols:[7], mk:["Blocked Shots"]},
+  {k:"ppp", label:"PP points", cols:[8], mk:["Power Play Points"]},
+  {k:"toi", label:"Ice time", cols:[2], dec:1},
+  {k:"pp", label:"PP time", cols:[3], dec:1}];
+const val = (st, r) => st.cols.reduce((a, c) => a + (+r[c] || 0), 0);
+const pid = new URLSearchParams(location.search).get("p");
+let DIST = {}, RULE = {markets: ["Points", "Assists"], min_edge: 0.10, max_odds: 4.0};
+function pAtLeast(k, mu, stat) {                       // mirrors nhl_model.p_at_least
+  if (k <= 0) return 1; if (!(mu > 0)) return 0;
+  const d = DIST[stat] || ["pois"]; let term, cdf;
+  if (d[0] === "nb") { const r = +d[1], p = r / (r + mu); term = Math.pow(p, r); cdf = term;
+    for (let i = 1; i < k; i++) { term *= (i - 1 + r) / i * (1 - p); cdf += term; } }
+  else { term = cdf = Math.exp(-mu); for (let i = 1; i < k; i++) { term *= mu / i; cdf += term; } }
+  return Math.max(0, Math.min(1, 1 - cdf)); }
+const isRule = (st, r) => !!r && st.mk && st.mk.some(m => RULE.markets.includes(m)) && r[3] >= 100 * RULE.min_edge && r[1] <= RULE.max_odds;
+let S = {stat: "sog", k: null, n: 15};
+
+const day = new Date().toISOString().slice(0, 13);
+Promise.all([fetch("nhl_data.json?v=" + Date.now()).then(r => r.json()).catch(() => ({games: []})),
+             fetch("nhl_all.json?d=" + day).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+             fetch("nhl_prev.json?d=" + day.slice(0, 10)).then(r => r.ok ? r.json() : {}).catch(() => ({}))]).then(([data, all, prevAll]) => {
+  DIST = data.dist || {}; RULE = data.rule || RULE;
+  let P = null, T = null, G = null, O = null;
+  for (const g of data.games || []) for (const t of g.teams) for (const p of t.players)
+    if (p.pid === pid) { P = p; T = t; G = g; O = g.teams.find(x => x !== t); }
+  const A = all[pid];
+  const app = document.getElementById("app");
+  if (!P && !A) { app.innerHTML = "<p class=none>Player not found. <a class=fmap href='nhl_players.html'>Search players</a></p>"; return; }
+  const LOG = A ? A.log : P.log;
+  const av = (c, xs) => xs.reduce((a, r) => a + (+r[c] || 0), 0) / Math.max(xs.length, 1);
+  const NOGAME = !G || G.status !== "STATUS_SCHEDULED";
+  if (!P) P = {pid, name: A.n, pos: A.pos, toi: av(2, LOG), toi_avg: av(2, LOG), pp: av(3, LOG), pp_avg: av(3, LOG), boost: 0,
+               proj: {sog: av(4, LOG), g: av(5, LOG), a: av(6, LOG), pts: av(5, LOG) + av(6, LOG), bs: av(7, LOG), ppp: av(8, LOG)}, mk: {}, inj: ""};
+  if (!T) T = {abbr: A.t, full: A.t};
+  document.title = `${P.name} · Al's NHL Bets`;
+  const tip = G ? new Date(G.tip).toLocaleString("en-GB", {weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/London"}) : "";
+  const rungsFor = st => !st.mk ? [] : st.mk.flatMap(m => (P.mk || {})[m] || []).sort((a, b) => a[0] - b[0]);
+  const projFor = st => st.k === "toi" ? P.toi : st.k === "pp" ? P.pp : (P.proj || {})[st.k] || 0;
+  // default stat: the market with the best logged-rule rung, else shots
+  let best = null;
+  for (const st of STATS) for (const r of rungsFor(st)) if (isRule(st, r) && (!best || r[3] > best.r[3])) best = {st, r};
+  if (best) { S.stat = best.st.k; S.k = best.r[0]; }
+  const PREV = prevAll[pid] || [];
+  const ALLG = PREV.concat(LOG);
+  const games = () => S.n === 0 ? LOG : ALLG.slice(-S.n);
+  const RANGES = [[10, "L10"], [15, "L15"], [25, "L25"], [0, "This season"]];
+
+  function render() {
+    const st = STATS.find(s => s.k === S.stat);
+    const rungs = rungsFor(st), proj = projFor(st);
+    if (S.k == null) {
+      const near = rungs.length ? rungs.reduce((a, b) => Math.abs(b[0] - 0.5 - proj) < Math.abs(a[0] - 0.5 - proj) ? b : a) : null;
+      S.k = near ? near[0] : Math.max(1, Math.round(proj));
+    }
+    const vals = LOG.map(r => val(st, r));
+    const top = Math.max(st.dec ? 30 : 5, Math.ceil(Math.max(...vals, proj) * 1.2));
+    const keep = ["#stat .chips:not(.range)", "#stat .chips.range", "#stat .rungs"].map(q => (document.querySelector(q) || {}).scrollLeft || 0);
+    const pageY = window.scrollY;
+    document.getElementById("stat").innerHTML =
+      `<div class=chips>${STATS.map(s => `<button data-s="${s.k}" class="${s.k === S.stat ? "on" : ""}">${s.label}</button>`).join("")}</div>`
+      + `<div class=panel><h2>${esc(st.label)} · ${NOGAME ? "avg" : "proj"} ${proj.toFixed(st.dec ? 1 : 2)}</h2>`
+      + `<div class="chips range">${RANGES.map(([n, l]) => `<button data-n="${n}" class="${n === S.n ? "on" : ""}">${l}</button>`).join("")}</div>`
+      + `<div class=chead><span id=linetag></span><span id=legend></span></div><div id=chartbox></div>`
+      + `<div class=mover><button id=kdown aria-label="Lower line">−</button><input id=kslide type=range min=1 max=${top} step=1 value=${S.k} aria-label="Move the line"><button id=kup aria-label="Raise line">+</button></div>`
+      + (rungs.length ? `<div class=rungs>${rungs.map(r => `<button data-k="${r[0]}">${r[0]}+ @ ${r[1].toFixed(2)}<small></small></button>`).join("")}</div>` : "")
+      + `<div class=hr id=hitrates></div></div>`;
+    ["#stat .chips:not(.range)", "#stat .chips.range", "#stat .rungs"].forEach((q, i) => { const el = document.querySelector(q); if (el) el.scrollLeft = keep[i]; });
+    window.scrollTo(0, pageY);
+    document.querySelectorAll("#stat .chips:not(.range) button").forEach(b => b.onclick = () => { S.stat = b.dataset.s; S.k = null; render(); });
+    document.querySelectorAll("#stat .chips.range button").forEach(b => b.onclick = () => { S.n = +b.dataset.n; render(); });
+    document.querySelectorAll("#stat .rungs button").forEach(b => b.onclick = () => { S.k = +b.dataset.k; draw(); });
+    const sl = document.getElementById("kslide");
+    sl.oninput = () => { S.k = +sl.value; draw(); };
+    document.getElementById("kdown").onclick = () => { S.k = Math.max(1, S.k - 1); draw(); };
+    document.getElementById("kup").onclick = () => { S.k = Math.min(top, S.k + 1); draw(); };
+    draw();
+  }
+
+  function draw() {
+    const st = STATS.find(s => s.k === S.stat);
+    const rungs = rungsFor(st), proj = projFor(st), k = S.k;
+    const vals = LOG.map(r => val(st, r)), last = games();
+    const rung = rungs.find(r => r[0] === k);
+    const pm = rung ? rung[2] / 100 : st.dec ? null : pAtLeast(k, proj, st.k);
+    const ev = rung ? rung[3] : null;
+    // bars = the stat, purple line = ice time (right-hand scale 0-30)
+    const n = last.length + 1, W = 340, H = 212, pad = 22, padR = 18, bw = (W - pad - padR) / n, gap = Math.min(4, bw * 0.25);
+    const base = H - 34, topY = 10;
+    const mx = Math.max(k * 1.3, proj * 1.1, ...last.map(r => val(st, r)), 1);
+    const y = v => base - (base - topY) * v / mx;
+    const ym = m => base - (base - topY) * Math.min(m, 30) / 30;
+    const showVals = bw >= 13, every = Math.ceil(n / 6);
+    const dm = d => { const [m, dd] = d.slice(-5).split("-"); return `${+dd}/${+m}`; };
+    const fmt = v => st.dec ? v.toFixed(0) : v;
+    let bars = "", pts = [], dots = "", labels = "";
+    last.forEach((r, i) => {
+      const v = val(st, r), x = pad + (last.length - i) * bw + gap / 2, w = bw - gap, cx = x + w / 2;
+      bars += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(1, base - y(v))}" rx="${Math.min(3, w / 3)}" fill="${v >= k ? "#4ADE80" : "#F87171"}" opacity=".9"><title>${r[0]} ${r[9] ? "v" : "@"} ${r[1]}: ${st.dec ? v.toFixed(1) : v} in ${(+r[2]).toFixed(1)} min</title></rect>`
+            + (showVals ? (base - y(v) >= 14
+                ? `<text x="${cx}" y="${y(v) + 10}" text-anchor="middle" font-size="9" font-weight="600" fill="#000" opacity=".7">${fmt(v)}</text>`
+                : `<text x="${cx}" y="${y(v) - 3}" text-anchor="middle" font-size="9" fill="#F5F5F5">${fmt(v)}</text>`) : "");
+      if (!st.dec) { pts.push(`${cx.toFixed(1)},${ym(+r[2]).toFixed(1)}`);
+        dots += `<circle cx="${cx}" cy="${ym(+r[2])}" r="${bw >= 10 ? 1.8 : 1.1}" fill="#A78BFA"><title>${(+r[2]).toFixed(1)} min</title></circle>`; }
+      if (i % every === 0) labels += `<text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="7.5" fill="#9A9A9A">${dm(r[0])}</text>`;
+      const ls = Math.min(12, w);
+      if (r[1]) labels += `<image href="${LOGO(r[1])}" x="${cx - ls / 2}" y="${base + 4}" width="${ls}" height="${ls}"><title>${r[9] ? "v" : "@"} ${r[1]}</title></image>`;
+    });
+    const tx = pad + gap / 2, tw = bw - gap, tcx = tx + tw / 2;
+    const lastPt = pts[pts.length - 1];
+    let tonight = `<rect x="${tx}" y="${y(proj)}" width="${tw}" height="${Math.max(1, base - y(proj))}" rx="${Math.min(3, tw / 3)}" fill="none" stroke="#F5F5F5" stroke-width="1" stroke-dasharray="3 2" opacity=".7"><title>${NOGAME ? "Average" : "Tonight: projection"} ${proj.toFixed(2)}</title></rect>`
+      + (G && O ? `<image href="${LOGO(O.abbr)}" x="${tcx - Math.min(12, tw) / 2}" y="${base + 4}" width="${Math.min(12, tw)}" height="${Math.min(12, tw)}"><title>v ${O.abbr} tonight</title></image>` : "")
+      + `<text x="${tcx}" y="${H - 4}" text-anchor="middle" font-size="7.5" fill="#38BDF8">${NOGAME ? "Avg" : "Tonight"}</text>`;
+    if (!st.dec) tonight += (lastPt ? `<line x1="${lastPt.split(",")[0]}" y1="${lastPt.split(",")[1]}" x2="${tcx}" y2="${ym(P.toi)}" stroke="#A78BFA" stroke-width="1" stroke-dasharray="2 2" opacity=".75"/>` : "")
+      + `<circle cx="${tcx}" cy="${ym(P.toi)}" r="2.4" fill="#000" stroke="#A78BFA" stroke-width="1.1"><title>Expected ${P.toi.toFixed(1)} min</title></circle>`
+      + `<polyline points="${pts.join(" ")}" fill="none" stroke="#A78BFA" stroke-width="1" stroke-linejoin="round" opacity=".75"/>${dots}`
+      + `<text x="${W - 2}" y="${ym(30) + 3}" text-anchor="end" font-size="6.5" fill="#A78BFA" opacity=".6">30</text><text x="${W - 2}" y="${ym(15) + 3}" text-anchor="end" font-size="6.5" fill="#A78BFA" opacity=".6">15</text>`;
+    const ly = y(k - 0.5);
+    const tag = rung ? `${k}+ · ${rung[1].toFixed(2)} · ${ev > 0 ? "+" : ""}${ev.toFixed(0)}% EV` : pm != null ? `${k}+ · fair ${(1 / Math.max(pm, 0.001)).toFixed(2)}` : `${k}+ min`;
+    const good = isRule(st, rung), bad = rung && ev < 0;
+    const col = good ? "#4ADE80" : bad ? "#F87171" : "#38BDF8";
+    document.getElementById("chartbox").innerHTML = `<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(st.label)} last ${last.length} games">`
+      + `<line x1="${pad}" x2="${W - padR}" y1="${y(proj)}" y2="${y(proj)}" stroke="#F5F5F5" stroke-width=".6" opacity=".2"/>${bars}${tonight}${labels}`
+      + `<line x1="${pad}" x2="${W - padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-width="1" stroke-dasharray="3 2"/>`
+      + `<text x="${pad - 3}" y="${ly + 3}" text-anchor="end" font-size="7.5" font-weight="600" fill="${col}">${k}+</text></svg>`;
+    document.getElementById("linetag").innerHTML = `<b style="color:${col}">${tag}</b>`;
+    document.getElementById("legend").innerHTML = `<i class=lg-bar></i>${esc(st.label.toLowerCase())}${st.dec ? "" : ` <i class=lg-line></i>ice time`} · ${NOGAME ? "avg" : "tonight"} ${proj.toFixed(st.dec ? 1 : 2)}${st.dec ? "" : ` / ${P.toi.toFixed(0)}m`}`;
+    document.getElementById("kslide").value = k;
+    document.querySelectorAll("#stat .rungs button").forEach(b => { const r = rungs.find(x => x[0] === +b.dataset.k);
+      b.className = (isRule(st, r) ? "val " : "") + (+b.dataset.k === k ? "on" : "");
+      b.querySelector("small").textContent = `${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}% EV`; });
+    const hit = xs => xs.length ? Math.round(100 * xs.filter(v => v >= k).length / xs.length) : 0;
+    const prevVals = PREV.map(r => val(st, r));
+    document.getElementById("hitrates").innerHTML = [["L5", vals.slice(-5)], ["L10", vals.slice(-10)], ["Season", vals]].concat(prevVals.length ? [["Last yr", prevVals]] : []).map(([l, xs]) => {
+      const h = hit(xs); return `<div class="${h >= 60 ? "good" : h < 40 ? "bad" : ""}"><b>${h}%</b><span>${l} ${k}+</span></div>`; }).join("")
+      + `<div><b>${(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1)).toFixed(st.dec ? 1 : 2)}</b><span>avg</span></div>`;
+  }
+
+  // ice time panel: last 10 games, PP time stacked on top of the rest
+  const l10 = LOG.slice(-10), tmax = Math.max(...l10.map(r => +r[2]), P.toi, 1);
+  const tb = l10.map(r => `<div style="height:${100 * r[2] / tmax}%;background:linear-gradient(to top,#38BDF8 ${100 * (r[2] - r[3]) / r[2]}%,#A78BFA ${100 * (r[2] - r[3]) / r[2]}%)" title="${r[0]}: ${(+r[2]).toFixed(1)} min, ${(+r[3]).toFixed(1)} PP"><span>${(+r[2]).toFixed(0)}</span></div>`).join("");
+  const boost = P.boost >= 0.3 ? `+${P.boost.toFixed(1)} with ${esc((P.boost_for || []).map(x => x.split(" ").slice(-1)[0]).slice(0, 2).join(", "))} out` : "";
+  const toiHtml = `<div class=panel><h2>Ice time</h2>
+    <div class=hr><div><b>${P.toi.toFixed(1)}</b><span>${NOGAME ? "avg" : "tonight"}</span></div><div><b>${av(2, LOG).toFixed(1)}</b><span>season</span></div>
+    <div><b>${av(2, LOG.slice(-5)).toFixed(1)}</b><span>last 5</span></div><div><b>${P.pp.toFixed(1)}</b><span>PP ${NOGAME ? "avg" : "tonight"}</span></div></div>
+    ${boost ? `<p class=meta>${boost}</p>` : ""}
+    <div class=qbars style="grid-template-columns:repeat(${l10.length},1fr);gap:4px">${tb}</div>
+    <p class=meta style="margin-top:6px"><i class=lg-bar style="background:#38BDF8"></i>even strength / shorthanded <i class=lg-bar style="background:#A78BFA"></i>power play · last ${l10.length} games</p></div>`;
+
+  // shot map: attacking half (ESPN feet: x 0 = centre ice, 89 = goal line; y -42.5..42.5)
+  const SH = (A && A.shots) || [];
+  const dotsS = SH.map(([x, yy, g]) => `<circle cx="${100 - x}" cy="${yy + 42.5}" r="${g ? 1.9 : 1.3}" fill="${g ? "#4ADE80" : "#E6F6FD"}" opacity="${g ? .95 : .35}"><title>${g ? "Goal" : "Shot"}</title></circle>`).join("");
+  const rink = `<svg class=rink viewBox="0 0 100 85" role=img aria-label="Shot locations this season">
+    <rect class=ln x="0" y="0" width="100" height="85" rx="12"/>
+    <line class="red" x1="11" x2="11" y1="2" y2="83"/><line class="blue" x1="75" x2="75" y1="0" y2="85"/>
+    <path class=red d="M 11 36.5 A 6 6 0 0 1 11 48.5"/><rect class=red x="7.5" y="39.5" width="3.5" height="6"/>
+    <circle class=red cx="31" cy="20.5" r="15"/><circle class=red cx="31" cy="64.5" r="15"/>
+    <circle cx="31" cy="20.5" r=".8" fill="#7F2D2D"/><circle cx="31" cy="64.5" r=".8" fill="#7F2D2D"/>
+    ${dotsS}</svg>`;
+  const zone = ([x, yy]) => (x >= 69 && Math.abs(yy) <= 9) ? "Slot / crease" : (x >= 54 && Math.abs(yy) <= 22) ? "High slot / circles" : x >= 75 ? "Below the circles / wide" : "Point / long range";
+  const Z = {}; for (const s of SH) { const z = zone(s); Z[z] = Z[z] || [0, 0]; Z[z][0]++; Z[z][1] += s[2]; }
+  const zr = ["Slot / crease", "High slot / circles", "Below the circles / wide", "Point / long range"].filter(z => Z[z]).map(z =>
+    `<tr><td>${z}</td><td>${Math.round(100 * Z[z][0] / SH.length)}%</td><td>${Z[z][0]}</td><td>${Z[z][1]}</td><td>${Math.round(100 * Z[z][1] / Z[z][0])}%</td></tr>`).join("");
+  const goals = SH.reduce((a, s) => a + s[2], 0);
+  const shotHtml = SH.length ? `<div class=panel><h2>Shot map</h2><p class=meta>${SH.length} shots on goal this season · ${goals} goals (${Math.round(100 * goals / SH.length)}%) · green = goal</p>
+    ${rink}<div class=tw><table class=zt><tr><th>Zone</th><th>Share</th><th>Shots</th><th>Goals</th><th>Sh%</th></tr>${zr}</table></div></div>` : "";
+
+  // game log
+  const glRows = LOG.slice(-15).reverse().map(r => `<tr><td>${r[0].slice(5).split("-").reverse().join("/")}</td><td>${r[9] ? "v" : "@"} ${esc(r[1])}</td><td>${(+r[2]).toFixed(1)}</td><td>${(+r[3]).toFixed(1)}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[5] + r[6]}</td><td>${r[7]}</td></tr>`).join("");
+  const logHtml = `<div class=panel><h2>Game log</h2><div class=tw><table class=gl><tr><th>Date</th><th>Opp</th><th>TOI</th><th>PP</th><th>SOG</th><th>G</th><th>A</th><th>PTS</th><th>BLK</th></tr>${glRows}</table></div></div>`;
+
+  const goalie = O && O.goalie && O.goalie.name ? ` · faces ${esc(O.goalie.name)}${O.goalie.status === "Confirmed" ? "" : " (exp)"}` : "";
+  const tags = (P.inj ? `<span class="nba-tag ${/^(out|injured)/i.test(P.inj) ? "out" : "dtd"}">${esc(P.inj)}</span>` : "")
+             + (P.up ? `<span class="nba-tag up">+${Math.max(P.toi - P.toi_avg, P.boost || 0).toFixed(1)} min</span>` : "");
+  const pr = P.proj || {};
+  app.innerHTML = `<div class=ph><img class=face src="${FACE(pid)}" alt="" onerror="this.style.visibility='hidden'">
+    <div><h1>${esc(P.name)}</h1><div class=tm><img src="${LOGO(T.abbr)}" alt="">${esc(T.full || T.abbr)} · ${esc(P.pos || "")}${G && O ? ` · ${T.side === "home" ? "v" : "@"} ${esc(O.abbr)} · ${tip}${goalie}` : " · no game today"}${tags}</div></div></div>
+    <div class=kv style="margin-top:12px"><div><b>${P.toi.toFixed(1)}</b><span>${NOGAME ? "avg" : "exp"} TOI</span></div><div><b>${(pr.sog || 0).toFixed(1)}</b><span>shots</span></div>
+    <div><b>${(pr.pts || 0).toFixed(2)}</b><span>points</span></div><div><b>${(pr.g || 0).toFixed(2)}</b><span>goals</span></div><div><b>${(pr.a || 0).toFixed(2)}</b><span>assists</span></div></div>
+    <div id=stat></div>${toiHtml}${shotHtml}${logHtml}
+    <p class=meta>Green rungs pass the logging rule (points / assists, edge 10%+, odds 4.00 or shorter) · photos and logos: ESPN · not betting advice</p>`;
+  render();
+}).catch(e => { document.getElementById("app").innerHTML = "<p class=none>Couldn't load player data.</p>"; });
+</script></body></html>
