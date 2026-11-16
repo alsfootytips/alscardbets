@@ -833,3 +833,4 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .mxh .mxp,.mxh .mxe{font-weight:400;color:var(--muted)}
 .mxd{font-size:13px}.mxd .mxw b{color:var(--muted);font-weight:600}
 .mxg{display:block;margin-top:4px;font-size:11px;color:var(--muted)}.mxg a{color:inherit}
+.pnext{color:inherit;text-decoration:underline;text-underline-offset:3px}.pnext:hover{color:var(--fg)}
