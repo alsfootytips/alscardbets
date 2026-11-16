@@ -2,7 +2,7 @@
 <title>Player · Al's Card Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=397379e7"><link rel=icon href="logo.jpg"></head><body>
+<link rel=stylesheet href="brand.css?v=d641608f"><link rel=icon href="logo.jpg"></head><body>
 <header class=top><div class=in><a class=logo href="football.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="football.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="football.html">Fixtures</a><a href="props.html">Props</a><a href="picks.html">Cards</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
 <main class=wide><div id=app><p class=meta>Loading…</p></div>
 <p class=meta style="margin-top:28px">Not betting advice.</p>
@@ -249,8 +249,9 @@ function drawPanel(){
   const box=document.getElementById("ppanel"), side=document.getElementById("pside"); if(!box||!DD)return; const key=CH.key;
   let below="", sideH=projBox()+teamBox();
   if(["shots","sot","hsot","osot"].includes(key)){ if(key==="hsot"&&SF._k!==key){SF.t="H";SF.on=true;SF.box="A"} if(key==="osot"&&SF._k!==key){SF.t="A";SF.on=true;SF.box="out"} SF._k=key;
-    const fr=filtered(DD.rows||[]), n=fr.reduce((a,r)=>a+(r[6]||[]).length,0);
-    if(n) below=`<div class=ppan><h3 class=sub3>Shot map · ${n} shots</h3>${shotmap(fr)}</div>`; }
+    if(!SF.range)SF.range=["5","10","20","season","all"].includes(FL.range)?FL.range:"10";
+    const b0=baseRows(DD.rows||[]), fr=rangeRows(b0,!b0.some(r=>r[9])&&SF.range==="season"?"all":SF.range);
+    if(b0.some(r=>(r[6]||[]).length)) below=`<div class=ppan><h3 class=sub3>Shot map</h3>${shotmap(fr)}</div>`; }
   else if(PANEL[key]&&meRow()){
     const [stat,label]=PANEL[key], x=G.cards[String(DD.pid)]||{};
     const P={...x,pid:Number(DD.pid),pitch:G.pitch,player:x.player||DD.name};
@@ -283,13 +284,20 @@ function wireShots(){
   const sf=document.getElementById("sf"), sfb=document.getElementById("sfb");
   if(sf)sf.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;SF.t=b.dataset.t;drawPanel()};
   if(sfb)sfb.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;if(b.dataset.on)SF.on=!SF.on;else SF.box=b.dataset.b;drawPanel()};
-  document.querySelectorAll(".smap circle").forEach(c=>c.onclick=()=>{const i=document.getElementById("sinfo");if(i)i.textContent=c.querySelector("title").textContent});
+  const sfr=document.getElementById("sfr");
+  if(sfr)sfr.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;SF.range=b.dataset.r;drawPanel()};
+  document.querySelectorAll(".smap circle").forEach(c=>c.onclick=()=>{const i=document.getElementById("sinfo");if(i)i.textContent=c.querySelector("title").textContent;
+    document.querySelectorAll(".smap circle.sel").forEach(x=>{x.classList.remove("sel");x.setAttribute("stroke","#000");x.setAttribute("stroke-width","1")});
+    c.classList.add("sel");c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","3")});
 }
 
-const SF={t:"A",box:"A",on:false};
+const SF={t:"A",box:"A",on:false,range:null};
+const dmy=r=>{const d=r[9]?new Date(r[9]+"T12:00:00Z"):null;return d?d.toLocaleDateString("en-GB",{day:"numeric",month:"short"}):r[0]};
+function shotRange(){return `<div class=seg id=sfr>${[["5","L5"],["10","L10"],["20","L20"],["season","Season"],["all","All"]].map(([v,l])=>`<button data-r="${v}"${SF.range===v?" class=on":""}>${l}</button>`).join("")}</div>`}
 function shotmap(rows){
-  const all=[];rows.forEach(r=>(r[6]||[]).forEach(s=>all.push({x:s[0],y:s[1],t:s[2],on:s[3],g:s[4],xg:s[5],m:s[6],ib:s[7],d:r[0],o:r[1]})));
-  if(!all.length)return"";
+  const all=[];rows.forEach(r=>(r[6]||[]).forEach(s=>all.push({x:s[0],y:s[1],t:s[2],on:s[3],g:s[4],xg:s[5],m:s[6],ib:s[7],d:dmy(r),o:r[1]})));
+  const span=rows.length?`${/^\d+$/.test(SF.range||"")?"last ":""}${rows.length} game${rows.length===1?"":"s"} · ${dmy(rows[rows.length-1])}${rows.length>1?` – ${dmy(rows[0])}`:""}`:"no games";
+  if(!all.length)return shotRange()+`<p class=meta><b>0 shots</b> · ${span}</p>`;
   const T={R:"Right foot",L:"Left foot",H:"Header",O:"Other"}, k=8, W=68*k, H=52.5*k;
   const keep=s=>(SF.t==="A"||s.t===SF.t)&&(SF.box==="A"||(SF.box==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on);
   const P=s=>[(s.y*k).toFixed(1),((105-s.x)*k).toFixed(1)];
@@ -298,14 +306,14 @@ function shotmap(rows){
     `<line x1="0" y1="${H-1}" x2="${W}" y2="${H-1}"/><path d="M ${(34-9.15)*k} ${H} A ${9.15*k} ${9.15*k} 0 0 1 ${(34+9.15)*k} ${H}"/><path d="M ${(34-7.3)*k} ${16.5*k} A ${9.15*k} ${9.15*k} 0 0 0 ${(34+7.3)*k} ${16.5*k}"/></g>`+
     `<rect x="${30.34*k}" y="-4" width="${7.32*k}" height="8" fill="#ddd"/>`;
   all.filter(keep).forEach(s=>{const [cx,cy]=P(s),r=5+Math.sqrt(s.xg||0)*18,col=s.g?"#FBBF24":s.on?"#4ADE80":"#9CA3AF";
-    svg+=`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="${col}" fill-opacity="${s.g||s.on?.9:.45}" stroke="#000" stroke-width="1"><title>${T[s.t]} · ${s.ib===0?"outside box":"inside box"} · ${s.g?"Goal":s.on?"On target":"Off target"} · xG ${s.xg} · v ${esc(s.o)} ${s.d} ${s.m??""}'</title></circle>`});
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="${col}" fill-opacity="${s.g||s.on?.9:.45}" stroke="#000" stroke-width="1"><title>v ${esc(s.o)} · ${s.d}${s.m!=null?` · ${s.m}'`:""} · ${T[s.t]} · ${s.ib===0?"Outside box":"Inside box"} · ${s.g?"Goal":s.on?"On target":"Off target"}${s.xg!=null?` · xG ${(+s.xg).toFixed(2)}`:""}</title></circle>`});
   svg+="</svg>";
   const cnt=f=>all.filter(s=>keep({...s,...f})).length;
   const sel=all.filter(keep).length, games=rows.length;
   const lab=`${{A:"",R:"Right-foot ",L:"Left-foot ",H:"Headed "}[SF.t]}${SF.on?"SOT":"shots"}${SF.box==="in"?" inside box":SF.box==="out"?" outside box":""}`;
-  return `<div class=seg id=sf>${[["A","All"],["R","Right"],["L","Left"],["H","Header"]].map(([t,l])=>`<button data-t="${t}"${SF.t===t?" class=on":""}>${l} ${all.filter(s=>(t==="A"||s.t===t)&&(SF.box==="A"||(SF.box==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on)).length}</button>`).join("")}</div>`
+  return shotRange()+`<div class=seg id=sf>${[["A","All"],["R","Right"],["L","Left"],["H","Header"]].map(([t,l])=>`<button data-t="${t}"${SF.t===t?" class=on":""}>${l} ${all.filter(s=>(t==="A"||s.t===t)&&(SF.box==="A"||(SF.box==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on)).length}</button>`).join("")}</div>`
     +`<div class=seg id=sfb>${[["A","Any"],["in","Inside box"],["out","Outside box"]].map(([b,l])=>`<button data-b="${b}"${SF.box===b?" class=on":""}>${l} ${all.filter(s=>(SF.t==="A"||s.t===SF.t)&&(b==="A"||(b==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on)).length}</button>`).join("")}<button data-on=1${SF.on?" class=on":""}>On target</button></div>`
-    +`<p class=meta><b>${lab[0].toUpperCase()+lab.slice(1)}: ${sel}</b> in ${games} games · ${(sel/Math.max(games,1)).toFixed(2)} a game · <span style="color:#4ADE80">●</span> on target <span style="color:#9CA3AF">●</span> off <span style="color:#FBBF24">●</span> goal</p>`
+    +`<p class=meta><b>${sel} ${lab}</b> · ${span} · ${(sel/Math.max(games,1)).toFixed(2)} a game · <span style="color:#4ADE80">●</span> on target <span style="color:#9CA3AF">●</span> off <span style="color:#FBBF24">●</span> goal</p>`
     +svg+`<p class=meta id=sinfo></p>`}
 
 function draw(d){

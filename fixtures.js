@@ -275,11 +275,21 @@ function game(g) {
     let svg = `<svg viewBox="0 0 ${W} ${H}" class=fx-smap role=img aria-label="Shot map"><rect width="${W}" height="${H}" rx="8" fill="#0E2215"/>`
       + `<g fill="none" stroke="#2F5A3C" stroke-width="2"><rect x="${13.84 * k}" y="0" width="${40.32 * k}" height="${16.5 * k}"/><rect x="${24.84 * k}" y="0" width="${18.32 * k}" height="${5.5 * k}"/>`
       + `<path d="M ${(34 - 7.3) * k} ${16.5 * k} A ${9.15 * k} ${9.15 * k} 0 0 0 ${(34 + 7.3) * k} ${16.5 * k}"/></g><rect x="${30.34 * k}" y="-3" width="${7.32 * k}" height="6" fill="#ddd"/>`;
-    for (const sh of all) { const [cx, cy] = P(sh); if (+cy > H) continue;
-      svg += `<circle cx="${cx}" cy="${cy}" r="${(5 + Math.sqrt(sh[5] || 0) * 16).toFixed(1)}" fill="${sh[4] ? "#FBBF24" : sh[3] ? "#4ADE80" : "#9CA3AF"}" fill-opacity="${sh[4] || sh[3] ? .9 : .45}" stroke="#000" stroke-width="1"/>`; }
+    // tap a shot -> when it was (row r: [date, opponent, ...]; shot: [x, y, type, on, goal, xG, minute, inBox])
+    const info = [], fd = d => { const m = /^(\d{1,2})\/(\d{1,2})$/.exec(String(d || "")); return m ? `${+m[1]} ${"Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[+m[2] - 1]}` : String(d || ""); };
+    use.forEach(r => (r[6] || []).filter(keep).forEach(sh => {
+      const [cx, cy] = P(sh); if (+cy > H) return;
+      const txt = [r[1] ? `v ${r[1]}` : "", fd(r[0]), sh[6] != null ? `${sh[6]}'` : "", {H: "Header", R: "Right foot", L: "Left foot"}[sh[2]] || "",
+        sh[4] ? "Goal" : sh[3] ? "On target" : "Off target", sh[5] != null ? `xG ${(+sh[5]).toFixed(2)}` : ""].filter(Boolean).join(" · ");
+      svg += `<circle data-i="${info.length}" cx="${cx}" cy="${cy}" r="${(5 + Math.sqrt(sh[5] || 0) * 16).toFixed(1)}" fill="${sh[4] ? "#FBBF24" : sh[3] ? "#4ADE80" : "#9CA3AF"}" fill-opacity="${sh[4] || sh[3] ? .9 : .45}" stroke="#000" stroke-width="1" style="cursor:pointer"><title>${esc(txt)}</title></circle>`;
+      info.push(txt); }));
+    const span = use.length ? `${fd(use[use.length - 1][0])} – ${fd(use[0][0])}` : "";
     const open = key in smOpen ? smOpen[key] : window.innerWidth > 800;
-    box.innerHTML = `<details class=fx-smd${open ? " open" : ""}><summary>Shot map · ${all.length} in ${use.length} games</summary>${svg}</svg></details>`;
+    box.innerHTML = `<details class=fx-smd${open ? " open" : ""}><summary>Shot map · ${all.length} in last ${use.length} games${span ? ` · ${span}` : ""}</summary>${svg}</svg><div class=fx-sinfo></div></details>`;
     box.querySelector("details").addEventListener("toggle", e => { smOpen[key] = e.target.open; });
+    box.querySelectorAll("circle[data-i]").forEach(c => c.onclick = ev => { ev.stopPropagation();
+      box.querySelectorAll("circle[data-i]").forEach(x => x.setAttribute("stroke", "#000"));
+      c.setAttribute("stroke", "#fff"); box.querySelector(".fx-sinfo").textContent = info[+c.dataset.i]; });
   }
   function wire(p) {
     const el = document.getElementById("c" + p.pid); if (!el) return;
@@ -297,8 +307,11 @@ function game(g) {
     const vals = tot(M).slice(-n), gs = G.slice(-n), subs = st.ss && M.vs ? M.vs.slice(-n) : null;
     const proj = s.proj ? M.proj : null;
     // NBA-style chart: newest on the left after a dashed "next" bar, minutes line on a right-hand scale
-    const W = wide ? 560 : 340, H = wide ? 230 : 196, pad = 24, padR = 14, cols = n + (proj != null ? 1 : 0), bw = (W - pad - padR) / Math.max(cols, 1), gap = Math.min(4, bw * .25);
-    const base = H - 32, topY = 10;
+    const hasPos = gs.some(r => r[5]);                          // football: position played each game under the bar
+    const W = wide ? 560 : 340, H = (wide ? 230 : 196) + (hasPos ? 9 : 0), pad = 24, padR = 14, cols = n + (proj != null ? 1 : 0), bw = (W - pad - padR) / Math.max(cols, 1), gap = Math.min(4, bw * .25);
+    const base = H - (hasPos ? 41 : 32), topY = 10;
+    const posC = {}; gs.forEach(r => { if (r[5]) posC[r[5]] = (posC[r[5]] || 0) + 1; });
+    const usual = Object.keys(posC).sort((a, b) => posC[b] - posC[a])[0];   // his most common spot: others show brighter
     const mx = Math.max(lineAt(M, k) * 1.3, (proj || 0) * 1.1, ...vals, 1);
     const y = v => base - (base - topY) * v / mx;
     const mMax = D.min_max || 0, hasMin = mMax && gs.some(r => r[3] != null);
@@ -316,6 +329,7 @@ function game(g) {
       const ls = Math.min(12, w);
       if (r[2]) labels += `<image href="${esc(r[2])}" x="${cx - ls / 2}" y="${base + 4}" width="${ls}" height="${ls}"><title>v ${esc(r[1] || "")}</title></image>`;
       else if (r[1] && bw >= 16) labels += `<text x="${cx}" y="${base + 12}" text-anchor=middle font-size=6.5 fill="#9A9A9A">${esc(String(r[1]).slice(0, 4))}</text>`;
+      if (r[5] && bw >= 10) labels += `<text x="${cx}" y="${base + 25}" text-anchor=middle font-size="${Math.min(7, bw * .5).toFixed(1)}" font-weight="${r[5] === usual ? 400 : 700}" fill="${r[5] === usual ? "#8A8A8A" : "#F5F5F5"}">${esc(r[5])}</text>`;
       if ((j + off) % every === 0 && r[0]) { const [mm, dd] = r[0].split("-").slice(-2); labels += `<text x="${cx}" y="${H - 3}" text-anchor=middle font-size=7.5 fill="#9A9A9A">${+dd}/${+mm}</text>`; }
     }
     let next = "";

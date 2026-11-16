@@ -834,3 +834,5 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .mxd{font-size:13px}.mxd .mxw b{color:var(--muted);font-weight:600}
 .mxg{display:block;margin-top:4px;font-size:11px;color:var(--muted)}.mxg a{color:inherit}
 .pnext{color:inherit;text-decoration:underline;text-underline-offset:3px}.pnext:hover{color:var(--fg)}
+
+.fx-sinfo{font-size:13px;color:var(--fg);min-height:18px;padding:6px 2px 0}
