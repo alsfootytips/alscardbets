@@ -783,3 +783,10 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .mw{min-width:0}.mw b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mw small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mo,.mres{text-align:right}.mo b,.mres b{display:block;font-size:14px}.mo small,.mres small{color:var(--muted);font-size:11px}
 .ssb{font-style:normal;font-size:9px;font-weight:700;color:#A78BFA;border:1px solid #A78BFA;border-radius:999px;padding:0 4px;margin-left:3px}
+/* Fixtures: lineups pitch */
+.chips.fx-lumk{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:6px 0 10px}
+.chips.fx-lumk button{flex:none;font:500 13px var(--body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chips.fx-lumk button.on{background:var(--fg);border-color:var(--fg);color:#000}
+.fx-pitch{max-width:720px}.fx-pitchsvg{width:100%;height:auto;display:block}
+.fx-luf{display:flex;justify-content:space-between;max-width:720px;margin:6px 0 4px;font-size:13px;color:var(--muted)}
+.fx-luf span{display:flex;align-items:center;gap:5px}

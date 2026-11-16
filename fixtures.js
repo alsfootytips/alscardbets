@@ -73,6 +73,51 @@ function list() {
 
 // ---------- one game ----------
 const ORDER = {out: 0, suspension: 0, "injured reserve": 0, doubtful: 1, questionable: 2, "day-to-day": 2, "game-time decision": 2, probable: 3};
+// Lineups pitch (football etc.): g.lineups = {status: "confirmed"|"predicted", home: {formation, players: [{pid, name, pos, x, y}]}, away: {...}}
+// x = 0 own goal .. 100 opponent goal, y = 0 .. 100 across. Each team sits in its own half; chips colour players by a stat.
+function lineups(g) {
+  const L = g.lineups; if (!L || !(L.home || {}).players && !(L.away || {}).players) return "";
+  const P = g.players || [], byId = Object.fromEntries(P.map(p => [String(p.pid), p]));
+  const mk = [...new Set(P.flatMap(p => Object.keys(p.m || {})))];
+  const order = D.markets || mk; mk.sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
+  return `<details class="rsec fx-lus" id="lu${esc(g.id)}" open><summary><h2>Lineups</h2><b class="${L.status === "confirmed" ? "pos" : ""}">${L.status === "confirmed" ? "Confirmed" : "Predicted"}</b></summary>`
+    + `<div class="chips fx-lumk"><button data-m="" class=on>Positions</button>${mk.map(m => `<button data-m="${esc(m)}">${esc(D.short?.[m] || m)}</button>`).join("")}</div>`
+    + `<div class=fx-pitch data-g="${esc(g.id)}"></div>`
+    + `<div class=fx-luf>${["home", "away"].map(sd => L[sd] && L[sd].formation ? `<span>${img((g[sd] || {}).logo, "fx-mini")}${esc((g[sd] || {}).abbr || (g[sd] || {}).name || "")} ${esc(L[sd].formation)}</span>` : "").join("")}</div></details>`;
+}
+function drawPitch(g, m) {
+  const box = document.querySelector(`.fx-pitch[data-g="${CSS.escape(String(g.id))}"]`); if (!box) return;
+  const L = g.lineups, P = g.players || [], byId = Object.fromEntries(P.map(p => [String(p.pid), p]));
+  const W = 1050, H = 680, ln = "rgba(255,255,255,.18)";
+  const avg = pl => { const p = byId[String(pl.pid)]; const M = p && m ? (p.m || {})[m] : null; if (!M || !M.v || !M.v.length) return null; const v = M.v.slice(-10); return v.reduce((a, b) => a + b, 0) / v.length; };
+  const all = ["home", "away"].flatMap(sd => ((L[sd] || {}).players || []).map(pl => avg(pl))).filter(v => v != null);
+  const mx = Math.max(...all, 0.01);
+  let out = `<svg viewBox="0 0 ${W} ${H}" class=fx-pitchsvg role=img aria-label="Lineups">`
+    + `<rect x=0 y=0 width=${W} height=${H} rx=14 fill="#0F1A12"/>`
+    + `<g fill=none stroke="${ln}" stroke-width=2><rect x=10 y=10 width=${W - 20} height=${H - 20} rx="8"/><line x1=${W / 2} y1=10 x2=${W / 2} y2="${H - 10}"/><circle cx=${W / 2} cy=${H / 2} r="80"/>`
+    + `<rect x=10 y=${H / 2 - 165} width=160 height="330"/><rect x=${W - 170} y=${H / 2 - 165} width=160 height="330"/><rect x=10 y=${H / 2 - 75} width=55 height="150"/><rect x=${W - 65} y=${H / 2 - 75} width=55 height="150"/></g>`;
+  for (const sd of ["home", "away"]) {
+    const T = L[sd]; if (!T || !T.players) continue;
+    const col = sd === "home" ? "#60A5FA" : "#F87171";
+    for (const pl of T.players) {
+      const fx = Math.max(4, Math.min(96, pl.x ?? 50)) / 100, fy = Math.max(6, Math.min(94, pl.y ?? 50)) / 100;
+      const X = sd === "home" ? 20 + fx * (W / 2 - 40) : W - 20 - fx * (W / 2 - 40), Y = sd === "home" ? 10 + fy * (H - 20) : H - 10 - fy * (H - 20);
+      const v = avg(pl), t = v == null ? 0 : v / mx;
+      const r = m ? 22 + 26 * t : 22;
+      const p = byId[String(pl.pid)], last = (pl.name || "").split(" ").slice(-1)[0];
+      out += (m && v != null ? `<circle cx=${X} cy=${Y} r=${r + 18} fill="${t > .66 ? "#4ADE80" : t > .33 ? "#FBBF24" : "#F87171"}" opacity="${.12 + .28 * t}"/>` : "")
+        + `<g class=fx-lup data-pid="${esc(pl.pid)}" style="cursor:${p ? "pointer" : "default"}"><circle cx=${X} cy=${Y} r=22 fill="#111" stroke="${col}" stroke-width="3"/>`
+        + `<text x=${X} y=${Y + 5} text-anchor=middle font-size=15 font-weight=700 fill="#F5F5F5">${esc(m && v != null ? v.toFixed(1) : (pl.pos || ""))}</text>`
+        + `<text x=${X} y=${Y + 44} text-anchor=middle font-size=17 font-weight=600 fill="#F5F5F5">${esc(last)}</text></g>`;
+    }
+  }
+  box.innerHTML = out + `</svg>`;
+  box.querySelectorAll(".fx-lup").forEach(n => n.onclick = () => {
+    const el = document.getElementById("c" + n.dataset.pid); if (!el) return;
+    if (el.parentElement.tagName === "DETAILS") el.parentElement.open = true;
+    el.scrollIntoView({behavior: "smooth", block: "center"}); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1500);
+  });
+}
 function injuries(g) {
   const L = (g.injuries || []).slice().sort((a, b) => (ORDER[(a.status || "").toLowerCase()] ?? 2) - (ORDER[(b.status || "").toLowerCase()] ?? 2));
   if (!L.length) return "";
@@ -111,6 +156,7 @@ function game(g) {
   root.innerHTML = `<a class=fx-back href="?d=${gday(g)}">‹ Fixtures</a>`
     + `<div class=fx-head>${team("away")}<div class=fx-mid><b>${when}</b>${g.info ? `<small>${esc(g.info)}</small>` : ""}${g.comp ? `<small>${esc(g.comp)}</small>` : ""}</div>${team("home")}</div>`
     + ((g.notes || []).length ? `<div class=fx-notes>${g.notes.map(n => `<span>${esc(n)}</span>`).join("")}</div>` : "")
+    + lineups(g)
     + injuries(g)
     + ((g.picks || []).length ? `<h2>Picks <span>${g.picks.length}</span></h2>` : "")
     + ((g.picks || []).length ? `<div class=fx-picks>${g.picks.map((k, i) => {
@@ -130,6 +176,10 @@ function game(g) {
   const ssb = root.querySelector("#fxss");
   if (ssb) ssb.onclick = () => { st.ss = !st.ss; ssb.classList.toggle("on", st.ss); try { localStorage.setItem("fxss", st.ss ? "1" : "0"); } catch (e) {} for (const k in cardState) cardState[k].k = null; cards(); };
   root.querySelector("#fxview").onclick = e => { st.graphs = !st.graphs; e.target.classList.toggle("on", st.graphs); cards(); };
+  if (g.lineups) {
+    drawPitch(g, "");
+    root.querySelectorAll(".fx-lumk button").forEach(b => b.onclick = () => { root.querySelectorAll(".fx-lumk button").forEach(x => x.classList.toggle("on", x === b)); drawPitch(g, b.dataset.m); });
+  }
   root.querySelectorAll(".fx-pick").forEach(b => b.onclick = () => {
     const k = g.picks[+b.dataset.i];
     cardState[k.pid] = {m: k.market, k: parseFloat(k.line)};
@@ -175,7 +225,11 @@ function game(g) {
     box.innerHTML = ps.length ? ps.map(x => st.graphs ? card(x.p, x.m)
       : `<details class=fx-li><summary id="s${esc(x.p.pid)}"></summary>${card(x.p, x.m)}</details>`).join("") : "<p class=none>No players match.</p>";
     for (const x of ps) wire(x.p);
-    box.querySelectorAll("details.fx-li").forEach(d => d.addEventListener("toggle", () => d.querySelector(".fx-card").classList.toggle("open", d.open)));
+    box.querySelectorAll("details.fx-li").forEach(d => d.addEventListener("toggle", () => {
+      d.querySelector(".fx-card").classList.toggle("open", d.open);
+      if (d.open) { const pl = P.find(x => "c" + x.pid === d.querySelector(".fx-card").id); if (pl) loadMore(pl); }
+    }));
+    if (st.graphs) for (const x of ps) loadMore(x.p);
   }
   function card(p, m) {
     const s = cardState[p.pid] = cardState[p.pid] || {m};
@@ -188,6 +242,17 @@ function game(g) {
       + `<div class=fx-mks>${ms.map(x => `<button data-m="${esc(x)}" class="${x === m ? "on" : ""}">${esc(D.short?.[x] || x)}</button>`).join("")}</div>`
       + `<div class=fx-body><div class=fx-left><div class=fx-chart></div><div class=fx-hr></div><div class=fx-ctl2></div></div>`
       + `<div class=fx-side><div class=fx-sum></div><div class=fx-rt></div></div></div></div>`;
+  }
+  const moreDone = new Set();
+  function loadMore(p) {
+    if (!D.more_url || moreDone.has(String(p.pid))) return;
+    moreDone.add(String(p.pid));
+    fetch(D.more_url.replace("{pid}", encodeURIComponent(p.pid)) + "?v=" + (D.updated || "")).then(r => r.ok ? r.json() : null).then(h => {
+      if (!h || !h.g || h.g.length <= (p.g || []).length) return;
+      p.g = h.g;
+      for (const [k, M] of Object.entries(p.m || {})) if (h.m && h.m[k]) { M.v = h.m[k].v; if (h.m[k].vs) M.vs = h.m[k].vs; }
+      if (document.getElementById("c" + p.pid)) draw(p);
+    }).catch(() => {});
   }
   function wire(p) {
     const el = document.getElementById("c" + p.pid); if (!el) return;
