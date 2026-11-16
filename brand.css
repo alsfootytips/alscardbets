@@ -697,3 +697,15 @@ details.fx-li .fx-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax
 .oppbox .swho .nface.fm{width:38px;height:38px;border-radius:50%;flex:none}.oppbox .stiles{margin-top:8px}
 .refl5{display:flex;align-items:center;gap:8px;margin-top:8px}.refl5 small{color:var(--muted)}
 .ppan ul.facts{display:block;columns:auto}.ppan ul.facts li{display:block}
+.oppbox .fx-rt{margin-top:8px}.oppbox .fx-pr{cursor:default}
+.mpair{border-color:#1F4D2E;background:#0E2215}.mpair>div{margin-top:4px;font-size:14px}.mpx{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--muted)}.mpx b{color:var(--fg)}
+.fx-pr span small,.fx-rng button small{color:var(--muted);font-weight:400;margin-left:3px}
+details.pcf>summary{cursor:pointer;font-size:13px;color:var(--muted);margin:4px 0;list-style:none}details.pcf>summary::-webkit-details-marker{display:none}details.pcf>summary::after{content:" ▾"}details.pcf b{color:var(--accent)}
+/* player page right column: projected + matchup boxes */
+#pside{margin-top:10px;display:grid;gap:10px}
+.pbox{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.pbox h4{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+.ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.ptiles div{text-align:center}.ptiles b{display:block;font-size:17px;font-weight:700}.ptiles small{font-size:10px;color:var(--muted)}
+#pside .oppbox{margin-bottom:0}
+.pref{max-width:360px}.pref .oppbox{margin-bottom:8px}

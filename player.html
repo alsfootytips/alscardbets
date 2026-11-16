@@ -2,7 +2,7 @@
 <title>Player · Al's Card Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=c26985f9"><link rel=icon href="logo.jpg"></head><body>
+<link rel=stylesheet href="brand.css?v=e0b07690"><link rel=icon href="logo.jpg"></head><body>
 <header class=top><div class=in><a class=logo href="football.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="football.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="football.html">Fixtures</a><a href="props.html">Props</a><a href="picks.html">Cards</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
 <main class=wide><div id=app><p class=meta>Loading…</p></div>
 <p class=meta style="margin-top:28px">Not betting advice.</p>
@@ -33,15 +33,39 @@ function bars(rows,key,k){ // oldest left, newest right
 // ---------- NBA-style stat card (same look as the fixtures player card): newest on the left after a dashed Next bar,
 // minutes as a faint background line, bet365 rows on the right (tap to set the line), Super Sub stacked in purple ----------
 const VAL_P=0.55, VAL_EV=0.10, MAX_ODDS=15, SS_COL="#A78BFA";   // value rule from props_calibration.json (backtest)
-const CH={key:"shots", n:15, k:null, ss:false, proj:true};
+const CH={key:"shots", k:null, ss:false, proj:true};
 try{CH.ss=localStorage.getItem("fxss")==="1"}catch(e){}
+// filters (remembered per visitor): range, competitions (empty = all), club / country
+const FL={range:"season", comps:[], side:"both"};
+try{Object.assign(FL,JSON.parse(localStorage.getItem("pfilt")||"{}"))}catch(e){}
+const saveFL=()=>{try{localStorage.setItem("pfilt",JSON.stringify(FL))}catch(e){}};
+const seasonStart=(()=>{const t=new Date(),y=t.getMonth()>=6?t.getFullYear():t.getFullYear()-1;return `${y}-07-01`})();
+const lastStart=`${+seasonStart.slice(0,4)-1}-07-01`;
+function baseRows(rows){return rows.filter(r=>(FL.side==="both"||(FL.side==="club"?r[11]===1:r[11]===0))&&(!FL.comps.length||FL.comps.includes(r[10])))}
+function rangeRows(rows,range){
+  if(range==="season")return rows.filter(r=>(r[9]||"")>=seasonStart);
+  if(range==="last")return rows.filter(r=>(r[9]||"")>=lastStart&&(r[9]||"")<seasonStart);
+  if(range==="all")return rows;
+  return rows.slice(0,+range)}
+function filtered(rows){return rangeRows(baseRows(rows),FL.range)}
+function filterBar(rows){
+  const b=baseRows(rows), ranges=[["5","L5"],["10","L10"],["20","L20"],["30","L30"],["50","L50"],["season","This season"],["last","Last season"],["all","All"]]
+    .filter(([k])=>k==="all"||k==="season"||(k==="last"?rangeRows(b,"last").length:b.length>+k));
+  const comps=[...new Set(rows.map(r=>r[10]).filter(Boolean))], hasNat=rows.some(r=>r[11]===0)&&rows.some(r=>r[11]===1);
+  return `<div class=fx-rng>${ranges.map(([k,l])=>`<button data-r="${k}" class="${FL.range===k?"on":""}">${l} <small>${rangeRows(b,k).length}</small></button>`).join("")}</div>`
+    +(hasNat?`<div class="fx-rng pside">${[["both","Both"],["club","Club"],["country","Country"]].map(([k,l])=>`<button data-s="${k}" class="${FL.side===k?"on":""}">${l}</button>`).join("")}</div>`:"")
+    +(comps.length>1?`<details class=pcf${FL.comps.length?" open":""}><summary>Competitions ${FL.comps.length?`<b>${FL.comps.length}</b>`:"<small>all</small>"}</summary><div class="fx-rng pcomps">${comps.map(c=>`<button data-c="${esc(c)}" class="${FL.comps.includes(c)?"on":""}">${esc(c)}</button>`).join("")}</div></details>`:"");
+}
 function series(rows,key){ // oldest first
   const R=rows.slice().reverse();
   return {R, v:R.map(r=>r[5][key]??0), vs:R.map(r=>(r[8]&&r[8][key])||0)};
 }
+const BOOK={bet365:"bet365",betmgm:"betmgm",paddypower:"paddypower",skybet:"skybet",williamhill:"williamhill",betfair:"betfair",betfred:"betfred"};
+const bookImg=n=>{const k=BOOK[String(n||"bet365").toLowerCase().replace(/\s/g,"")]; return k?`<img class=fx-bk src="books/${k}.png" alt="${esc(n)}">`:""};
 function rungsOf(nx,key){
   const base=(nx&&nx.lines&&nx.lines[key])||[], ss=(nx&&nx.lines_ss&&nx.lines_ss[key])||[];
-  return CH.ss&&ss.length?ss:base;   // [k, odds, model 0-1, EV 0-1, ...]
+  if(key==="cards"&&!base.length&&G){const x=G.cards[String(DD.pid)]; if(x&&x.best&&x.fair)return [[1,x.best,1/x.fair,x.edge,0,0,x.book]]}
+  return CH.ss&&ss.length?ss:base;   // [k, odds, model 0-1, EV 0-1, ..., book]
 }
 const isVal=r=>r&&r[2]>=VAL_P&&r[3]>=VAL_EV&&r[1]<=MAX_ODDS;
 function defK(rs,proj,vals){
@@ -51,12 +75,13 @@ function defK(rs,proj,vals){
   return Math.max(1,Math.round(pr));
 }
 function statCard(d){
-  const rows=d.rows||[], nx=d.next, key=CH.key, S=series(rows,key);
+  const rows=filtered(d.rows||[]), nx=d.next, key=CH.key, S=series(rows,key);
   const tot=CH.ss?S.v.map((v,i)=>v+S.vs[i]):S.v, hasSS=S.vs.some(x=>x);
   const rs=rungsOf(nx,key);
   const projAll=nx&&nx.proj?(CH.ss&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
+  if(!S.v.length)return `<div class="fx-card pcardx"><div class=fx-ctl2>${filterBar(d.rows||[])}</div><p class=meta>No games match these filters.</p></div>`;
   if(CH.k==null)CH.k=key==="cards"?1:defK(rs,projAll,tot);
-  const k=CH.k, n=Math.min(S.v.length,CH.n), vals=tot.slice(-n), raw=S.v.slice(-n), subs=CH.ss?S.vs.slice(-n):null, gs=S.R.slice(-n);
+  const k=CH.k, n=S.v.length, vals=tot.slice(-n), raw=S.v.slice(-n), subs=CH.ss?S.vs.slice(-n):null, gs=S.R.slice(-n);
   const proj=CH.proj?projAll:null;
   const W=620,H=220,pad=24,padR=14,cols=n+(proj!=null?1:0),bw=(W-pad-padR)/Math.max(cols,1),gap=Math.min(4,bw*.25),base=H-32,topY=10;
   const mx=Math.max((k-.5)*1.3,(proj||0)*1.1,...vals,1), y=v=>base-(base-topY)*v/mx, ym=m=>base-(base-topY)*Math.min(m,90)/90;
@@ -77,23 +102,25 @@ function statCard(d){
     if(nx&&nx.exp_min!=null)pts.unshift(`${cx.toFixed(1)},${ym(nx.exp_min).toFixed(1)}`);}
   const mins=pts.length>1?`<polyline points="${pts.join(" ")}" fill=none stroke="#60A5FA" stroke-width="1" opacity=".45"/>`:"";
   const rung=rs.find(r=>r[0]===k), col=rung?(isVal(rung)?"#4ADE80":rung[3]<0?"#F87171":"#F27A1A"):"#F27A1A", ly=y(k-.5), kl=key==="cards"?"Booked":`${k}+`;
-  const ranges=[5,10,20].filter(x=>x<S.v.length).concat([S.v.length]);
   const hits=vals.filter(v=>v>=k).length, hitsRaw=raw.filter(v=>v>=k).length, avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
   return `<div class="fx-card pcardx">`
     +`<div class=fx-mks>${STATS.map(([kk,l])=>`<button data-m="${kk}" class="${kk===key?"on":""}">${l.replace("Shots on target","SOT").replace("Fouls won","Fouled")}</button>`).join("")}`
     +(hasSS?`<button id=pss class="${CH.ss?"on ss":"ss"}" title="Count what his replacement adds if he is subbed off (bet365 Super Sub)">Super Sub</button>`:"")+`</div>`
-    +`<div class=fx-body><div class=fx-left><div class=fx-chart><div class=fx-lt><b style="color:${col}">${kl}${rung?` · ${rung[1].toFixed(2)} · ${rung[3]>0?"+":""}${Math.round(100*rung[3])}% EV`:" · no bet365 price"}</b><span>${proj!=null?`proj ${(+proj).toFixed(1)}`:""}${subs?` · <b style="color:${SS_COL}">■</b> super sub`:""}</span></div>`
+    +`<div class=fx-body><div class=fx-left><div class=fx-chart><div class=fx-lt><b style="color:${col}">${kl}${rung?` · ${rung[1].toFixed(2)}${rung[6]?" "+esc(rung[6]):""} · ${rung[3]>0?"+":""}${Math.round(100*rung[3])}% EV`:""}</b><span>${proj!=null?`proj ${(+proj).toFixed(1)}`:""}${subs?` · <b style="color:${SS_COL}">■</b> super sub`:""}</span></div>`
     +`<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(key)} last ${n}">${mins}${bars}${next}${labels}<line x1="${pad}" x2="${W-padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-dasharray="3 2"/><text x="${pad-3}" y="${ly+3}" text-anchor=end font-size=7.5 font-weight=600 fill="${col}">${esc(kl)}</text></svg></div>`
     +`<div class=fx-hr>Hit ${kl} in <b>${hits}/${vals.length}</b>${CH.ss?` (${hitsRaw}/${vals.length} without Super Sub)`:""} · avg ${avg.toFixed(1)}${projAll!=null?` · proj ${(+projAll).toFixed(1)}`:""}</div>`
-    +`<div class=fx-ctl2><div class=fx-rng>${ranges.map(x=>`<button data-n="${x}" class="${x===n?"on":""}">${x===S.v.length?`All ${x}`:`L${x}`}</button>`).join("")}${projAll!=null?`<button data-p=1 class="${CH.proj?"on":""}">Projection</button>`:""}</div>`
+    +`<div class=fx-ctl2>${filterBar(d.rows||[])}${projAll!=null?`<div class=fx-rng><button data-p=1 class="${CH.proj?"on":""}">Projection</button></div>`:""}`
     +(key==="cards"?"":`<div class=fx-mv><button data-d=-1 aria-label="Lower the line">−</button><input type=range min=1 max="${Math.max(5,Math.ceil(Math.max(...tot,projAll||0)*1.3))}" step=1 value="${k}" aria-label="Move the line"><button data-d=1 aria-label="Raise the line">+</button><span>${kl}</span></div>`)
-    +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}"><img class=fx-bk src="books/bet365.png" alt="bet365"><span>${key==="cards"?"Booked":r[0]+"+"}</span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${r[3]>0?"+":""}${Math.round(100*r[3])}%</b></button>`).join("")||"<p class=meta>No bet365 prices for his next game.</p>"}</div></div></div></div>`;
+    +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}">${bookImg(r[6])}<span>${key==="cards"?"Booked":r[0]+"+"} <small>${vals.filter(v=>v>=r[0]).length}/${vals.length}</small></span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${r[3]>0?"+":""}${Math.round(100*r[3])}%</b></button>`).join("")||""}</div><div id=pside></div></div></div></div>`;
 }
 function wireCard(d){
-  const box=document.getElementById("pchart"), redraw=()=>{box.innerHTML=statCard(d);wireCard(d)};
+  const box=document.getElementById("pchart"), redraw=()=>{box.innerHTML=statCard(d);wireCard(d);drawPanel()};
   box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw();drawPanel()});
   const ss=document.getElementById("pss"); if(ss)ss.onclick=()=>{CH.ss=!CH.ss;CH.k=null;try{localStorage.setItem("fxss",CH.ss?"1":"0")}catch(e){};redraw()};
-  box.querySelectorAll(".fx-rng button[data-n]").forEach(b=>b.onclick=()=>{CH.n=+b.dataset.n;redraw()});
+  const re=()=>{saveFL();redraw();drawPanel()};
+  box.querySelectorAll(".fx-rng button[data-r]").forEach(b=>b.onclick=()=>{FL.range=b.dataset.r;re()});
+  box.querySelectorAll(".fx-rng button[data-s]").forEach(b=>b.onclick=()=>{FL.side=b.dataset.s;re()});
+  box.querySelectorAll(".fx-rng button[data-c]").forEach(b=>b.onclick=()=>{const c=b.dataset.c;FL.comps=FL.comps.includes(c)?FL.comps.filter(x=>x!==c):[...FL.comps,c];re()});
   const pb=box.querySelector(".fx-rng button[data-p]"); if(pb)pb.onclick=()=>{CH.proj=!CH.proj;redraw()};
   box.querySelectorAll(".fx-mv button").forEach(b=>b.onclick=()=>{CH.k=Math.max(1,CH.k+ +b.dataset.d);redraw()});
   const inp=box.querySelector(".fx-mv input"); if(inp)inp.oninput=e=>{CH.k=+e.target.value;redraw()};
@@ -115,7 +142,8 @@ function clashCell(a,b,fa,fb){ if(!a||!b)return null; let best=null;
   for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){const ai=fa?NX-1-i:i,aj=fa?NY-1-j:j,bi=fb?NX-1-i:i,bj=fb?NY-1-j:j;
     const v=Math.min(a[ai][aj],b[bi][bj]); if(!best||v>best.v)best={v,x:(i+.5)*L/NX,y:(j+.5)*W/NY};}
   return best;}
-function matchupSvg(p,noFacts){
+function matchupSvg(p,noFacts,labels){
+  labels=labels||{};
   const C=PC, LN=C.line, PL='fill="#fff" font-weight="600" font-family="Inter,Helvetica,Arial,sans-serif"';
   const pl=p.pitch||[]; const me=pl.find(x=>x.pid===p.pid); if(!me)return"";
   const opp=pl.find(x=>x.side!==me.side&&x.name===p.opp&&!x.bench);
@@ -129,7 +157,7 @@ function matchupSvg(p,noFacts){
   const [mx,my]=pos(me),[ox,oy]=opp?pos(opp):[0,0],[px,py]=opp2?pos(opp2):[0,0];
   const link=opp?`<line x1="${mx.toFixed(1)}" y1="${my.toFixed(1)}" x2="${ox.toFixed(1)}" y2="${oy.toFixed(1)}" stroke="${C.ink}" stroke-width=".5" stroke-dasharray="1.5 1" opacity=".8"/>`:"";
   const dots=pl.filter(x=>x!==me&&x!==opp&&x!==opp2&&!x.bench).map(x=>{const [X,Y]=pos(x);return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="1.5" fill="${x.side===me.side?C.own:C.them}" opacity=".7"/>`}).join("");
-  const tag=(x,X,Y,col)=>{const t=lastN(x.name),w=t.length*2.3+3,up=Y>8?-6.2:3.6;
+  const tag=(x,X,Y,col)=>{const t=lastN(x.name)+(labels[x.pid]?" · "+labels[x.pid]:""),w=t.length*2.1+3,up=Y>8?-6.2:3.6;
     return `<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="2.6" fill="${col}" stroke="#172A3A" stroke-width=".7"/><rect x="${(X-w/2).toFixed(1)}" y="${(Y+up).toFixed(1)}" width="${w.toFixed(1)}" height="4.6" rx="1.2" fill="#172A3A" opacity=".85"/><text x="${X.toFixed(1)}" y="${(Y+up+3.4).toFixed(1)}" font-size="3.6" text-anchor="middle" ${PL}>${t}</text>`};
   const lines=`<rect x="0" y="0" width="${L}" height="${W}" fill="none" ${LN}/><line x1="52.5" y1="0" x2="52.5" y2="${W}" ${LN}/><circle cx="52.5" cy="34" r="9.15" fill="none" ${LN}/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/><rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" ${LN}/>`;
   const svg=`<svg class="pitch" role="img" viewBox="-2 -2 ${L+4} ${W+4}" aria-label="${esc(p.player)} and ${esc(p.opp||"")} heatmaps"><defs><filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>${lines}${heat}${clash}${dots}${link}${opp2?tag(opp2,px,py,C.ora):""}${opp?tag(opp,ox,oy,C.red):""}${tag(me,mx,my,C.yel)}<text x="${L-1}" y="${W-1.5}" font-size="3" text-anchor="end" fill="${C.ink}" opacity=".7" font-family="Inter,Helvetica,Arial,sans-serif">attacking →</text></svg>`;
@@ -164,23 +192,61 @@ function oppBox(r,stat,label){
   const rows=(o&&o.rows)||[]; if(!rows.length)return"";
   const l10=rows.slice(0,10), mins=l10.reduce((a,x)=>a+x[3],0), tot=l10.reduce((a,x)=>a+(x[5][stat]||0),0);
   const tiles=l10.map(x=>`<div class="stile ${(x[5][stat]||0)>0?"hit":"miss"}" title="${esc(x[0])} v ${esc(x[1])}"><b>${x[5][stat]||0}</b>${logo(x[2])}</div>`).join("");
-  return `<div class=oppbox><a class=swho href="player.html?p=${r.pid}"><img class="nface fm" src="${IMG}playerimages/${r.pid}.png" alt="" onerror="this.style.visibility='hidden'"><span><b>${esc(r.name)}</b><small class=smk>${label}</small></span><span class=sodds><b>${mins?(tot/mins*90).toFixed(1):"–"}</b><small>per 90</small></span></a><div class=stiles>${tiles}</div></div>`;
+  const rs=(o&&o.next&&o.next.lines&&o.next.lines[stat])||[];
+  const rr=rs.length?`<div class=fx-rt>${rs.map(x=>`<div class="fx-pr${isVal(x)?" val":""}"><img class=fx-bk src="books/bet365.png" alt="bet365"><span>${x[0]}+ <small>${Math.round(100*x[2])}%</small></span><b>${x[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(x)?"#4ADE80":x[3]<0?"#F87171":"#F27A1A"}">${x[3]>0?"+":""}${Math.round(100*x[3])}%</b></div>`).join("")}</div>`:"";
+  return `<div class=oppbox><a class=swho href="player.html?p=${r.pid}"><img class="nface fm" src="${IMG}playerimages/${r.pid}.png" alt="" onerror="this.style.visibility='hidden'"><span><b>${esc(r.name)}</b><small class=smk>${label}</small></span><span class=sodds><b>${mins?(tot/mins*90).toFixed(1):"–"}</b><small>per 90</small></span></a><div class=stiles>${tiles}</div>${rr}</div>`;
 }
 function refBox(){const r=G&&G.referee; if(!r||!r.name)return"";
   const last=(r.last10||[]).slice(0,5), boxes=last.map(c=>`<i class=b${Math.min(4,c>>1)}>${c}</i>`).join("");
   return `<div class=oppbox><div class=swho><span><b>${esc(r.name)}</b><small class=smk>Referee</small></span><span class=sodds><b>${r.cards_pg?(+r.cards_pg).toFixed(1):"–"}</b><small>cards a game</small></span></div>${last.length?`<div class=refl5><span class=l5>${boxes}</span><small>last 5</small></div>`:""}</div>`}
+const tile=(v,l,cls="")=>v==null||v===""?"":`<div><b class="${cls}">${v}</b><small>${l}</small></div>`;
+const CONC={shots:["shots","Shots conceded"],sot:["sot","SOT conceded"],fouls:["fouls","Fouls won"],fouled:["fouled","Fouls committed"],tackles:["tackles","Times tackled"]};
+function projBox(){
+  const nx=DD.next||{}, key=CH.key, rows=filtered(DD.rows||[]), S=series(rows,key);
+  const tot=CH.ss?S.v.map((v,i)=>v+S.vs[i]):S.v, k=CH.k||1, rs=rungsOf(nx,key), r=rs.find(x=>x[0]===k);
+  const proj=nx.proj?(CH.ss&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
+  const t=[tile(proj!=null?(+proj).toFixed(1):null,"proj"), tile(nx.exp_min!=null?nx.exp_min:null,"exp min"),
+    tile(r?Math.round(100*r[2])+"%":null,"model",r&&isVal(r)?"pos":""), tile(r?(1/Math.max(r[2],1e-3)).toFixed(2):null,"fair"),
+    tile(tot.length?Math.round(100*tot.filter(v=>v>=k).length/tot.length)+"%":null,`hit ${key==="cards"?"":k+"+"}`)].join("");
+  return t?`<div class=pbox><h4>Projected</h4><div class=ptiles>${t}</div></div>`:"";
+}
+function teamBox(){
+  const nx=DD.next||{}, c=nx.opp_conc, m=CONC[CH.key]; if(!c||!m)return"";
+  const t=tile(c[m[0]]!=null?(+c[m[0]]).toFixed(1):null,`${m[1]} / game`)+(CH.key==="shots"&&c.sot!=null?tile((+c.sot).toFixed(1),"SOT conceded / game"):"");
+  return t?`<div class=pbox><h4>${esc(nx.opp&&nx.opp.name||"Opponent")}</h4><div class=ptiles>${t}</div></div>`:"";
+}
 function drawPanel(){
-  const box=document.getElementById("ppanel"); if(!box||!DD)return; const key=CH.key; let h="";
-  if(key==="shots"||key==="sot"){ if((DD.rows||[]).some(r=>(r[6]||[]).length)) h=`<div class=ppan>${shotmap(DD.rows)}</div>`; }
+  const box=document.getElementById("ppanel"), side=document.getElementById("pside"); if(!box||!DD)return; const key=CH.key;
+  let below="", sideH=projBox()+teamBox();
+  if(key==="shots"||key==="sot"){ const fr=filtered(DD.rows||[]), n=fr.reduce((a,r)=>a+(r[6]||[]).length,0);
+    if(n) below=`<div class=ppan><h3 class=sub3>Shot map · ${n} shots</h3>${shotmap(fr)}</div>`; }
   else if(PANEL[key]&&meRow()){
     const [stat,label]=PANEL[key], x=G.cards[String(DD.pid)]||{};
     const P={...x,pid:Number(DD.pid),pitch:G.pitch,player:x.player||DD.name};
     const opps=oppRows().map(r=>oppBox(r,stat,label)).join("");
-    const pitch=key==="cards"?"":matchupSvg(P,key==="tackles");
-    const extra=key==="cards"?refBox():"";
-    if(pitch||opps||extra)h=`<div class=ppan>${extra}${pitch}${opps?`<div class=oppgrid>${opps}</div>`:""}</div>`;
+    let pair="";
+    if(key==="fouls"||key==="fouled"){
+      const best=rs=>rs.filter(isVal).sort((a,b)=>b[2]-a[2])[0];
+      const mine=best((DD.next&&DD.next.lines&&DD.next.lines[key])||[]);
+      for(const r of oppRows()){const o=OPP[r.pid], theirs=o&&best((o.next&&o.next.lines&&o.next.lines[stat])||[]);
+        if(mine&&theirs){const pr=mine[1]*theirs[1], pp=mine[2]*theirs[2];
+          pair+=`<div class="oppbox mpair"><b>Matchup pair</b><div>${esc(DD.name)} ${mine[0]}+ ${key==="fouls"?"fouls":"fouled"} @${mine[1].toFixed(2)} <small class=pos>+${Math.round(100*mine[3])}%</small></div>`
+            +`<div>${esc(r.name)} ${theirs[0]}+ ${stat==="fouls"?"fouls":"fouled"} @${theirs[1].toFixed(2)} <small class=pos>+${Math.round(100*theirs[3])}%</small></div>`
+            +`<div class=mpx><span>Combined <b>${pr.toFixed(2)}</b></span><span>Chance <b>${Math.round(100*pp)}%</b> <small>independent</small></span><span>EV <b class=${pp*pr>=1?"pos":"neg"}>${pp*pr>=1?"+":""}${Math.round(100*(pp*pr-1))}%</b></span></div></div>`; break}}
+    }
+    sideH+=pair;
+    // pitch of the game: him + likely direct opponents, labelled with the stat that matters for this market (+ price / EV)
+    const myStat=key==="cards"?"fouls":key, p90=(rows,st)=>{const l=rows.slice(0,10),m=l.reduce((a,x)=>a+x[3],0);return m?(l.reduce((a,x)=>a+(x[5][st]||0),0)/m*90):null};
+    const SH={fouls:"f",fouled:"fw",tackles:"tk",disp:"tkd"}, labels={};
+    const mine=p90(filtered(DD.rows||[]),myStat); if(mine!=null)labels[Number(DD.pid)]=`${mine.toFixed(1)} ${SH[myStat]||""}/90`;
+    for(const r of oppRows()){const o=OPP[r.pid]; if(!o)continue; const v=p90(o.rows||[],stat);
+      const b=((o.next&&o.next.lines&&o.next.lines[stat])||[]).filter(x=>x[3]>=0).sort((a,c)=>c[3]-a[3])[0];
+      labels[r.pid]=(v!=null?`${v.toFixed(1)} ${SH[stat]||""}/90`:"")+(b?` · ${b[1].toFixed(2)} +${Math.round(100*b[3])}%`:"")}
+    const pitch=matchupSvg(P,true,labels);
+    if(pitch||opps)below=`<div class=ppan>${key==="cards"?`<div class=pref>${refBox()}</div>`:""}${pitch}${opps?`<h3 class=sub3>Direct opponents</h3><div class=oppgrid>${opps}</div>`:""}</div>`;
   }
-  box.innerHTML=h; wireShots();
+  if(side)side.innerHTML=sideH;
+  box.innerHTML=below; wireShots();
 }
 function wireShots(){
   const sf=document.getElementById("sf");
@@ -221,7 +287,7 @@ function draw(d){
   h+=`<div id=pchart>${statCard(d)}</div><div id=ppanel></div>`;
   app.innerHTML=h;
   DD=d; wireCard(d); drawPanel();
-  if(d.card_game)fetch(`pg/${d.card_game}.json`).then(r=>r.json()).then(g=>{G=g;drawPanel()}).catch(()=>{});
+  if(d.card_game)fetch(`pg/${d.card_game}.json`).then(r=>r.json()).then(g=>{G=g;document.getElementById("pchart").innerHTML=statCard(d);wireCard(d);drawPanel()}).catch(()=>{});
   const K="openFb";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
   app.querySelectorAll("details[id]").forEach(dd=>{if(o.includes(dd.id))dd.open=true;dd.addEventListener("toggle",()=>{
     let s=new Set(o);dd.open?s.add(dd.id):s.delete(dd.id);o=[...s];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}})});
