@@ -774,3 +774,11 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 #sf,#sfb{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;scrollbar-width:none;justify-content:flex-start;margin:4px 0}#sf::-webkit-scrollbar,#sfb::-webkit-scrollbar{display:none}
 #sf button,#sfb button{flex:none;font-size:12px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;white-space:nowrap}
 .ptiles small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+/* Results > Model */
+.msum{font-size:14px;margin:4px 0 6px}.msum .muted{color:var(--muted);font-size:13px}
+.msm{font-size:13px;font-weight:600}
+.mrows{display:grid;gap:4px;padding-bottom:6px}
+.mrow{display:grid;grid-template-columns:30px 1fr auto 64px;gap:10px;align-items:center;padding:6px 4px;border-top:1px solid var(--line);color:var(--fg);text-decoration:none}
+.mrow .nface.fm{width:30px;height:30px;border-radius:50%;background:var(--soft)}
+.mw{min-width:0}.mw b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mw small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mo,.mres{text-align:right}.mo b,.mres b{display:block;font-size:14px}.mo small,.mres small{color:var(--muted);font-size:11px}
