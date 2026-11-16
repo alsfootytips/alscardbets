@@ -2,14 +2,14 @@
 <title>Player · Al's Card Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=e0b07690"><link rel=icon href="logo.jpg"></head><body>
+<link rel=stylesheet href="brand.css?v=06fc09c6"><link rel=icon href="logo.jpg"></head><body>
 <header class=top><div class=in><a class=logo href="football.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="football.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="football.html">Fixtures</a><a href="props.html">Props</a><a href="picks.html">Cards</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
 <main class=wide><div id=app><p class=meta>Loading…</p></div>
 <p class=meta style="margin-top:28px">Not betting advice.</p>
 <footer class=foot><i></i>Al's Card Bets</footer></main>
 <script>
 const IMG="https://images.fotmob.com/image_resources/";
-const STATS=[["shots","Shots"],["sot","Shots on target"],["fouls","Fouls"],["fouled","Fouls won"],["tackles","Tackles"],["cards","Booked"]];
+const STATS=[["shots","Shots"],["sot","Shots on target"],["hsot","Headed SOT"],["osot","SOT outside box"],["fouls","Fouls"],["fouled","Fouls won"],["tackles","Tackles"],["cards","Booked"]];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pid=new URLSearchParams(location.search).get("p");
 const app=document.getElementById("app");
@@ -41,19 +41,21 @@ try{Object.assign(FL,JSON.parse(localStorage.getItem("pfilt")||"{}"))}catch(e){}
 const saveFL=()=>{try{localStorage.setItem("pfilt",JSON.stringify(FL))}catch(e){}};
 const seasonStart=(()=>{const t=new Date(),y=t.getMonth()>=6?t.getFullYear():t.getFullYear()-1;return `${y}-07-01`})();
 const lastStart=`${+seasonStart.slice(0,4)-1}-07-01`;
-function baseRows(rows){return rows.filter(r=>(FL.side==="both"||(FL.side==="club"?r[11]===1:r[11]===0))&&(!FL.comps.length||FL.comps.includes(r[10])))}
+if(!Array.isArray(FL.pos))FL.pos=[];
+function baseRows(rows){return rows.filter(r=>(FL.side==="both"||(FL.side==="club"?r[11]===1:r[11]===0))&&(!FL.comps.length||FL.comps.includes(r[10]))&&(!FL.pos.length||FL.pos.includes(r[12])))}
 function rangeRows(rows,range){
   if(range==="season")return rows.filter(r=>(r[9]||"")>=seasonStart);
   if(range==="last")return rows.filter(r=>(r[9]||"")>=lastStart&&(r[9]||"")<seasonStart);
   if(range==="all")return rows;
   return rows.slice(0,+range)}
-function filtered(rows){return rangeRows(baseRows(rows),FL.range)}
+function filtered(rows){const hasDates=rows.some(r=>r[9]); return rangeRows(baseRows(rows),!hasDates&&(FL.range==="season"||FL.range==="last")?"all":FL.range)}
 function filterBar(rows){
   const b=baseRows(rows), ranges=[["5","L5"],["10","L10"],["20","L20"],["30","L30"],["50","L50"],["season","This season"],["last","Last season"],["all","All"]]
     .filter(([k])=>k==="all"||k==="season"||(k==="last"?rangeRows(b,"last").length:b.length>+k));
   const comps=[...new Set(rows.map(r=>r[10]).filter(Boolean))], hasNat=rows.some(r=>r[11]===0)&&rows.some(r=>r[11]===1);
   return `<div class=fx-rng>${ranges.map(([k,l])=>`<button data-r="${k}" class="${FL.range===k?"on":""}">${l} <small>${rangeRows(b,k).length}</small></button>`).join("")}</div>`
     +(hasNat?`<div class="fx-rng pside">${[["both","Both"],["club","Club"],["country","Country"]].map(([k,l])=>`<button data-s="${k}" class="${FL.side===k?"on":""}">${l}</button>`).join("")}</div>`:"")
+    +(()=>{const ps=[...new Set(rows.map(r=>r[12]).filter(Boolean))]; return ps.length>1?`<div class="fx-rng ppos">${ps.map(p=>`<button data-o="${esc(p)}" class="${FL.pos.includes(p)?"on":""}">${esc(p)} <small>${rows.filter(r=>r[12]===p).length}</small></button>`).join("")}</div>`:""})()
     +(comps.length>1?`<details class=pcf${FL.comps.length?" open":""}><summary>Competitions ${FL.comps.length?`<b>${FL.comps.length}</b>`:"<small>all</small>"}</summary><div class="fx-rng pcomps">${comps.map(c=>`<button data-c="${esc(c)}" class="${FL.comps.includes(c)?"on":""}">${esc(c)}</button>`).join("")}</div></details>`:"");
 }
 function series(rows,key){ // oldest first
@@ -62,11 +64,17 @@ function series(rows,key){ // oldest first
 }
 const BOOK={bet365:"bet365",betmgm:"betmgm",paddypower:"paddypower",skybet:"skybet",williamhill:"williamhill",betfair:"betfair",betfred:"betfred"};
 const bookImg=n=>{const k=BOOK[String(n||"bet365").toLowerCase().replace(/\s/g,"")]; return k?`<img class=fx-bk src="books/${k}.png" alt="${esc(n)}">`:""};
-function rungsOf(nx,key){
-  const base=(nx&&nx.lines&&nx.lines[key])||[], ss=(nx&&nx.lines_ss&&nx.lines_ss[key])||[];
-  if(key==="cards"&&!base.length&&G){const x=G.cards[String(DD.pid)]; if(x&&x.best&&x.fair)return [[1,x.best,1/x.fair,x.edge,0,0,x.book]]}
-  return CH.ss&&ss.length?ss:base;   // [k, odds, model 0-1, EV 0-1, ..., book]
+// Markets where bet365 offers Super Sub: waiting on Alex to confirm, so SS EV is shown but picks stay on non-SS EV.
+const SUPER_SUB_MARKETS={shots:"unconfirmed",sot:"unconfirmed",hsot:"unconfirmed",osot:"unconfirmed",fouls:"unconfirmed",fouled:"unconfirmed",tackles:"unconfirmed"};
+const dedup=rs=>{const m=new Map();for(const r of rs){const o=m.get(r[0]);if(!o||r[1]>o[1])m.set(r[0],r)}return [...m.values()].sort((a,b)=>a[0]-b[0])};
+function rungsBoth(nx,key){   // {base, ss}: one row per line each
+  const base=dedup((nx&&nx.lines&&nx.lines[key])||[]), ss=SUPER_SUB_MARKETS[key]?dedup((nx&&nx.lines_ss&&nx.lines_ss[key])||[]):[];
+  if(key==="cards"&&!base.length&&G){const x=G.cards[String(DD.pid)]; if(x&&x.best&&x.fair)return {base:[[1,x.best,1/x.fair,x.edge,0,0,x.book]],ss:[]}}
+  return {base,ss};
 }
+function rungsOf(nx,key){const b=rungsBoth(nx,key); return CH.ss&&b.ss.length?b.ss:b.base}   // [k, odds, model 0-1, EV 0-1, ..., book]
+function otherEV(nx,key,k){const b=rungsBoth(nx,key), o=(CH.ss?b.base:b.ss).find(r=>r[0]===k); return o?o[3]:null}
+const pct=v=>`${v>0?"+":""}${Math.round(100*v)}%`;
 const isVal=r=>r&&r[2]>=VAL_P&&r[3]>=VAL_EV&&r[1]<=MAX_ODDS;
 function defK(rs,proj,vals){
   const v=rs.filter(isVal).sort((a,b)=>b[3]-a[3])[0]; if(v)return v[0];
@@ -105,22 +113,28 @@ function statCard(d){
   const hits=vals.filter(v=>v>=k).length, hitsRaw=raw.filter(v=>v>=k).length, avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
   return `<div class="fx-card pcardx">`
     +`<div class=fx-mks>${STATS.map(([kk,l])=>`<button data-m="${kk}" class="${kk===key?"on":""}">${l.replace("Shots on target","SOT").replace("Fouls won","Fouled")}</button>`).join("")}`
-    +(hasSS?`<button id=pss class="${CH.ss?"on ss":"ss"}" title="Count what his replacement adds if he is subbed off (bet365 Super Sub)">Super Sub</button>`:"")+`</div>`
-    +`<div class=fx-body><div class=fx-left><div class=fx-chart><div class=fx-lt><b style="color:${col}">${kl}${rung?` · ${rung[1].toFixed(2)}${rung[6]?" "+esc(rung[6]):""} · ${rung[3]>0?"+":""}${Math.round(100*rung[3])}% EV`:""}</b><span>${proj!=null?`proj ${(+proj).toFixed(1)}`:""}${subs?` · <b style="color:${SS_COL}">■</b> super sub`:""}</span></div>`
+    +`</div>`
+    +`<div class=fx-body><div class=fx-left><div class=fx-chart><div class=fx-lt><b style="color:${col}">${kl}${rung?` · ${rung[1].toFixed(2)}${rung[6]?" "+esc(rung[6]):""} · ${pct(rung[3])} EV`:""}${rung&&otherEV(nx,key,k)!=null?` <small class=evo>${pct(otherEV(nx,key,k))} ${CH.ss?"without":"with"} SS</small>`:""}</b>`
+      +`${SUPER_SUB_MARKETS[key]?`<label class=ssw><input type=checkbox id=pss${CH.ss?" checked":""}><i></i>Super Sub</label>`:""}<span>${proj!=null?`proj ${(+proj).toFixed(1)}`:""}</span></div>`
     +`<svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(key)} last ${n}">${mins}${bars}${next}${labels}<line x1="${pad}" x2="${W-padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-dasharray="3 2"/><text x="${pad-3}" y="${ly+3}" text-anchor=end font-size=7.5 font-weight=600 fill="${col}">${esc(kl)}</text></svg></div>`
     +`<div class=fx-hr>Hit ${kl} in <b>${hits}/${vals.length}</b>${CH.ss?` (${hitsRaw}/${vals.length} without Super Sub)`:""} · avg ${avg.toFixed(1)}${projAll!=null?` · proj ${(+projAll).toFixed(1)}`:""}</div>`
     +`<div class=fx-ctl2>${filterBar(d.rows||[])}${projAll!=null?`<div class=fx-rng><button data-p=1 class="${CH.proj?"on":""}">Projection</button></div>`:""}`
     +(key==="cards"?"":`<div class=fx-mv><button data-d=-1 aria-label="Lower the line">−</button><input type=range min=1 max="${Math.max(5,Math.ceil(Math.max(...tot,projAll||0)*1.3))}" step=1 value="${k}" aria-label="Move the line"><button data-d=1 aria-label="Raise the line">+</button><span>${kl}</span></div>`)
-    +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}">${bookImg(r[6])}<span>${key==="cards"?"Booked":r[0]+"+"} <small>${vals.filter(v=>v>=r[0]).length}/${vals.length}</small></span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${r[3]>0?"+":""}${Math.round(100*r[3])}%</b></button>`).join("")||""}</div><div id=pside></div></div></div></div>`;
+    +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}">${bookImg(r[6])}<span>${key==="cards"?"Booked":r[0]+"+"} <small>${vals.filter(v=>v>=r[0]).length}/${vals.length}</small></span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${pct(r[3])}${otherEV(nx,key,r[0])!=null?`<small class=evo>${pct(otherEV(nx,key,r[0]))} ${CH.ss?"w/o":"w/"} SS</small>`:""}</b></button>`).join("")||""}</div><div id=pside></div></div></div></div>`;
 }
 function wireCard(d){
-  const box=document.getElementById("pchart"), redraw=()=>{box.innerHTML=statCard(d);wireCard(d);drawPanel()};
-  box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw();drawPanel()});
-  const ss=document.getElementById("pss"); if(ss)ss.onclick=()=>{CH.ss=!CH.ss;CH.k=null;try{localStorage.setItem("fxss",CH.ss?"1":"0")}catch(e){};redraw()};
-  const re=()=>{saveFL();redraw();drawPanel()};
+  const box=document.getElementById("pchart"), redraw=()=>{
+    const keep=[...document.querySelectorAll("#app .fx-mks,#app .fx-rng,#app .fx-rt,#app .pcomps")].map(e=>e.scrollLeft), y=window.scrollY;
+    box.innerHTML=statCard(d);wireCard(d);drawPanel();
+    [...document.querySelectorAll("#app .fx-mks,#app .fx-rng,#app .fx-rt,#app .pcomps")].forEach((e,i)=>{if(keep[i]!=null)e.scrollLeft=keep[i]});
+    window.scrollTo(0,y)};
+  box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw()});
+  const ss=document.getElementById("pss"); if(ss)ss.onchange=()=>{CH.ss=ss.checked;try{localStorage.setItem("fxss",CH.ss?"1":"0")}catch(e){};redraw()};
+  const re=()=>{saveFL();redraw()};
   box.querySelectorAll(".fx-rng button[data-r]").forEach(b=>b.onclick=()=>{FL.range=b.dataset.r;re()});
   box.querySelectorAll(".fx-rng button[data-s]").forEach(b=>b.onclick=()=>{FL.side=b.dataset.s;re()});
   box.querySelectorAll(".fx-rng button[data-c]").forEach(b=>b.onclick=()=>{const c=b.dataset.c;FL.comps=FL.comps.includes(c)?FL.comps.filter(x=>x!==c):[...FL.comps,c];re()});
+  box.querySelectorAll(".fx-rng button[data-o]").forEach(b=>b.onclick=()=>{const o=b.dataset.o;FL.pos=FL.pos.includes(o)?FL.pos.filter(x=>x!==o):[...FL.pos,o];re()});
   const pb=box.querySelector(".fx-rng button[data-p]"); if(pb)pb.onclick=()=>{CH.proj=!CH.proj;redraw()};
   box.querySelectorAll(".fx-mv button").forEach(b=>b.onclick=()=>{CH.k=Math.max(1,CH.k+ +b.dataset.d);redraw()});
   const inp=box.querySelector(".fx-mv input"); if(inp)inp.oninput=e=>{CH.k=+e.target.value;redraw()};
@@ -207,6 +221,7 @@ function projBox(){
   const proj=nx.proj?(CH.ss&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
   const t=[tile(proj!=null?(+proj).toFixed(1):null,"proj"), tile(nx.exp_min!=null?nx.exp_min:null,"exp min"),
     tile(r?Math.round(100*r[2])+"%":null,"model",r&&isVal(r)?"pos":""), tile(r?(1/Math.max(r[2],1e-3)).toFixed(2):null,"fair"),
+    tile(r?pct(r[3])+(otherEV(nx,key,k)!=null?`<small class=evo>${pct(otherEV(nx,key,k))} ${CH.ss?"w/o":"w/"} SS</small>`:""):null,"EV",r&&r[3]>=0?"pos":"neg"),
     tile(tot.length?Math.round(100*tot.filter(v=>v>=k).length/tot.length)+"%":null,`hit ${key==="cards"?"":k+"+"}`)].join("");
   return t?`<div class=pbox><h4>Projected</h4><div class=ptiles>${t}</div></div>`:"";
 }
@@ -218,7 +233,8 @@ function teamBox(){
 function drawPanel(){
   const box=document.getElementById("ppanel"), side=document.getElementById("pside"); if(!box||!DD)return; const key=CH.key;
   let below="", sideH=projBox()+teamBox();
-  if(key==="shots"||key==="sot"){ const fr=filtered(DD.rows||[]), n=fr.reduce((a,r)=>a+(r[6]||[]).length,0);
+  if(["shots","sot","hsot","osot"].includes(key)){ if(key==="hsot"&&SF._k!==key){SF.t="H";SF.on=true;SF.box="A"} if(key==="osot"&&SF._k!==key){SF.t="A";SF.on=true;SF.box="out"} SF._k=key;
+    const fr=filtered(DD.rows||[]), n=fr.reduce((a,r)=>a+(r[6]||[]).length,0);
     if(n) below=`<div class=ppan><h3 class=sub3>Shot map · ${n} shots</h3>${shotmap(fr)}</div>`; }
   else if(PANEL[key]&&meRow()){
     const [stat,label]=PANEL[key], x=G.cards[String(DD.pid)]||{};
@@ -229,10 +245,10 @@ function drawPanel(){
       const best=rs=>rs.filter(isVal).sort((a,b)=>b[2]-a[2])[0];
       const mine=best((DD.next&&DD.next.lines&&DD.next.lines[key])||[]);
       for(const r of oppRows()){const o=OPP[r.pid], theirs=o&&best((o.next&&o.next.lines&&o.next.lines[stat])||[]);
-        if(mine&&theirs){const pr=mine[1]*theirs[1], pp=mine[2]*theirs[2];
+        if(mine&&theirs){const pr=mine[1]*theirs[1], cp=((DD.next&&DD.next.pairs)||[]).find(q=>q.opp===r.pid&&q.mk===key&&q.k1===mine[0]&&q.k2===theirs[0]), pp=cp?cp.p:mine[2]*theirs[2], corrL=cp&&cp.corr?"correlated":"independent";
           pair+=`<div class="oppbox mpair"><b>Matchup pair</b><div>${esc(DD.name)} ${mine[0]}+ ${key==="fouls"?"fouls":"fouled"} @${mine[1].toFixed(2)} <small class=pos>+${Math.round(100*mine[3])}%</small></div>`
             +`<div>${esc(r.name)} ${theirs[0]}+ ${stat==="fouls"?"fouls":"fouled"} @${theirs[1].toFixed(2)} <small class=pos>+${Math.round(100*theirs[3])}%</small></div>`
-            +`<div class=mpx><span>Combined <b>${pr.toFixed(2)}</b></span><span>Chance <b>${Math.round(100*pp)}%</b> <small>independent</small></span><span>EV <b class=${pp*pr>=1?"pos":"neg"}>${pp*pr>=1?"+":""}${Math.round(100*(pp*pr-1))}%</b></span></div></div>`; break}}
+            +`<div class=mpx><span>Combined <b>${pr.toFixed(2)}</b></span><span>Chance <b>${Math.round(100*pp)}%</b> <small>${corrL}</small></span><span>EV <b class=${pp*pr>=1?"pos":"neg"}>${pp*pr>=1?"+":""}${Math.round(100*(pp*pr-1))}%</b></span></div></div>`; break}}
     }
     sideH+=pair;
     // pitch of the game: him + likely direct opponents, labelled with the stat that matters for this market (+ price / EV)
@@ -249,31 +265,33 @@ function drawPanel(){
   box.innerHTML=below; wireShots();
 }
 function wireShots(){
-  const sf=document.getElementById("sf");
-  if(sf)sf.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;
-    sf.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
-    document.querySelectorAll(".smap circle").forEach(c=>c.style.display=(b.dataset.t==="A"||c.dataset.t===b.dataset.t)?"":"none")};
+  const sf=document.getElementById("sf"), sfb=document.getElementById("sfb");
+  if(sf)sf.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;SF.t=b.dataset.t;drawPanel()};
+  if(sfb)sfb.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;if(b.dataset.on)SF.on=!SF.on;else SF.box=b.dataset.b;drawPanel()};
   document.querySelectorAll(".smap circle").forEach(c=>c.onclick=()=>{const i=document.getElementById("sinfo");if(i)i.textContent=c.querySelector("title").textContent});
 }
 
+const SF={t:"A",box:"A",on:false};
 function shotmap(rows){
-  const all=[];rows.forEach(r=>(r[6]||[]).forEach(s=>all.push({x:s[0],y:s[1],t:s[2],on:s[3],g:s[4],xg:s[5],m:s[6],d:r[0],o:r[1]})));
-  if(!all.length)return"<p class=meta>No shots in his last games.</p>";
+  const all=[];rows.forEach(r=>(r[6]||[]).forEach(s=>all.push({x:s[0],y:s[1],t:s[2],on:s[3],g:s[4],xg:s[5],m:s[6],ib:s[7],d:r[0],o:r[1]})));
+  if(!all.length)return"";
   const T={R:"Right foot",L:"Left foot",H:"Header",O:"Other"}, k=8, W=68*k, H=52.5*k;
+  const keep=s=>(SF.t==="A"||s.t===SF.t)&&(SF.box==="A"||(SF.box==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on);
   const P=s=>[(s.y*k).toFixed(1),((105-s.x)*k).toFixed(1)];
   let svg=`<svg class=smap viewBox="0 0 ${W} ${H}" role=img aria-label="Shot map"><rect width="${W}" height="${H}" fill="#0E2215" rx="8"/>`+
     `<g fill="none" stroke="#2F5A3C" stroke-width="2"><rect x="${13.84*k}" y="0" width="${40.32*k}" height="${16.5*k}"/><rect x="${24.84*k}" y="0" width="${18.32*k}" height="${5.5*k}"/>`+
     `<line x1="0" y1="${H-1}" x2="${W}" y2="${H-1}"/><path d="M ${(34-9.15)*k} ${H} A ${9.15*k} ${9.15*k} 0 0 1 ${(34+9.15)*k} ${H}"/><path d="M ${(34-7.3)*k} ${16.5*k} A ${9.15*k} ${9.15*k} 0 0 0 ${(34+7.3)*k} ${16.5*k}"/></g>`+
     `<rect x="${30.34*k}" y="-4" width="${7.32*k}" height="8" fill="#ddd"/>`;
-  all.forEach((s,i)=>{const [cx,cy]=P(s),r=5+Math.sqrt(s.xg||0)*18,col=s.g?"#FBBF24":s.on?"#4ADE80":"#9CA3AF";
-    svg+=`<circle data-i="${i}" data-t="${s.t}" cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="${col}" fill-opacity="${s.g||s.on?.9:.45}" stroke="#000" stroke-width="1"><title>${T[s.t]} · ${s.g?"Goal":s.on?"On target":"Off target"} · xG ${s.xg} · v ${esc(s.o)} ${s.d} ${s.m??""}'</title></circle>`});
+  all.filter(keep).forEach(s=>{const [cx,cy]=P(s),r=5+Math.sqrt(s.xg||0)*18,col=s.g?"#FBBF24":s.on?"#4ADE80":"#9CA3AF";
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="${col}" fill-opacity="${s.g||s.on?.9:.45}" stroke="#000" stroke-width="1"><title>${T[s.t]} · ${s.ib===0?"outside box":"inside box"} · ${s.g?"Goal":s.on?"On target":"Off target"} · xG ${s.xg} · v ${esc(s.o)} ${s.d} ${s.m??""}'</title></circle>`});
   svg+="</svg>";
-  const cnt=t=>all.filter(s=>t==="A"||s.t===t).length;
-  const on=all.filter(s=>s.on).length;
-  window._shots=all;
-  return `<div class=seg id=sf>${[["A","All"],["R","Right"],["L","Left"],["H","Header"]].map(([t,l])=>`<button data-t="${t}"${t==="A"?" class=on":""}>${l} ${cnt(t)}</button>`).join("")}</div>`+
-    `<p class=meta>${all.length} shots · ${on} on target · ${all.filter(s=>s.g).length} goals · <span style="color:#4ADE80">●</span> on target <span style="color:#9CA3AF">●</span> off <span style="color:#FBBF24">●</span> goal</p>`+
-    svg+`<p class=meta id=sinfo></p>`}
+  const cnt=f=>all.filter(s=>keep({...s,...f})).length;
+  const sel=all.filter(keep).length, games=rows.length;
+  const lab=`${{A:"",R:"Right-foot ",L:"Left-foot ",H:"Headed "}[SF.t]}${SF.on?"SOT":"shots"}${SF.box==="in"?" inside box":SF.box==="out"?" outside box":""}`;
+  return `<div class=seg id=sf>${[["A","All"],["R","Right"],["L","Left"],["H","Header"]].map(([t,l])=>`<button data-t="${t}"${SF.t===t?" class=on":""}>${l} ${all.filter(s=>(t==="A"||s.t===t)&&(SF.box==="A"||(SF.box==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on)).length}</button>`).join("")}</div>`
+    +`<div class=seg id=sfb>${[["A","Any"],["in","Inside box"],["out","Outside box"]].map(([b,l])=>`<button data-b="${b}"${SF.box===b?" class=on":""}>${l} ${all.filter(s=>(SF.t==="A"||s.t===SF.t)&&(b==="A"||(b==="in"?s.ib===1:s.ib===0))&&(!SF.on||s.on)).length}</button>`).join("")}<button data-on=1${SF.on?" class=on":""}>On target</button></div>`
+    +`<p class=meta><b>${lab[0].toUpperCase()+lab.slice(1)}: ${sel}</b> in ${games} games · ${(sel/Math.max(games,1)).toFixed(2)} a game · <span style="color:#4ADE80">●</span> on target <span style="color:#9CA3AF">●</span> off <span style="color:#FBBF24">●</span> goal</p>`
+    +svg+`<p class=meta id=sinfo></p>`}
 
 function draw(d){
   document.title=`${d.name} · Al's Card Bets`;

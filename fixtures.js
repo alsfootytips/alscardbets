@@ -22,7 +22,9 @@ fetch(root.dataset.src + "?v=" + Date.now()).then(r => r.json()).then(d => {
 
 // ---------- list ----------
 function list() {
-  const today = day(new Date().toISOString());
+  // sports that use US game days (NBA/NHL/NFL send g.day) count "today" in US Eastern time, so a 1am UK tip isn't "Yesterday"
+  const tz = D.tz || (D.games.some(g => g.day) ? "America/New_York" : null);
+  const today = tz ? new Date().toLocaleDateString("en-CA", {timeZone: tz}) : day(new Date().toISOString());
   const days = [...new Set(D.games.map(gday))].sort();
   let sel = params.get("d") || (days.includes(today) ? today : days.find(d => d >= today) || days[days.length - 1]);
   let upcoming = false, q = "";
