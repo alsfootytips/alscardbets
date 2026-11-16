@@ -72,7 +72,7 @@ function list() {
 }
 
 // ---------- one game ----------
-const ORDER = {out: 0, suspension: 0, "injured reserve": 0, doubtful: 1, questionable: 2, "day-to-day": 2, "game-time decision": 2, probable: 3};
+const ORDER = {out: 0, suspension: 0, suspended: 0, "injured reserve": 0, doubtful: 1, questionable: 2, "day-to-day": 2, "game-time decision": 2, probable: 3};
 // Lineups pitch (football etc.): g.lineups = {status: "confirmed"|"predicted", home: {formation, players: [{pid, name, pos, x, y}]}, away: {...}}
 // x = 0 own goal .. 100 opponent goal, y = 0 .. 100 across. Each team sits in its own half; chips colour players by a stat.
 function lineups(g) {
