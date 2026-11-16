@@ -92,7 +92,9 @@ function game(g) {
   // "rungs_ss" = model/EV with Super Sub. With the toggle on, bars stack that part on top in purple.
   const SS_COL = "#A78BFA";
   const tot = M => st.ss && M.vs ? M.v.map((v, i) => v + (M.vs[i] || 0)) : M.v;
-  const RG = M => (st.ss && M.rungs_ss) || M.rungs || [];
+  // one row per line: feeds can repeat a rung (same line from two bet365 groups); keep the best price
+  const dedupR = rs => { const m = new Map(); for (const r of rs || []) { const o = m.get(r[0]); if (!o || r[1] > o[1]) m.set(r[0], r); } return [...m.values()].sort((a, b) => a[0] - b[0]); };
+  const RG = M => dedupR((st.ss && M.rungs_ss && M.rungs_ss.length ? M.rungs_ss : M.rungs) || []);
   const SRX = window.SR || {score: (a, b) => String(b).toLowerCase().includes(String(a).toLowerCase()) ? 1 : 0};
   // only markets bet365 actually prices: drop unpriced markets, then players left with none
   const P = (g.players || []).map(p => ({...p, m: Object.fromEntries(Object.entries(p.m || {})

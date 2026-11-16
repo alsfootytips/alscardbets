@@ -782,3 +782,4 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .mrow .nface.fm{width:30px;height:30px;border-radius:50%;background:var(--soft)}
 .mw{min-width:0}.mw b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mw small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mo,.mres{text-align:right}.mo b,.mres b{display:block;font-size:14px}.mo small,.mres small{color:var(--muted);font-size:11px}
+.ssb{font-style:normal;font-size:9px;font-weight:700;color:#A78BFA;border:1px solid #A78BFA;border-radius:999px;padding:0 4px;margin-left:3px}

@@ -2,7 +2,7 @@
 <title>Player · Al's Card Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=6fa721f0"><link rel=icon href="logo.jpg"></head><body>
+<link rel=stylesheet href="brand.css?v=25608ad8"><link rel=icon href="logo.jpg"></head><body>
 <header class=top><div class=in><a class=logo href="football.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="football.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="football.html">Fixtures</a><a href="props.html">Props</a><a href="picks.html">Cards</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
 <main class=wide><div id=app><p class=meta>Loading…</p></div>
 <p class=meta style="margin-top:28px">Not betting advice.</p>
@@ -69,15 +69,17 @@ function series(rows,key){ // oldest first
 const BOOK={bet365:"bet365",betmgm:"betmgm",paddypower:"paddypower",skybet:"skybet",williamhill:"williamhill",betfair:"betfair",betfred:"betfred"};
 const bookImg=n=>{const k=BOOK[String(n||"bet365").toLowerCase().replace(/\s/g,"")]; return k?`<img class=fx-bk src="books/${k}.png" alt="${esc(n)}">`:""};
 // Markets where bet365 offers Super Sub: waiting on Alex to confirm, so SS EV is shown but picks stay on non-SS EV.
-const SUPER_SUB_MARKETS={shots:"unconfirmed",sot:"unconfirmed",hsot:"unconfirmed",osot:"unconfirmed",fouls:"unconfirmed",fouled:"unconfirmed",tackles:"unconfirmed"};
+// bet365 Sub On Play On (Alex 16 Nov): these markets, in the competitions on bet365's list (next.ss, pricer/supersub.py)
+const SUPER_SUB_MARKETS={shots:1,sot:1,hsot:1,osot:1,fouls:1,fouled:1,tackles:1};
+const ssHere=(nx,key)=>!!(nx&&nx.ss&&SUPER_SUB_MARKETS[key]);
 const dedup=rs=>{const m=new Map();for(const r of rs){const o=m.get(r[0]);if(!o||r[1]>o[1])m.set(r[0],r)}return [...m.values()].sort((a,b)=>a[0]-b[0])};
 function rungsBoth(nx,key){   // {base, ss}: one row per line each
-  const base=dedup((nx&&nx.lines&&nx.lines[key])||[]), ss=SUPER_SUB_MARKETS[key]?dedup((nx&&nx.lines_ss&&nx.lines_ss[key])||[]):[];
+  const base=dedup((nx&&nx.lines&&nx.lines[key])||[]), ss=ssHere(nx,key)?dedup((nx&&nx.lines_ss&&nx.lines_ss[key])||[]):[];
   if(key==="cards"&&!base.length&&G){const x=G.cards[String(DD.pid)]; if(x&&x.best&&x.fair)return {base:[[1,x.best,1/x.fair,x.edge,0,0,x.book]],ss:[]}}
   return {base,ss};
 }
-function rungsOf(nx,key){const b=rungsBoth(nx,key); return CH.ss&&b.ss.length?b.ss:b.base}   // [k, odds, model 0-1, EV 0-1, ..., book]
-function otherEV(nx,key,k){const b=rungsBoth(nx,key), o=(CH.ss?b.base:b.ss).find(r=>r[0]===k); return o?o[3]:null}
+function rungsOf(nx,key){const b=rungsBoth(nx,key); return CH.ss&&ssHere(nx,key)&&b.ss.length?b.ss:b.base}   // [k, odds, model 0-1, EV 0-1, ..., book]
+function otherEV(nx,key,k){const b=rungsBoth(nx,key), o=(CH.ss&&ssHere(nx,key)?b.base:b.ss).find(r=>r[0]===k); return o?o[3]:null}
 const pct=v=>`${v>0?"+":""}${Math.round(100*v)}%`;
 const isVal=r=>r&&r[2]>=VAL_P&&r[3]>=VAL_EV&&r[1]<=MAX_ODDS;
 function defK(rs,proj,vals){
@@ -88,12 +90,13 @@ function defK(rs,proj,vals){
 }
 function statCard(d){
   const rows=filtered(d.rows||[]), nx=d.next, key=CH.key, S=series(rows,key);
-  const tot=CH.ss?S.v.map((v,i)=>v+S.vs[i]):S.v, hasSS=S.vs.some(x=>x);
+  const SSON=CH.ss&&ssHere(nx,key);
+  const tot=SSON?S.v.map((v,i)=>v+S.vs[i]):S.v, hasSS=S.vs.some(x=>x);
   const rs=rungsOf(nx,key);
-  const projAll=nx&&nx.proj?(CH.ss&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
+  const projAll=nx&&nx.proj?(SSON&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
   if(!S.v.length)return `<div class="fx-card pcardx"><div class=fx-ctl2>${filterBar(d.rows||[])}</div><p class=meta>No games match these filters.</p></div>`;
   if(CH.k==null)CH.k=key==="cards"?1:defK(rs,projAll,tot);
-  const k=CH.k, n=S.v.length, vals=tot.slice(-n), raw=S.v.slice(-n), subs=CH.ss?S.vs.slice(-n):null, gs=S.R.slice(-n);
+  const k=CH.k, n=S.v.length, vals=tot.slice(-n), raw=S.v.slice(-n), subs=SSON?S.vs.slice(-n):null, gs=S.R.slice(-n);
   const proj=CH.proj?projAll:null;
   const W=620,H=220,pad=24,padR=14,cols=n+(proj!=null?1:0),bw=(W-pad-padR)/Math.max(cols,1),gap=Math.min(4,bw*.25),base=H-32,topY=10;
   const mx=Math.max((k-.5)*1.3,(proj||0)*1.1,...vals,1), y=v=>base-(base-topY)*v/mx, ym=m=>base-(base-topY)*Math.min(m,90)/90;
@@ -119,13 +122,13 @@ function statCard(d){
     +`<div class=fx-mks>${STATS.map(([kk,l])=>`<button data-m="${kk}" class="${kk===key?"on":""}">${l.replace("Shots on target","SOT").replace("Fouls won","Fouled")}</button>`).join("")}`
     +`</div>`
     +`<div class=fx-body><div class=fx-left><div class=fx-chart><div class="fx-lt plt"><b style="color:${col}">${kl}${rung?` · ${rung[1].toFixed(2)} · ${pct(rung[3])} EV`:""}</b>`
-      +`${SUPER_SUB_MARKETS[key]?`<button id=pss class="sspill${CH.ss?" on":""}" aria-pressed="${CH.ss}" title="Super Sub">SS</button>`:""}</div>`
+      +`${ssHere(nx,key)?`<button id=pss class="sspill${SSON?" on":""}" aria-pressed="${SSON}" title="Super Sub">SS</button>`:""}</div>`
     +`<div class=pchartw><svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(key)} last ${n}">${mins}${bars}${next}${labels}<line x1="${pad}" x2="${W-padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-dasharray="3 2"/><text x="${pad-3}" y="${ly+3}" text-anchor=end font-size=7.5 font-weight=600 fill="${col}">${esc(kl)}</text></svg>`
       +`${projAll!=null?`<button id=pproj class="projbtn${CH.proj?" on":""}" aria-pressed="${CH.proj}" title="Projection"><svg viewBox="0 0 12 14" width=12 height=14><rect x="2" y="2" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-dasharray="2 1.5"/></svg></button>`:""}</div></div>`
-    +`<div class=fx-hr><b>${hits}/${vals.length}</b>${CH.ss&&hitsRaw!==hits?` <small>(${hitsRaw} without SS)</small>`:""} · avg ${avg.toFixed(1)}${projAll!=null?` · proj ${(+projAll).toFixed(1)}`:""}</div>`
+    +`<div class=fx-hr><b>${hits}/${vals.length}</b>${SSON&&hitsRaw!==hits?` <small>(${hitsRaw} without SS)</small>`:""} · avg ${avg.toFixed(1)}${projAll!=null?` · proj ${(+projAll).toFixed(1)}`:""}</div>`
     +`<div class=fx-ctl2>${filterBar(d.rows||[])}`
     +(key==="cards"?"":`<div class="fx-mv pmv"><button data-d=-1 aria-label="Lower the line">−</button><input type=range min=1 max="${Math.max(5,Math.ceil(Math.max(...tot,projAll||0)*1.3))}" step=1 value="${k}" aria-label="Move the line"><button data-d=1 aria-label="Raise the line">+</button><span>${kl}</span></div>`)
-    +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}">${bookImg(r[6])}<span>${key==="cards"?"Booked":r[0]+"+"}<small> · ${vals.filter(v=>v>=r[0]).length}/${vals.length}</small></span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${pct(r[3])}${otherEV(nx,key,r[0])!=null?`<small class=evo>${pct(otherEV(nx,key,r[0]))} ${CH.ss?"w/o":"w/"}</small>`:""}</b></button>`).join("")||""}</div><div id=pside></div></div></div></div>`;
+    +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}">${bookImg(r[6])}<span>${key==="cards"?"Booked":r[0]+"+"}<small> · ${vals.filter(v=>v>=r[0]).length}/${vals.length}</small></span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${pct(r[3])}${otherEV(nx,key,r[0])!=null?`<small class=evo>${pct(otherEV(nx,key,r[0]))} ${SSON?"w/o":"w/"}</small>`:""}</b></button>`).join("")||""}</div><div id=pside></div></div></div></div>`;
 }
 function wireCard(d){
   const box=document.getElementById("pchart"), redraw=()=>{
@@ -224,12 +227,12 @@ function refBox(){const r=G&&G.referee; if(!r||!r.name)return"";
 const tile=(v,l,cls="")=>v==null||v===""?"":`<div><b class="${cls}">${v}</b><small>${l}</small></div>`;
 const CONC={shots:["shots","Shots conceded"],sot:["sot","SOT conceded"],fouls:["fouls","Fouls won"],fouled:["fouled","Fouls committed"],tackles:["tackles","Times tackled"]};
 function projBox(){
-  const nx=DD.next||{}, key=CH.key, rows=filtered(DD.rows||[]), S=series(rows,key);
-  const tot=CH.ss?S.v.map((v,i)=>v+S.vs[i]):S.v, k=CH.k||1, rs=rungsOf(nx,key), r=rs.find(x=>x[0]===k);
-  const proj=nx.proj?(CH.ss&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
+  const nx=DD.next||{}, key=CH.key, SSON=CH.ss&&ssHere(nx,key), rows=filtered(DD.rows||[]), S=series(rows,key);
+  const tot=SSON?S.v.map((v,i)=>v+S.vs[i]):S.v, k=CH.k||1, rs=rungsOf(nx,key), r=rs.find(x=>x[0]===k);
+  const proj=nx.proj?(SSON&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
   const t=[tile(proj!=null?(+proj).toFixed(1):null,"proj"), tile(nx.exp_min!=null?nx.exp_min:null,"exp min"),
     tile(r?Math.round(100*r[2])+"%":null,"model",r&&isVal(r)?"pos":""), tile(r?(1/Math.max(r[2],1e-3)).toFixed(2):null,"fair"),
-    tile(r?pct(r[3]):null,CH.ss&&otherEV(nx,key,k)!=null?`EV · ${pct(otherEV(nx,key,k))} w/o SS`:"EV",r&&r[3]>=0?"pos":"neg"),
+    tile(r?pct(r[3]):null,SSON&&otherEV(nx,key,k)!=null?`EV · ${pct(otherEV(nx,key,k))} w/o SS`:"EV",r&&r[3]>=0?"pos":"neg"),
     tile(tot.length?Math.round(100*tot.filter(v=>v>=k).length/tot.length)+"%":null,`hit ${key==="cards"?"":k+"+"}`)].join("");
   return t?`<div class=pbox><h4>Projected</h4><div class=ptiles>${t}</div></div>`:"";
 }
