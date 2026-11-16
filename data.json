@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-16T21:31:05.546274+00:00",
+ "updated": "2026-11-16T21:41:23.589546+00:00",
  "picks": [
   {
    "id": 4,
@@ -852,8 +852,8 @@
    "odds": 8.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "close": 8.0,
    "hist": [
     [
@@ -874,8 +874,8 @@
    "odds": 5.0,
    "bookie": "Paddy Power",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "close": 5.0,
    "hist": [
     [
@@ -896,8 +896,8 @@
    "odds": 6.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null
+   "result": "W",
+   "pl": 5.0
   },
   {
    "id": 100,
@@ -908,8 +908,8 @@
    "odds": 4.33,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "close": 4.3333335,
    "hist": [
     [
@@ -948,8 +948,8 @@
    "odds": 21.67,
    "bookie": "Sky Bet",
    "stake": 0.5,
-   "result": null,
-   "pl": null
+   "result": "L",
+   "pl": -0.5
   },
   {
    "id": 102,
@@ -960,8 +960,8 @@
    "odds": 48.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null
+   "result": "L",
+   "pl": -0.5
   }
  ]
 }
