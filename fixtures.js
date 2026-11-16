@@ -86,7 +86,7 @@ function injuries(g) {
     + `</div></details>`;
 }
 function game(g) {
-  let ss0 = false; try { ss0 = localStorage.getItem("fxss") === "1"; } catch (e) {}
+  let ss0 = true; try { ss0 = localStorage.getItem("fxss") !== "0"; } catch (e) {}   // Super Sub on unless the viewer turned it off
   const st = {team: "all", market: "best", q: params.get("q") || "", priced: false, ss: ss0};
   // Super Sub (football): a market may carry "vs" = what the player who replaced him added that game, and
   // "rungs_ss" = model/EV with Super Sub. With the toggle on, bars stack that part on top in purple.
@@ -117,7 +117,7 @@ function game(g) {
           + `<div class=c><b>${(+k.odds).toFixed(2)}</b><small>${k.stake ? esc(k.stake) + "u" : ""}</small></div><div class=c><b class=pos>${k.ev > 0 ? "+" : ""}${(+k.ev).toFixed(0)}%</b><small>${(+k.model).toFixed(0)}% model</small></div></button>`;
       }).join("")}</div>` : "")
     + `<h2>Players</h2><div class=fx-ctl><div class=fx-seg>${[["all", "Both"], ["away", g.away?.abbr || g.away?.name || "Away"], ["home", g.home?.abbr || g.home?.name || "Home"]].map(([k, l]) => `<button data-t="${k}" class="${k === st.team ? "on" : ""}">${esc(l)}</button>`).join("")}</div>`
-    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxview>Show all graphs</button>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}" title="Count what his replacement adds if he is subbed off (bet365 Super Sub)">Super Sub</button>` : ""}</div>`
+    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxview>Show all graphs</button>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}">Super Sub</button>` : ""}</div>`
     + `<p class="meta fx-key"><b class=pos>green</b> value · <b style="color:#F27A1A">orange</b> +EV long shot · <b class=neg>red</b> −EV</p>`
     + `<div class="chips fx-mk"><button data-m="best" class=on>Best value</button>${markets.map(m => `<button data-m="${esc(m)}">${esc(D.short?.[m] || m)}</button>`).join("")}</div>`
     + `<div id=fxcards class=fx-cards></div>`;
