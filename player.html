@@ -40,8 +40,9 @@ const CH={key:"shots", k:null, ss:false, proj:true};
 CH.ss=true;try{CH.ss=localStorage.getItem("fxss")!=="0"}catch(e){}
 // filters (remembered per visitor): range, competitions (empty = all), club / country
 const FL={range:"season", comps:[], side:"both"};
-try{Object.assign(FL,JSON.parse(localStorage.getItem("pfilt")||"{}"))}catch(e){}
-const saveFL=()=>{try{localStorage.setItem("pfilt",JSON.stringify(FL))}catch(e){}};
+// only the range carries over between players: a club/comp/position picked on one player can leave another with no games
+try{const sv=JSON.parse(localStorage.getItem("pfilt")||"{}");if(typeof sv.range==="string")FL.range=sv.range}catch(e){}
+const saveFL=()=>{try{localStorage.setItem("pfilt",JSON.stringify({range:FL.range}))}catch(e){}};
 const seasonStart=(()=>{const t=new Date(),y=t.getMonth()>=6?t.getFullYear():t.getFullYear()-1;return `${y}-07-01`})();
 const lastStart=`${+seasonStart.slice(0,4)-1}-07-01`;
 if(!Array.isArray(FL.pos))FL.pos=[];
@@ -51,7 +52,7 @@ function rangeRows(rows,range){
   if(range==="last")return rows.filter(r=>(r[9]||"")>=lastStart&&(r[9]||"")<seasonStart);
   if(range==="all")return rows;
   return rows.slice(0,+range)}
-function filtered(rows){const hasDates=rows.some(r=>r[9]); return rangeRows(baseRows(rows),!hasDates&&(FL.range==="season"||FL.range==="last")?"all":FL.range)}
+function filtered(rows){const hasDates=rows.some(r=>r[9]), b=baseRows(rows), f=rangeRows(b,!hasDates&&(FL.range==="season"||FL.range==="last")?"all":FL.range); return f.length?f:b.slice(0,10)}   // empty range (e.g. no starts this season) -> his last 10
 function filterBar(rows){
   const b=baseRows(rows), ranges=[["5","L5"],["10","L10"],["20","L20"],["30","L30"],["50","L50"],["season","This season"],["last","Last season"],["all","All"]]
     .filter(([k])=>k==="all"||k==="season"||(k==="last"?rangeRows(b,"last").length:b.length>+k));
