@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-16T19:50:22.279859+00:00",
+ "updated": "2026-11-16T20:05:14.462906+00:00",
  "picks": [
   {
    "id": 4,
@@ -842,6 +842,126 @@
     ]
    ],
    "ko": "2026-11-15T19:45:00+00:00"
+  },
+  {
+   "id": 97,
+   "date": "2026-11-16",
+   "player": "Adrian Bajrami",
+   "game": "Switzerland v Scotland",
+   "kind": "single",
+   "odds": 8.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 8.0,
+   "hist": [
+    [
+     "2026-11-16T18:50:45+00:00",
+     8.0,
+     "bet365",
+     6.94
+    ]
+   ],
+   "ko": "2026-11-16T19:45:00+00:00"
+  },
+  {
+   "id": 98,
+   "date": "2026-11-16",
+   "player": "Samuel Ballet",
+   "game": "Switzerland v Scotland",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "Paddy Power",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-16T19:10:46+00:00",
+     5.0,
+     "Paddy Power",
+     3.97
+    ]
+   ],
+   "ko": "2026-11-16T19:45:00+00:00"
+  },
+  {
+   "id": 99,
+   "date": "2026-11-16",
+   "player": "Christos Zafeiris",
+   "game": "Greece v Serbia",
+   "kind": "single",
+   "odds": 6.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null
+  },
+  {
+   "id": 100,
+   "date": "2026-11-16",
+   "player": "David Zec",
+   "game": "North Macedonia v Slovenia",
+   "kind": "single",
+   "odds": 4.33,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "close": 4.3333335,
+   "hist": [
+    [
+     "2026-11-16T18:20:55+00:00",
+     4.3333335,
+     "Sky Bet",
+     3.71
+    ],
+    [
+     "2026-11-16T18:50:45+00:00",
+     4.3333335,
+     "Sky Bet",
+     3.83
+    ],
+    [
+     "2026-11-16T19:01:02+00:00",
+     4.3333335,
+     "Paddy Power",
+     3.83
+    ],
+    [
+     "2026-11-16T19:20:43+00:00",
+     4.3333335,
+     "Sky Bet",
+     3.83
+    ]
+   ],
+   "ko": "2026-11-16T19:45:00+00:00"
+  },
+  {
+   "id": 101,
+   "date": "2026-11-16",
+   "player": "David Zec + Samuel Ballet",
+   "game": "North Macedonia v Slovenia / Switzerland v Scotland",
+   "kind": "double",
+   "odds": 21.67,
+   "bookie": "Sky Bet",
+   "stake": 0.5,
+   "result": null,
+   "pl": null
+  },
+  {
+   "id": 102,
+   "date": "2026-11-16",
+   "player": "Adrian Bajrami + Christos Zafeiris",
+   "game": "Switzerland v Scotland / Greece v Serbia",
+   "kind": "double",
+   "odds": 48.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null
   }
  ]
 }

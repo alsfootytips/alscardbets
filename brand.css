@@ -836,3 +836,5 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .pnext{color:inherit;text-decoration:underline;text-underline-offset:3px}.pnext:hover{color:var(--fg)}
 
 .fx-sinfo{font-size:13px;color:var(--fg);min-height:18px;padding:6px 2px 0}
+
+.mxo{opacity:.55}.mxo .mxp{font-weight:600}.mxe.neg{color:var(--red,#F87171)}
