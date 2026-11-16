@@ -350,9 +350,19 @@ function game(g) {
     // right-hand panel: the line being looked at, its price and EV, then every bet365 line
     const fair = rung ? 100 / Math.max(rung[2], 0.1) : null, h = hr(RV);
     el.querySelector(".fx-sum").innerHTML = "";
+    // r[4] (optional) = every bookie for that line [[name, odds, EV, superSub]], highest odds first: top one shown, rest in a compare fold
+    const BK = {"bet365": "bet365", "betmgm": "betmgm", "skybet": "skybet", "paddypower": "paddypower", "williamhill": "williamhill", "betfairsb": "betfair", "betfair": "betfair", "betfred": "betfred"};
+    const bkImg = nm => { const f = nm ? BK[String(nm).toLowerCase().replace(/ /g, "")] : "bet365"; return f ? `<img class=fx-bk src="books/${f}.png" alt="${esc(nm || "bet365")}" title="${esc(nm || "bet365")}">` : `<i class=fx-bkt>${esc(String(nm).slice(0, 3))}</i>`; };
+    const evCol = (ev, ok) => ok ? "#4ADE80" : ev < 0 ? "#F87171" : "#F27A1A";
+    const evTxt = ev => `${ev > 0 ? "+" : ""}${(+ev).toFixed(0)}%`;
+    const cur = RG(M).find(r => r[0] === k), bks = cur && cur[4] && cur[4].length > 1 ? cur[4] : null;
+    const bestEv = bks ? bks.reduce((a, b) => b[2] > a[2] ? b : a) : null;
     el.querySelector(".fx-rt").innerHTML = RG(M).map(r => `<button data-k="${r[0]}" class="fx-pr${isVal(r) ? " val" : ""}${r[0] === k ? " on" : ""}">`
-      + `<img class=fx-bk src="${esc(D.book_logo || "books/bet365.png")}" alt="bet365"><span>${kLabel(M, r[0])}</span><b>${r[1].toFixed(2)}</b>`
-      + `<b class=fx-ev style="color:${isVal(r) ? "#4ADE80" : r[3] < 0 ? "#F87171" : "#F27A1A"}">${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}%</b></button>`).join("");
+      + `${bkImg(r[4] && r[4][0] ? r[4][0][0] : null)}<span>${kLabel(M, r[0])}</span><b>${r[1].toFixed(2)}</b>`
+      + `<b class=fx-ev style="color:${evCol(r[3], isVal(r))}">${evTxt(r[3])}</b></button>`).join("")
+      + (bks ? `<details class=fx-bks><summary>${bks.length} bookies${bestEv !== bks[0] ? ` <b style="color:${evCol(bestEv[2], isVal([0, bestEv[1], 100, bestEv[2]]))}">${esc(bestEv[0])} ${evTxt(bestEv[2])}</b>` : ""}</summary>`
+        + bks.map(b => `<div class=fx-bkr>${bkImg(b[0])}<span>${esc(b[0])}${b[3] ? ` <i class=fx-ssb>SS</i>` : ""}</span><b>${(+b[1]).toFixed(2)}</b><b class=fx-ev style="color:${evCol(b[2], isVal([0, b[1], 100, b[2]]))}">${evTxt(b[2])}</b></div>`).join("")
+        + `</details>` : "");
     el.querySelectorAll(".fx-rt button[data-k]").forEach(t => t.onclick = () => { s.k = +t.dataset.k; draw(p); });
     miniShots(p, s.m, n, el.querySelector(".fx-shots"));
     const sm = document.getElementById("s" + p.pid);
