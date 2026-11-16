@@ -105,10 +105,12 @@ function drawPitch(g, m) {
       const v = avg(pl), t = v == null ? 0 : v / mx;
       const r = m ? 22 + 26 * t : 22;
       const p = byId[String(pl.pid)], last = (pl.name || "").split(" ").slice(-1)[0];
+      const M5 = p && m ? (p.m || {})[m] : null, l5 = M5 && M5.v ? M5.v.slice(-5).map(x => Number.isInteger(x) ? x : +x.toFixed(1)) : [];   // last 5, oldest first
       out += (m && v != null ? `<circle cx=${X} cy=${Y} r=${r + 18} fill="${t > .66 ? "#4ADE80" : t > .33 ? "#FBBF24" : "#F87171"}" opacity="${.12 + .28 * t}"/>` : "")
         + `<g class=fx-lup data-pid="${esc(pl.pid)}" style="cursor:${p ? "pointer" : "default"}"><circle cx=${X} cy=${Y} r=22 fill="#111" stroke="${col}" stroke-width="3"/>`
         + `<text x=${X} y=${Y + 5} text-anchor=middle font-size=15 font-weight=700 fill="#F5F5F5">${esc(m && v != null ? v.toFixed(1) : (pl.pos || ""))}</text>`
-        + `<text x=${X} y=${Y + 44} text-anchor=middle font-size=17 font-weight=600 fill="#F5F5F5">${esc(last)}</text></g>`;
+        + `<text x=${X} y=${Y + 44} text-anchor=middle font-size=17 font-weight=600 fill="#F5F5F5">${esc(last)}</text>`
+        + (l5.length ? `<text x=${X} y=${Y + 62} text-anchor=middle font-size=14 fill="#8A8A8A" letter-spacing="1">${l5.map(x => x > 0 ? `<tspan fill="#E5E5E5">${x}</tspan>` : x).join(" ")}</text>` : "") + `</g>`;
     }
   }
   box.innerHTML = out + `</svg>`;
