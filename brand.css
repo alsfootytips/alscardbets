@@ -790,3 +790,19 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .fx-pitch{max-width:720px}.fx-pitchsvg{width:100%;height:auto;display:block}
 .fx-luf{display:flex;justify-content:space-between;max-width:720px;margin:6px 0 4px;font-size:13px;color:var(--muted)}
 .fx-luf span{display:flex;align-items:center;gap:5px}
+.fx-lw a.fx-name{color:var(--fg);font-weight:600;font-size:15px;text-decoration:none;border-bottom:1px dotted var(--muted)}
+.fx-lw a.fx-name:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.fx-shots details.fx-smd{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.fx-shots details.fx-smd>summary{cursor:pointer;font-size:13px;color:var(--muted);list-style:none;padding:4px 0}
+.fx-shots details.fx-smd>summary::-webkit-details-marker{display:none}
+.fx-shots details.fx-smd>summary::before{content:"▸ "}.fx-shots details.fx-smd[open]>summary::before{content:"▾ "}
+.fx-smap{width:100%;height:auto;display:block;margin:4px 0 2px}
+/* Matchups: one card per matchup (both directions merged) */
+.mcards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));margin-top:10px}
+.mcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.mtop{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.mlegs{display:grid;gap:6px;min-width:0}.mleg{display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:center}
+.mleg .face{width:28px;height:28px;border-radius:50%;grid-row:span 2}.mleg b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mleg small{color:var(--muted);font-size:11px}
+.mmain{text-align:right;flex:none}.mmain>b:first-child{display:block;font-size:13px}.mmain span{display:block;font-size:12px;color:var(--muted)}.mmain>b:last-child{display:block;font-size:18px}
+.mchips2{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.mchip{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--muted)}.mchip b{color:var(--fg)}
+.mgame{display:block;margin-top:8px;color:var(--muted)}

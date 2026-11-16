@@ -241,7 +241,7 @@ function game(g) {
       + `${p.link ? `<a href="${esc(p.link)}"><b>${esc(p.name)}</b></a>` : `<b>${esc(p.name)}</b>`}<small>${img(tm.logo, "fx-mini")}${esc(tm.abbr || tm.name || "")}${p.pos ? " · " + esc(p.pos) : ""}${p.tag ? ` <span class="fx-tag ${esc(p.tag_cls || "")}">${esc(p.tag)}</span>` : ""}</small></div></div>`
       + `<div class=fx-mks>${ms.map(x => `<button data-m="${esc(x)}" class="${x === m ? "on" : ""}">${esc(D.short?.[x] || x)}</button>`).join("")}</div>`
       + `<div class=fx-body><div class=fx-left><div class=fx-chart></div><div class=fx-hr></div><div class=fx-ctl2></div></div>`
-      + `<div class=fx-side><div class=fx-sum></div><div class=fx-rt></div></div></div></div>`;
+      + `<div class=fx-side><div class=fx-sum></div><div class=fx-rt></div><div class=fx-shots></div></div></div></div>`;
   }
   const moreDone = new Set();
   function loadMore(p) {
@@ -253,6 +253,31 @@ function game(g) {
       for (const [k, M] of Object.entries(p.m || {})) if (h.m && h.m[k]) { M.v = h.m[k].v; if (h.m[k].vs) M.vs = h.m[k].vs; }
       if (document.getElementById("c" + p.pid)) draw(p);
     }).catch(() => {});
+  }
+  const shotCache = {}, smOpen = {};
+  function miniShots(p, m, n, box) {
+    if (!box) return;
+    if (!D.shots_url || !/shot|sot/i.test(m)) { box.innerHTML = ""; return; }
+    const key = String(p.pid);
+    if (!(key in shotCache)) {
+      shotCache[key] = null;
+      fetch(D.shots_url.replace("{pid}", encodeURIComponent(p.pid)) + "?v=" + (D.updated || "")).then(r => r.ok ? r.json() : null)
+        .then(d => { shotCache[key] = (d && d.rows) || []; if (document.getElementById("c" + p.pid)) draw(p); }).catch(() => {});
+      box.innerHTML = ""; return;
+    }
+    const rows = shotCache[key]; if (!rows || !rows.length) { box.innerHTML = ""; return; }
+    const head = /head/i.test(m), outside = /outside/i.test(m), sotOnly = /target|sot/i.test(m);
+    const keep = sh => (!sotOnly || sh[3]) && (!head || sh[2] === "H") && (!outside || sh[7] === 0);
+    const use = rows.slice(0, n), all = use.flatMap(r => (r[6] || []).filter(keep));
+    const k = 6, W = 68 * k, H = 32 * k, P = sh => [(sh[1] * k).toFixed(1), ((105 - sh[0]) * k).toFixed(1)];
+    let svg = `<svg viewBox="0 0 ${W} ${H}" class=fx-smap role=img aria-label="Shot map"><rect width="${W}" height="${H}" rx="8" fill="#0E2215"/>`
+      + `<g fill="none" stroke="#2F5A3C" stroke-width="2"><rect x="${13.84 * k}" y="0" width="${40.32 * k}" height="${16.5 * k}"/><rect x="${24.84 * k}" y="0" width="${18.32 * k}" height="${5.5 * k}"/>`
+      + `<path d="M ${(34 - 7.3) * k} ${16.5 * k} A ${9.15 * k} ${9.15 * k} 0 0 0 ${(34 + 7.3) * k} ${16.5 * k}"/></g><rect x="${30.34 * k}" y="-3" width="${7.32 * k}" height="6" fill="#ddd"/>`;
+    for (const sh of all) { const [cx, cy] = P(sh); if (+cy > H) continue;
+      svg += `<circle cx="${cx}" cy="${cy}" r="${(5 + Math.sqrt(sh[5] || 0) * 16).toFixed(1)}" fill="${sh[4] ? "#FBBF24" : sh[3] ? "#4ADE80" : "#9CA3AF"}" fill-opacity="${sh[4] || sh[3] ? .9 : .45}" stroke="#000" stroke-width="1"/>`; }
+    const open = key in smOpen ? smOpen[key] : window.innerWidth > 800;
+    box.innerHTML = `<details class=fx-smd${open ? " open" : ""}><summary>Shot map · ${all.length} in ${use.length} games</summary>${svg}</svg></details>`;
+    box.querySelector("details").addEventListener("toggle", e => { smOpen[key] = e.target.open; });
   }
   function wire(p) {
     const el = document.getElementById("c" + p.pid); if (!el) return;
@@ -327,10 +352,11 @@ function game(g) {
       + `<img class=fx-bk src="${esc(D.book_logo || "books/bet365.png")}" alt="bet365"><span>${kLabel(M, r[0])}</span><b>${r[1].toFixed(2)}</b>`
       + `<b class=fx-ev style="color:${isVal(r) ? "#4ADE80" : r[3] < 0 ? "#F87171" : "#F27A1A"}">${r[3] > 0 ? "+" : ""}${r[3].toFixed(0)}%</b></button>`).join("");
     el.querySelectorAll(".fx-rt button[data-k]").forEach(t => t.onclick = () => { s.k = +t.dataset.k; draw(p); });
+    miniShots(p, s.m, n, el.querySelector(".fx-shots"));
     const sm = document.getElementById("s" + p.pid);
     if (sm) {
       const tm = g[p.team] || {}, l10 = TV.slice(-10), h10 = l10.filter(v => hitOf(M, v, k)).length, s10 = st.ss && M.vs ? M.vs.slice(-10) : [];
-      sm.innerHTML = `${img(p.face, "fx-face sm")}<div class=fx-lw><b>${esc(p.name)}</b><small>${img(tm.logo, "fx-mini")}${esc(tm.abbr || "")} · ${esc(D.short?.[s.m] || s.m)} ${kLabel(M, k)}${p.tag ? ` <span class="fx-tag ${esc(p.tag_cls || "")}">${esc(p.tag)}</span>` : ""}</small></div>`
+      sm.innerHTML = `${img(p.face, "fx-face sm")}<div class=fx-lw>${p.link ? `<a class=fx-name href="${esc(p.link)}" onclick="event.stopPropagation()">${esc(p.name)}</a>` : `<b>${esc(p.name)}</b>`}<small>${img(tm.logo, "fx-mini")}${esc(tm.abbr || "")} · ${esc(D.short?.[s.m] || s.m)} ${kLabel(M, k)}${p.tag ? ` <span class="fx-tag ${esc(p.tag_cls || "")}">${esc(p.tag)}</span>` : ""}</small></div>`
         + `<div class=fx-lt10>${l10.map((v, i) => `<i class="${hitOf(M, v, k) ? "h" : "m"}${s10[i] ? " s" : ""}"${s10[i] ? ` title="+${s10[i]} Super Sub"` : ""}>${v}</i>`).reverse().join("")}</div>`
         + `<div class=c><b>${h10}/${l10.length}</b><small>L10</small></div>`
         + `<div class=c><b>${rung ? rung[1].toFixed(2) : "–"}</b><small>${rung ? rung[2].toFixed(0) + "%" : "no price"}</small></div>`
