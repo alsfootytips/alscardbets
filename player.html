@@ -142,6 +142,13 @@ function statCard(d){
 // FotMob images have no CORS headers, so faces/logos are loaded through wsrv.nl (free image proxy) for the capture only.
 function loadH2C(){return window.html2canvas?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");
   s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+const PX=src=>"https://wsrv.nl/?url="+encodeURIComponent(src.replace(/^https?:\/\//,""))+"&w=128&output=png";
+const PXC={};   // proxied images already fetched (warmed in the background so Share is quick)
+function warmShare(){   // after the page draws: load html2canvas + the card's faces/logos through the proxy, idle time
+  const go=()=>{loadH2C().catch(()=>{});
+    document.querySelectorAll("#app img").forEach(im=>{const src=im.getAttribute("src")||"";
+      if(/^https?:/.test(src)&&!src.startsWith(location.origin)&&!src.includes("wsrv.nl")&&!PXC[src]){const w=new Image();w.crossOrigin="anonymous";w.src=PX(src);PXC[src]=w}})};
+  (window.requestIdleCallback||(f=>setTimeout(f,1200)))(go)}
 async function shareCard(d,btn,el,tag){
   const card=el||document.querySelector("#pchart .pcardx"); if(!card)return;
   btn.disabled=true; btn.classList.add("busy");
@@ -158,9 +165,9 @@ async function shareCard(d,btn,el,tag){
     wrap.insertAdjacentHTML("beforeend",`<div class=shotfoot><span>Al's Card Bets</span><span>alsfootytips.github.io/alscardbets</span></div>`);
     document.body.appendChild(wrap);
     await Promise.all([...wrap.querySelectorAll("img")].map(im=>new Promise(res=>{
-      const src=im.getAttribute("src")||""; if(/^https?:/.test(src)&&!src.startsWith(location.origin)){im.crossOrigin="anonymous";im.src="https://wsrv.nl/?url="+encodeURIComponent(src.replace(/^https?:\/\//,""))}
-      if(im.complete&&im.naturalWidth)return res(); im.onload=res; im.onerror=()=>{im.remove();res()}; setTimeout(res,5000)})));
-    const cv=await html2canvas(wrap,{backgroundColor:"#000",scale:2,useCORS:true,logging:false});
+      const src=im.getAttribute("src")||""; if(/^https?:/.test(src)&&!src.startsWith(location.origin)&&!src.includes("wsrv.nl")){im.crossOrigin="anonymous";im.src=PX(src)}
+      if(im.complete&&im.naturalWidth)return res(); im.onload=res; im.onerror=()=>{im.remove();res()}; setTimeout(res,2500)})));
+    const cv=await html2canvas(wrap,{backgroundColor:"#000",scale:1.5,useCORS:true,logging:false,imageTimeout:2500});
     wrap.remove();
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
     const name=`${(d.name||"player").replace(/\W+/g,"-").toLowerCase()}-${tag||CH.key||"stats"}.png`, file=new File([blob],name,{type:"image/png"});
@@ -376,7 +383,7 @@ function draw(d){
   if(firstPriced)CH.key=firstPriced[0];
   h+=`<div id=pchart>${statCard(d)}</div><div id=ppanel></div>`;
   app.innerHTML=h;
-  DD=d; try{CH.ss=localStorage.getItem(ssKey())!=="0"}catch(e){}; wireCard(d); drawPanel();
+  DD=d; try{CH.ss=localStorage.getItem(ssKey())!=="0"}catch(e){}; wireCard(d); drawPanel(); warmShare();
   if(d.card_game)fetch(`pg/${d.card_game}.json`).then(r=>r.json()).then(g=>{G=g;document.getElementById("pchart").innerHTML=statCard(d);wireCard(d);drawPanel()}).catch(()=>{});
   const K="openFb";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
   app.querySelectorAll("details[id]").forEach(dd=>{if(o.includes(dd.id))dd.open=true;dd.addEventListener("toggle",()=>{
