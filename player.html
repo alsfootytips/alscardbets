@@ -267,7 +267,7 @@ function drawPanel(){
         if(mine&&theirs){const pr=mine[1]*theirs[1], cp=((DD.next&&DD.next.pairs)||[]).find(q=>q.opp===r.pid&&q.mk===key&&q.k1===mine[0]&&q.k2===theirs[0]), pp=cp?cp.p:mine[2]*theirs[2], corrL=cp&&cp.corr?"correlated":"independent";
           pair+=`<div class="oppbox mpair"><b>Matchup pair</b><div>${esc(DD.name)} ${mine[0]}+ ${key==="fouls"?"fouls":"fouled"} @${mine[1].toFixed(2)} <small class=pos>+${Math.round(100*mine[3])}%</small></div>`
             +`<div>${esc(r.name)} ${theirs[0]}+ ${stat==="fouls"?"fouls":"fouled"} @${theirs[1].toFixed(2)} <small class=pos>+${Math.round(100*theirs[3])}%</small></div>`
-            +`<div class=mpx><span>Combined <b>${pr.toFixed(2)}</b></span><span>Chance <b>${Math.round(100*pp)}%</b> <small>${corrL}</small></span><span>EV <b class=${pp*pr>=1?"pos":"neg"}>${pp*pr>=1?"+":""}${Math.round(100*(pp*pr-1))}%</b></span></div></div>`; break}}
+            +`<div class=mpx><span>Combined <b>≈${pr.toFixed(2)}</b></span><span>Chance <b>${Math.round(100*pp)}%</b> <small>${corrL}</small></span><span>EV <b class=${pp*pr>=1?"pos":"neg"}>${pp*pr>=1?"+":""}${Math.round(100*(pp*pr-1))}%</b></span></div></div>`; break}}
     }
     sideH+=pair;
     // pitch of the game: him + likely direct opponents, labelled with the stat that matters for this market (+ price / EV)
