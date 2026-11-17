@@ -2,7 +2,7 @@
 <title>Player · Al's Card Bets</title>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel=stylesheet>
-<link rel=stylesheet href="brand.css?v=f19140e0"><link rel=icon href="logo.jpg"></head><body>
+<link rel=stylesheet href="brand.css"><link rel=icon href="logo.jpg"></head><body>
 <header class=top><div class=in><a class=logo href="football.html"><img src="logo.jpg" alt="Al's Card Bets"></a><div class=sport role=group aria-label=Sport><a class=on aria-current=page href="football.html">Football</a><a href="nba.html">NBA</a><a href="nhl.html">NHL</a><a href="nfl.html">NFL</a><a href="darts.html">Darts</a><a href="cricket.html">Cricket</a></div><nav><a href="football.html">Fixtures</a><a href="props.html">Props</a><a href="picks.html">Cards</a><a class=on href="players.html">Players</a><a href="index.html">Results</a></nav></div></header>
 <main class=wide><div id=app><p class=meta>Loading…</p></div>
 <p class=meta style="margin-top:28px">Not betting advice.</p>
@@ -37,7 +37,7 @@ function bars(rows,key,k){ // oldest left, newest right
 // minutes as a faint background line, bet365 rows on the right (tap to set the line), Super Sub stacked in purple ----------
 const VAL_P=0.55, VAL_EV=0.10, MAX_ODDS=15, SS_COL="#A78BFA";   // value rule from props_calibration.json (backtest)
 const CH={key:"shots", k:null, ss:false, proj:true};
-CH.ss=true;try{CH.ss=localStorage.getItem("fxss")!=="0"}catch(e){}
+CH.ss=true;const ssKey=()=>"fxss_"+((typeof DD!=="undefined"&&DD&&DD.next&&DD.next.fid)||"");   // Super Sub per game (same key as Fixtures)
 // filters (remembered per visitor): range, competitions (empty = all), club / country
 const FL={range:"season", comps:[], side:"both"};
 // only the range carries over between players: a club/comp/position picked on one player can leave another with no games
@@ -144,7 +144,7 @@ function wireCard(d){
     [...document.querySelectorAll("#app .fx-mks,#app .fx-rng,#app .fx-rt,#app .pcomps")].forEach((e,i)=>{if(keep[i]!=null)e.scrollLeft=keep[i]});
     window.scrollTo(0,y)};
   box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw()});
-  const ss=document.getElementById("pss"); if(ss)ss.onclick=()=>{CH.ss=!CH.ss;try{localStorage.setItem("fxss",CH.ss?"1":"0")}catch(e){};redraw()};
+  const ss=document.getElementById("pss"); if(ss)ss.onclick=()=>{CH.ss=!CH.ss;try{localStorage.setItem(ssKey(),CH.ss?"1":"0")}catch(e){};redraw()};
   const pj=document.getElementById("pproj"); if(pj)pj.onclick=()=>{CH.proj=!CH.proj;redraw()};
   const on=(id,f)=>{const e=document.getElementById(id); if(e)e.onchange=()=>{f(e.value);saveFL();redraw()}};
   on("frange",v=>FL.range=v); on("fside",v=>FL.side=v); on("fcomp",v=>FL.comps=v?[v]:[]); on("fpos",v=>FL.pos=v?[v]:[]);
@@ -332,7 +332,7 @@ function draw(d){
   if(firstPriced)CH.key=firstPriced[0];
   h+=`<div id=pchart>${statCard(d)}</div><div id=ppanel></div>`;
   app.innerHTML=h;
-  DD=d; wireCard(d); drawPanel();
+  DD=d; try{CH.ss=localStorage.getItem(ssKey())!=="0"}catch(e){}; wireCard(d); drawPanel();
   if(d.card_game)fetch(`pg/${d.card_game}.json`).then(r=>r.json()).then(g=>{G=g;document.getElementById("pchart").innerHTML=statCard(d);wireCard(d);drawPanel()}).catch(()=>{});
   const K="openFb";let o=[];try{o=JSON.parse(localStorage.getItem(K)||"[]")}catch(e){}
   app.querySelectorAll("details[id]").forEach(dd=>{if(o.includes(dd.id))dd.open=true;dd.addEventListener("toggle",()=>{

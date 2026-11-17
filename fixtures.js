@@ -133,7 +133,8 @@ function injuries(g) {
     + `</div></details>`;
 }
 function game(g) {
-  let ss0 = true; try { ss0 = localStorage.getItem("fxss") !== "0"; } catch (e) {}   // Super Sub on unless the viewer turned it off
+  const ssKey = "fxss_" + g.id;   // Super Sub remembered PER GAME: on unless the viewer turned it off for this game
+  let ss0 = true; try { ss0 = localStorage.getItem(ssKey) !== "0"; } catch (e) {}
   const st = {team: "all", market: "best", q: params.get("q") || "", priced: false, ss: ss0};
   // Super Sub (football): a market may carry "vs" = what the player who replaced him added that game, and
   // "rungs_ss" = model/EV with Super Sub. With the toggle on, bars stack that part on top in purple.
@@ -146,7 +147,7 @@ function game(g) {
   // only markets bet365 actually prices: drop unpriced markets, then players left with none
   const P = (g.players || []).map(p => ({...p, m: Object.fromEntries(Object.entries(p.m || {})
     .filter(([, M]) => (M.rungs || []).length || (M.rungs_ss || []).length))})).filter(p => Object.keys(p.m).length);
-  const hasSS = P.some(p => Object.values(p.m || {}).some(M => (M.vs || []).some(x => x)));
+  const hasSS = P.some(p => Object.values(p.m || {}).some(M => (M.vs || []).some(x => x) || (M.rungs_ss || []).length));
   const markets = [...new Set(P.flatMap(p => Object.keys(p.m || {})))];
   const order = D.markets || markets;
   markets.sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
@@ -176,7 +177,7 @@ function game(g) {
   root.querySelector("#fxq").value = st.q;
   root.querySelector("#fxq").oninput = e => { st.q = e.target.value; cards(); };
   const ssb = root.querySelector("#fxss");
-  if (ssb) ssb.onclick = () => { st.ss = !st.ss; ssb.classList.toggle("on", st.ss); try { localStorage.setItem("fxss", st.ss ? "1" : "0"); } catch (e) {} for (const k in cardState) cardState[k].k = null; cards(); };
+  if (ssb) ssb.onclick = () => { st.ss = !st.ss; ssb.classList.toggle("on", st.ss); try { localStorage.setItem(ssKey, st.ss ? "1" : "0"); } catch (e) {} for (const k in cardState) cardState[k].k = null; cards(); };
   root.querySelector("#fxview").onclick = e => { st.graphs = !st.graphs; e.target.classList.toggle("on", st.graphs); cards(); };
   if (g.lineups) {
     drawPitch(g, "");
