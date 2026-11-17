@@ -129,13 +129,45 @@ function statCard(d){
     +`<div class=fx-mks>${STATS.map(([kk,l])=>`<button data-m="${kk}" class="${kk===key?"on":""}">${l.replace("Shots on target","SOT").replace("Fouls won","Fouled")}</button>`).join("")}`
     +`</div>`
     +`<div class=fx-body><div class=fx-left><div class=fx-chart><div class="fx-lt plt"><b style="color:${col}">${kl}${rung?` · ${rung[1].toFixed(2)} · ${pct(rung[3])} EV`:""}</b>`
-      +`${ssHere(nx,key)?`<button id=pss class="sspill${SSON?" on":""}" aria-pressed="${SSON}" title="Super Sub">SS</button>`:""}</div>`
+      +`<span class=plt-r><button id=pshare class=sharebtn title="Share as image" aria-label="Share as image"><svg viewBox="0 0 24 24" width=15 height=15 fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>`
+      +`${ssHere(nx,key)?`<button id=pss class="sspill${SSON?" on":""}" aria-pressed="${SSON}" title="Super Sub">SS</button>`:""}</span></div>`
     +`<div class=pchartw><svg class=chart viewBox="0 0 ${W} ${H}" role=img aria-label="${esc(key)} last ${n}">${mins}${bars}${next}${labels}<line x1="${pad}" x2="${W-padR}" y1="${ly}" y2="${ly}" stroke="${col}" stroke-dasharray="3 2"/><text x="${pad-3}" y="${ly+3}" text-anchor=end font-size=7.5 font-weight=600 fill="${col}">${esc(kl)}</text></svg>`
       +`${projAll!=null?`<button id=pproj class="projbtn${CH.proj?" on":""}" aria-pressed="${CH.proj}" title="Projection"><svg viewBox="0 0 12 14" width=12 height=14><rect x="2" y="2" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-dasharray="2 1.5"/></svg></button>`:""}</div></div>`
     +`<div class=fx-hr><b>${hits}/${vals.length}</b>${SSON&&hitsRaw!==hits?` <small>(${hitsRaw} without SS)</small>`:""} · avg ${avg.toFixed(1)}${projAll!=null?` · proj ${(+projAll).toFixed(1)}`:""}</div>`
     +`<div class=fx-ctl2>${filterBar(d.rows||[])}`
     +(key==="cards"?"":`<div class="fx-mv pmv"><button data-d=-1 aria-label="Lower the line">−</button><input type=range min=1 max="${Math.max(5,Math.ceil(Math.max(...tot,projAll||0)*1.3))}" step=1 value="${k}" aria-label="Move the line"><button data-d=1 aria-label="Raise the line">+</button><span>${kl}</span></div>`)
     +`</div></div><div class=fx-side><div class=fx-rt>${rs.map(r=>`<button data-k="${r[0]}" class="fx-pr${isVal(r)?" val":""}${r[0]===k?" on":""}">${bookImg(r[6])}<span>${key==="cards"?"Booked":r[0]+"+"}<small> · ${vals.filter(v=>v>=r[0]).length}/${vals.length}</small></span><b>${r[1].toFixed(2)}</b><b class=fx-ev style="color:${isVal(r)?"#4ADE80":r[3]<0?"#F87171":"#F27A1A"}">${pct(r[3])}</b></button>`).join("")||""}</div><div id=pside></div></div></div></div>`;
+}
+// Share: the stat card as a PNG (player header + chart + prices), via the phone share sheet or a download.
+// FotMob images have no CORS headers, so faces/logos are loaded through wsrv.nl (free image proxy) for the capture only.
+function loadH2C(){return window.html2canvas?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");
+  s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+async function shareCard(d,btn,el,tag){
+  const card=el||document.querySelector("#pchart .pcardx"); if(!card)return;
+  btn.disabled=true; btn.classList.add("busy");
+  try{
+    await loadH2C();
+    const nx=d.next||{}, wrap=document.createElement("div");
+    wrap.className="shotwrap";
+    const ko=nx.ko?new Date(nx.ko).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"}):"";
+    wrap.innerHTML=`<div class=shothead><img class=shotface src="${IMG}playerimages/${encodeURIComponent(d.pid)}.png" alt=""><div><b>${esc(d.name||"")}</b>`
+      +`<small>${esc(d.team||"")}${nx.game?` · ${esc(nx.game)}${ko?` · ${ko}`:""}`:""}</small></div></div>`;
+    const c=card.cloneNode(true);
+    c.querySelectorAll(".fx-ctl2,#pshare,#pproj,.pmv,.sharebtn").forEach(e=>e.remove());
+    wrap.appendChild(c);
+    wrap.insertAdjacentHTML("beforeend",`<div class=shotfoot><span>Al's Card Bets</span><span>alsfootytips.github.io/alscardbets</span></div>`);
+    document.body.appendChild(wrap);
+    await Promise.all([...wrap.querySelectorAll("img")].map(im=>new Promise(res=>{
+      const src=im.getAttribute("src")||""; if(/^https?:/.test(src)&&!src.startsWith(location.origin)){im.crossOrigin="anonymous";im.src="https://wsrv.nl/?url="+encodeURIComponent(src.replace(/^https?:\/\//,""))}
+      if(im.complete&&im.naturalWidth)return res(); im.onload=res; im.onerror=()=>{im.remove();res()}; setTimeout(res,5000)})));
+    const cv=await html2canvas(wrap,{backgroundColor:"#000",scale:2,useCORS:true,logging:false});
+    wrap.remove();
+    const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+    const name=`${(d.name||"player").replace(/\W+/g,"-").toLowerCase()}-${tag||CH.key||"stats"}.png`, file=new File([blob],name,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]}).catch(()=>{})}
+    else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+  }catch(e){console.error(e);alert("Couldn't make the image")}
+  finally{btn.disabled=false;btn.classList.remove("busy");document.querySelectorAll(".shotwrap").forEach(w=>w.remove())}
 }
 function wireCard(d){
   const box=document.getElementById("pchart"), redraw=()=>{
@@ -146,6 +178,7 @@ function wireCard(d){
   box.querySelectorAll(".fx-mks button[data-m]").forEach(b=>b.onclick=()=>{CH.key=b.dataset.m;CH.k=null;redraw()});
   const ss=document.getElementById("pss"); if(ss)ss.onclick=()=>{CH.ss=!CH.ss;try{localStorage.setItem(ssKey(),CH.ss?"1":"0")}catch(e){};redraw()};
   const pj=document.getElementById("pproj"); if(pj)pj.onclick=()=>{CH.proj=!CH.proj;redraw()};
+  const sh=document.getElementById("pshare"); if(sh)sh.onclick=()=>shareCard(d,sh);
   const on=(id,f)=>{const e=document.getElementById(id); if(e)e.onchange=()=>{f(e.value);saveFL();redraw()}};
   on("frange",v=>FL.range=v); on("fside",v=>FL.side=v); on("fcomp",v=>FL.comps=v?[v]:[]); on("fpos",v=>FL.pos=v?[v]:[]);
   const re=()=>{saveFL();redraw()};
@@ -237,8 +270,11 @@ function projBox(){
   const nx=DD.next||{}, key=CH.key, SSON=CH.ss&&ssHere(nx,key), rows=filtered(DD.rows||[]), S=series(rows,key);
   const tot=SSON?S.v.map((v,i)=>v+S.vs[i]):S.v, k=CH.k||1, rs=rungsOf(nx,key), r=rs.find(x=>x[0]===k);
   const proj=nx.proj?(SSON&&nx.proj[key+"_ss"]!=null?nx.proj[key+"_ss"]:nx.proj[key]):null;
+  // no bookie price in our feed (e.g. headed SOT / SOT outside box): chance + fair price from the projection (Poisson)
+  const pf=!r&&proj!=null&&+proj>0&&key!=="cards"?(()=>{let c=0,t=Math.exp(-proj);for(let i=0;i<k;i++){c+=t;t*=proj/(i+1)}return 1-c})():null;
   const t=[tile(proj!=null?(+proj).toFixed(1):null,"proj"), tile(nx.exp_min!=null?nx.exp_min:null,"exp min"),
-    tile(r?Math.round(100*r[2])+"%":null,"model",r&&isVal(r)?"pos":""), tile(r?(1/Math.max(r[2],1e-3)).toFixed(2):null,"fair"),
+    tile(r?Math.round(100*r[2])+"%":pf!=null?Math.round(100*pf)+"%":null,"model",r&&isVal(r)?"pos":""),
+    tile(r?(1/Math.max(r[2],1e-3)).toFixed(2):pf?(1/Math.max(pf,1e-3)).toFixed(2):null,r?"fair":`fair ${k}+`),
     tile(r?pct(r[3]):null,"EV",r&&r[3]>=0?"pos":"neg"),
     tile(tot.length?Math.round(100*tot.filter(v=>v>=k).length/tot.length)+"%":null,`hit ${key==="cards"?"":k+"+"}`)].join("");
   return t?`<div class=pbox><h4>Projected</h4><div class=ptiles>${t}</div></div>`:"";
@@ -254,7 +290,7 @@ function drawPanel(){
   if(["shots","sot","hsot","osot"].includes(key)){ if(SF._k!==key){Object.assign(SF,{shots:{t:"A",on:false,box:"A"},sot:{t:"A",on:true,box:"A"},hsot:{t:"H",on:true,box:"A"},osot:{t:"A",on:true,box:"out"}}[key])} SF._k=key;   // map follows the market
     if(!SF.range)SF.range=["5","10","20","season","all"].includes(FL.range)?FL.range:"10";
     const b0=baseRows(DD.rows||[]), fr=rangeRows(b0,!b0.some(r=>r[9])&&SF.range==="season"?"all":SF.range);
-    if(b0.some(r=>(r[6]||[]).length)) below=`<div class=ppan><h3 class=sub3>Shot map</h3>${shotmap(fr)}</div>`; }
+    if(b0.some(r=>(r[6]||[]).length)) below=`<div class="ppan pshotmap"><h3 class="sub3 smh">Shot map<button class="sharebtn smshare" title="Share as image" aria-label="Share as image"><svg viewBox="0 0 24 24" width=15 height=15 fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></h3>${shotmap(fr)}</div>`; }
   else if(PANEL[key]&&meRow()){
     const [stat,label]=PANEL[key], x=G.cards[String(DD.pid)]||{};
     const P={...x,pid:Number(DD.pid),pitch:G.pitch,player:x.player||DD.name};
@@ -282,6 +318,7 @@ function drawPanel(){
   }
   if(side)side.innerHTML=sideH;
   box.innerHTML=below; wireShots();
+  const smb=box.querySelector(".smshare"); if(smb)smb.onclick=()=>shareCard(DD,smb,box.querySelector(".pshotmap"),"shotmap");
 }
 function wireShots(){
   const sf=document.getElementById("sf"), sfb=document.getElementById("sfb");
