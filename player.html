@@ -144,10 +144,14 @@ function loadH2C(){return window.html2canvas?Promise.resolve():new Promise((ok,n
   s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
 const PX=src=>"https://wsrv.nl/?url="+encodeURIComponent(src.replace(/^https?:\/\//,""))+"&w=128&output=png";
 const PXC={};   // proxied images already fetched (warmed in the background so Share is quick)
+const DURL={};  // chart badges (SVG <image>) as data URLs: an SVG drawn by html2canvas never loads outside images itself
+const dataUrl=src=>DURL[src]||(DURL[src]=fetch(PX(src)).then(r=>r.ok?r.blob():null).then(b=>b?new Promise(res=>{const f=new FileReader();f.onload=()=>res(f.result);f.onerror=()=>res(null);f.readAsDataURL(b)}):null).catch(()=>null));
+const svgImgs=root=>[...root.querySelectorAll("svg image")].map(im=>[im,im.getAttribute("href")||im.getAttribute("xlink:href")||""]).filter(([,h])=>/^https?:/.test(h));
 function warmShare(){   // after the page draws: load html2canvas + the card's faces/logos through the proxy, idle time
   const go=()=>{loadH2C().catch(()=>{});
     document.querySelectorAll("#app img").forEach(im=>{const src=im.getAttribute("src")||"";
-      if(/^https?:/.test(src)&&!src.startsWith(location.origin)&&!src.includes("wsrv.nl")&&!PXC[src]){const w=new Image();w.crossOrigin="anonymous";w.src=PX(src);PXC[src]=w}})};
+      if(/^https?:/.test(src)&&!src.startsWith(location.origin)&&!src.includes("wsrv.nl")&&!PXC[src]){const w=new Image();w.crossOrigin="anonymous";w.src=PX(src);PXC[src]=w}});
+    svgImgs(document.getElementById("app")||document).forEach(([,h])=>dataUrl(h))};
   (window.requestIdleCallback||(f=>setTimeout(f,1200)))(go)}
 async function shareCard(d,btn,el,tag){
   const card=el||document.querySelector("#pchart .pcardx"); if(!card)return;
@@ -167,6 +171,8 @@ async function shareCard(d,btn,el,tag){
     await Promise.all([...wrap.querySelectorAll("img")].map(im=>new Promise(res=>{
       const src=im.getAttribute("src")||""; if(/^https?:/.test(src)&&!src.startsWith(location.origin)&&!src.includes("wsrv.nl")){im.crossOrigin="anonymous";im.src=PX(src)}
       if(im.complete&&im.naturalWidth)return res(); im.onload=res; im.onerror=()=>{im.remove();res()}; setTimeout(res,2500)})));
+    await Promise.all(svgImgs(wrap).map(async([im,h])=>{const u=await Promise.race([dataUrl(h),new Promise(r=>setTimeout(()=>r(null),2500))]);
+      if(u){im.setAttribute("href",u);im.removeAttribute("xlink:href")}else im.remove()}));
     const cv=await html2canvas(wrap,{backgroundColor:"#000",scale:1.5,useCORS:true,logging:false,imageTimeout:2500});
     wrap.remove();
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
