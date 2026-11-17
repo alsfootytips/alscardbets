@@ -376,7 +376,14 @@ function game(g) {
       + `<b class=fx-ev style="color:${evCol(r[3], isVal(r))}">${evTxt(r[3])}</b></button>`).join("")
       + (bks ? `<details class=fx-bks><summary>${bks.length} bookies${bestEv !== bks[0] ? ` <b style="color:${evCol(bestEv[2], isVal([0, bestEv[1], 100, bestEv[2]]))}">${esc(bestEv[0])} ${evTxt(bestEv[2])}</b>` : ""}</summary>`
         + bks.map(b => `<div class=fx-bkr>${bkImg(b[0])}<span>${esc(b[0])}${b[3] ? ` <i class=fx-ssb>SS</i>` : ""}</span><b>${(+b[1]).toFixed(2)}</b><b class=fx-ev style="color:${evCol(b[2], isVal([0, b[1], 100, b[2]]))}">${evTxt(b[2])}</b></div>`).join("")
-        + `</details>` : "");
+        + `</details>` : "")
+      // no bookie price in our feed (e.g. headed SOT / SOT outside box on some games): our fair price from the projection,
+      // so a screenshot still shows what the line is worth next to the bookie's own price
+      + (!RG(M).length && M.proj != null && +M.proj > 0 ? (() => {
+          const lam = +M.proj, tail = kk => { let c = 0, t = Math.exp(-lam); for (let i = 0; i < kk; i++) { c += t; t *= lam / (i + 1); } return 1 - c; };
+          return `<div class=fx-fair><small>No price in our feed · fair</small>` + [1, 2, 3].map(kk => { const pp = tail(kk); return pp >= 0.02
+            ? `<div class=fx-fr><span>${kLabel(M, kk)}</span><b>${(1 / pp).toFixed(2)}</b><small>${Math.round(100 * pp)}%</small></div>` : ""; }).join("") + `</div>`;
+        })() : "");
     el.querySelectorAll(".fx-rt button[data-k]").forEach(t => t.onclick = () => { s.k = +t.dataset.k; draw(p); });
     miniShots(p, s.m, n, el.querySelector(".fx-shots"));
     const sm = document.getElementById("s" + p.pid);
