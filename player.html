@@ -164,8 +164,15 @@ async function shareCard(d,btn,el,tag){
     wrap.remove();
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
     const name=`${(d.name||"player").replace(/\W+/g,"-").toLowerCase()}-${tag||CH.key||"stats"}.png`, file=new File([blob],name,{type:"image/png"});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]}).catch(()=>{})}
-    else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+    // phones (iOS) only open the share sheet straight after a tap, and making the image takes a moment: show it in a popup
+    // with its own Share / Save buttons (a fresh tap); long-press the image also saves it to Photos
+    const url=URL.createObjectURL(blob), canShare=navigator.canShare&&navigator.canShare({files:[file]});
+    const ov=document.createElement("div"); ov.className="shotov";
+    ov.innerHTML=`<div class=shotbox><img src="${url}" alt="Share image"><div class=shotbtns>${canShare?`<button class=shotgo data-a=share>Share</button>`:""}`
+      +`<a class=shotgo download="${name}" href="${url}">Save</a><button class=shotx data-a=close>Close</button></div></div>`;
+    ov.onclick=async ev=>{const a=ev.target.closest("[data-a]"); if(ev.target===ov||(a&&a.dataset.a==="close")){ov.remove();URL.revokeObjectURL(url);return}
+      if(a&&a.dataset.a==="share"){try{await navigator.share({files:[file]})}catch(e){}}};
+    document.body.appendChild(ov);
   }catch(e){console.error(e);alert("Couldn't make the image")}
   finally{btn.disabled=false;btn.classList.remove("busy");document.querySelectorAll(".shotwrap").forEach(w=>w.remove())}
 }
