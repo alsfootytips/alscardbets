@@ -168,7 +168,7 @@ function game(g) {
           + `<div class=c><b>${(+k.odds).toFixed(2)}</b><small>${k.stake ? esc(k.stake) + "u" : ""}</small></div><div class=c><b class=pos>${k.ev > 0 ? "+" : ""}${(+k.ev).toFixed(0)}%</b><small>${(+k.model).toFixed(0)}% model</small></div></button>`;
       }).join("")}</div>` : "")
     + `<h2>Players</h2><div class=fx-ctl><div class=fx-seg>${[["all", "Both"], ["away", g.away?.abbr || g.away?.name || "Away"], ["home", g.home?.abbr || g.home?.name || "Home"]].map(([k, l]) => `<button data-t="${k}" class="${k === st.team ? "on" : ""}">${esc(l)}</button>`).join("")}</div>`
-    + `<input id=fxq type=search placeholder="Search players" autocomplete=off><button id=fxview>Show all graphs</button>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}">Super Sub</button>` : ""}</div>`
+    + `<input id=fxq type=search placeholder="Search players" autocomplete=off>${hasSS ? `<button id=fxss class="${st.ss ? "on ss" : "ss"}">Super Sub</button>` : ""}</div>`
     + `<p class="meta fx-key"><b class=pos>green</b> value · <b style="color:#F27A1A">orange</b> +EV long shot · <b class=neg>red</b> −EV</p>`
     + `<div class="chips fx-mk"><button data-m="best" class=on>Best value</button>${markets.map(m => `<button data-m="${esc(m)}">${esc(D.short?.[m] || m)}</button>`).join("")}</div>`
     + `<div id=fxcards class=fx-cards></div>`;
@@ -178,7 +178,6 @@ function game(g) {
   root.querySelector("#fxq").oninput = e => { st.q = e.target.value; cards(); };
   const ssb = root.querySelector("#fxss");
   if (ssb) ssb.onclick = () => { st.ss = !st.ss; ssb.classList.toggle("on", st.ss); try { localStorage.setItem(ssKey, st.ss ? "1" : "0"); } catch (e) {} for (const k in cardState) cardState[k].k = null; cards(); };
-  root.querySelector("#fxview").onclick = e => { st.graphs = !st.graphs; e.target.classList.toggle("on", st.graphs); cards(); };
   if (g.lineups) {
     drawPitch(g, "");
     root.querySelectorAll(".fx-lumk button").forEach(b => b.onclick = () => { root.querySelectorAll(".fx-lumk button").forEach(x => x.classList.toggle("on", x === b)); drawPitch(g, b.dataset.m); });
@@ -224,15 +223,13 @@ function game(g) {
     for (const x of ps) { const s = cardState[x.p.pid] = cardState[x.p.pid] || {m: x.m}; if (s.m !== x.m) { s.m = x.m; s.k = null; } if (s.k == null) s.k = defLine(x.p.m[x.m]); }
     const curEv = x => { const r = RG(x.p.m[x.m]).find(r => r[0] === cardState[x.p.pid].k); return r ? r[3] : -999; };
     ps.sort((a, b) => (st.q ? qs(b.p) - qs(a.p) : 0) || (curEv(b) - curEv(a)) || ((b.p.sort || 0) - (a.p.sort || 0)));
-    box.className = st.graphs ? "fx-cards" : "fx-list";
-    box.innerHTML = ps.length ? ps.map(x => st.graphs ? card(x.p, x.m)
-      : `<details class=fx-li><summary id="s${esc(x.p.pid)}"></summary>${card(x.p, x.m)}</details>`).join("") : "<p class=none>No players match.</p>";
+    box.className = "fx-list";   // every player a row; tap to open his graphs (Alex, 18 Nov: no "Show all graphs")
+    box.innerHTML = ps.length ? ps.map(x => `<details class=fx-li><summary id="s${esc(x.p.pid)}"></summary>${card(x.p, x.m)}</details>`).join("") : "<p class=none>No players match.</p>";
     for (const x of ps) wire(x.p);
     box.querySelectorAll("details.fx-li").forEach(d => d.addEventListener("toggle", () => {
       d.querySelector(".fx-card").classList.toggle("open", d.open);
       if (d.open) { const pl = P.find(x => "c" + x.pid === d.querySelector(".fx-card").id); if (pl) loadMore(pl); }
     }));
-    if (st.graphs) for (const x of ps) loadMore(x.p);
   }
   function card(p, m) {
     const s = cardState[p.pid] = cardState[p.pid] || {m};
