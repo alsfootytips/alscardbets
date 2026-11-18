@@ -45,6 +45,10 @@ function list() {
       if (!c) comps.push(c = {name: g.comp || D.title, logo: g.comp_logo, sub: g.comp_sub || "", games: []});
       c.games.push(g);
     }
+    // biggest leagues first: most priced prop lines (Alex, 18 Nov: Premier League etc. above A-League / J. League)
+    const nLines = g => (g.players || []).reduce((a, p) => a + Object.values(p.m || {}).reduce((b, M) => b + ((M && M.rungs) || []).length, 0), 0);
+    for (const c of comps) c.n = c.games.reduce((a, g) => a + nLines(g), 0);
+    comps.sort((a, b) => b.n - a.n);
     const npk = D.games.filter(g => gday(g) === sel).reduce((a, g) => a + (g.picks || []).length, 0);
     root.innerHTML = `${root.dataset.sub ? "<h2 class=fx-h>Fixtures</h2>" : "<h1>Fixtures</h1>"}${D.updated ? `<p class=meta>Updated ${hhmm(D.updated)}</p>` : ""}`
       + `<div class=fx-days>${days.map(d => `<button data-d="${d}" class="${d === sel ? "on" : ""}">${label(d)} <span>${D.games.filter(g => gday(g) === d).length}</span></button>`).join("")}</div>`
