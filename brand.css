@@ -862,3 +862,9 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .shotbtns{display:flex;gap:8px;justify-content:center}
 .shotgo,.shotx{font:600 15px var(--body);padding:10px 22px;border-radius:999px;border:1px solid var(--line);background:var(--fg);color:#000;text-decoration:none;cursor:pointer}
 .shotx{background:none;color:var(--fg)}
+/* Matchups: ladder prices folded under the value side (19 Nov) */
+.mxfold{margin:2px 0 4px}
+.mxfold>summary{cursor:pointer;font-size:12px;color:var(--muted,#9aa);padding:4px 2px;list-style:none}
+.mxfold>summary::-webkit-details-marker{display:none}
+.mxfold>summary::before{content:"▸ ";}
+.mxfold[open]>summary::before{content:"▾ ";}
