@@ -868,3 +868,4 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .mxfold>summary::-webkit-details-marker{display:none}
 .mxfold>summary::before{content:"▸ ";}
 .mxfold[open]>summary::before{content:"▾ ";}
+.mxheat{display:block;width:100%;max-width:360px;margin:6px auto 2px;color:var(--muted,#9aa);background:rgba(76,175,80,.06);border-radius:4px}
