@@ -875,3 +875,14 @@ details.rsec>summary h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsi
 .evday>summary::-webkit-details-marker{display:none}
 .evday>summary::before{content:"▸";margin-right:6px}.evday[open]>summary::before{content:"▾"}
 .evday .evday{margin-left:10px}
+/* Everything: section header = name on one line, record underneath (mobile-friendly, 20 Nov) */
+details.rsec.evsec>summary{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 26px 12px 2px;position:relative}
+.evsec>summary .evt{font-size:17px;font-weight:700;line-height:1.25}
+.evsec>summary .evr,.evday>summary .evr{font-size:12.5px;color:var(--muted);font-weight:500}
+.evday>summary{flex-wrap:wrap;align-items:baseline}
+.evday>summary .evr{margin-left:auto}
+details.rsec.evsec>summary::after{position:absolute;right:4px;top:14px}
+details.evday>summary{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:flex-start;gap:2px 6px}
+details.evday>summary::before{flex:none}
+details.evday>summary>span:first-of-type{flex:1 1 auto;font-weight:600}
+details.evday>summary .evr{flex-basis:100%;margin-left:0;padding-left:14px}
