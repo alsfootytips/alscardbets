@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T16:48:11.047428+00:00",
+ "updated": "2026-11-22T17:10:08.847360+00:00",
  "picks": [
   {
    "id": 4,
@@ -1292,6 +1292,842 @@
     1124529
    ],
    "lg": ""
+  },
+  {
+   "id": 109,
+   "date": "2026-11-21",
+   "player": "Sabit James Ngor",
+   "game": "Brisbane Roar v Sydney FC",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 6.0,
+   "hist": [
+    [
+     "2026-11-19T13:41:01+00:00",
+     7.0,
+     "bet365",
+     5.81
+    ],
+    [
+     "2026-11-19T16:51:41+00:00",
+     6.0,
+     "BetMGM",
+     5.05
+    ]
+   ],
+   "ko": "2026-11-21T08:40:00+00:00"
+  },
+  {
+   "id": 110,
+   "date": "2026-11-21",
+   "player": "Joel King",
+   "game": "Brisbane Roar v Sydney FC",
+   "kind": "single",
+   "odds": 7.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Golden Sub",
+   "pids": null,
+   "lg": null,
+   "close": 7.5,
+   "hist": [
+    [
+     "2026-11-19T16:51:41+00:00",
+     7.5,
+     "BetMGM",
+     4.72
+    ]
+   ],
+   "ko": "2026-11-21T08:40:00+00:00"
+  },
+  {
+   "id": 111,
+   "date": "2026-11-21",
+   "player": "Sabit James Ngor + Joel King",
+   "game": "Brisbane Roar v Sydney FC",
+   "kind": "double",
+   "odds": 51.0,
+   "bookie": "William Hill",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 112,
+   "date": "2026-11-21",
+   "player": "Phil Foden",
+   "game": "Man City v Fulham",
+   "kind": "single",
+   "odds": 13.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 12.0,
+   "hist": [
+    [
+     "2026-11-19T14:01:46+00:00",
+     12.0,
+     "BetMGM",
+     8.23
+    ],
+    [
+     "2026-11-21T11:40:52+00:00",
+     12.0,
+     "BetMGM",
+     8.79
+    ]
+   ],
+   "ko": "2026-11-21T12:30:00+00:00"
+  },
+  {
+   "id": 113,
+   "date": "2026-11-21",
+   "player": "Marc Gu\u00e9hi",
+   "game": "Man City v Fulham",
+   "kind": "single",
+   "odds": 10.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 10.0,
+   "hist": [
+    [
+     "2026-11-20T18:23:25+00:00",
+     10.0,
+     "bet365",
+     6.85
+    ],
+    [
+     "2026-11-21T11:40:52+00:00",
+     10.0,
+     "bet365",
+     5.91
+    ]
+   ],
+   "ko": "2026-11-21T12:30:00+00:00"
+  },
+  {
+   "id": 114,
+   "date": "2026-11-21",
+   "player": "Phil Foden + Marc Gu\u00e9hi",
+   "game": "Man City v Fulham",
+   "kind": "double",
+   "odds": 121.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 115,
+   "date": "2026-11-21",
+   "player": "Casper de Norre",
+   "game": "Millwall v QPR",
+   "kind": "single",
+   "odds": 6.0,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Impact Sub",
+   "pids": null,
+   "lg": null,
+   "close": 6.5,
+   "hist": [
+    [
+     "2026-11-21T11:42:12+00:00",
+     6.5,
+     "BetMGM",
+     4.52
+    ]
+   ],
+   "ko": "2026-11-21T12:30:00+00:00"
+  },
+  {
+   "id": 116,
+   "date": "2026-11-21",
+   "player": "Finn Azaz",
+   "game": "Southampton v Derby",
+   "kind": "single",
+   "odds": 8.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 8.0,
+   "hist": [
+    [
+     "2026-11-21T11:53:26+00:00",
+     8.0,
+     "BetMGM",
+     6.66
+    ]
+   ],
+   "ko": "2026-11-21T12:30:00+00:00"
+  },
+  {
+   "id": 117,
+   "date": "2026-11-21",
+   "player": "Zach Abbott",
+   "game": "Southampton v Derby",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 118,
+   "date": "2026-11-21",
+   "player": "Finn Azaz + Zach Abbott",
+   "game": "Southampton v Derby",
+   "kind": "double",
+   "odds": 51.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 119,
+   "date": "2026-11-21",
+   "player": "Z\u00e9 Pedro",
+   "game": "Como v Cagliari",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-19T17:21:25+00:00",
+     4.2,
+     "BetMGM",
+     3.37
+    ],
+    [
+     "2026-11-19T20:41:09+00:00",
+     5.5,
+     "bet365",
+     3.54
+    ],
+    [
+     "2026-11-20T15:41:21+00:00",
+     5.0,
+     "bet365",
+     3.54
+    ]
+   ],
+   "ko": "2026-11-21T14:00:00+00:00"
+  },
+  {
+   "id": 120,
+   "date": "2026-11-21",
+   "player": "Kenneth Taylor",
+   "game": "Lazio v Lecce",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-19T21:11:04+00:00",
+     7.0,
+     "BetMGM",
+     5.34
+    ],
+    [
+     "2026-11-21T07:32:32+00:00",
+     7.0,
+     "BetMGM",
+     5.02
+    ]
+   ],
+   "ko": "2026-11-21T14:00:00+00:00"
+  },
+  {
+   "id": 121,
+   "date": "2026-11-21",
+   "player": "Z\u00e9 Pedro + Kenneth Taylor",
+   "game": "Como v Cagliari / Lazio v Lecce",
+   "kind": "double",
+   "odds": 35.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 122,
+   "date": "2026-11-21",
+   "player": "Andrej Kramari\u0107",
+   "game": "Eintracht Frankfurt v Hoffenheim",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": null,
+   "lg": null,
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-21T13:47:12+00:00",
+     7.0,
+     "Sky Bet",
+     5.89
+    ],
+    [
+     "2026-11-21T14:11:09+00:00",
+     7.0,
+     "Paddy Power",
+     5.89
+    ]
+   ],
+   "ko": "2026-11-21T14:30:00+00:00"
+  },
+  {
+   "id": 123,
+   "date": "2026-11-21",
+   "player": "Cole Campbell",
+   "game": "Elversberg v Freiburg",
+   "kind": "single",
+   "odds": 7.5,
+   "bookie": "William Hill",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Impact Sub",
+   "pids": null,
+   "lg": null,
+   "close": 7.5,
+   "hist": [
+    [
+     "2026-11-20T18:43:26+00:00",
+     7.5,
+     "BetMGM",
+     6.02
+    ],
+    [
+     "2026-11-21T13:47:44+00:00",
+     7.5,
+     "BetMGM",
+     6.48
+    ]
+   ],
+   "ko": "2026-11-21T14:30:00+00:00"
+  },
+  {
+   "id": 124,
+   "date": "2026-11-21",
+   "player": "Paul Nsio",
+   "game": "Celtic v St Mirren",
+   "kind": "single",
+   "odds": 4.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": null,
+   "lg": null,
+   "close": 4.0,
+   "hist": [
+    [
+     "2026-11-21T14:13:07+00:00",
+     4.0,
+     "Sky Bet",
+     3.36
+    ]
+   ],
+   "ko": "2026-11-21T15:00:00+00:00"
+  },
+  {
+   "id": 125,
+   "date": "2026-11-21",
+   "player": "Rabby Nzingoula",
+   "game": "Swansea v West Brom",
+   "kind": "single",
+   "odds": 4.5,
+   "bookie": "William Hill",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Impact Sub",
+   "pids": null,
+   "lg": null,
+   "close": 4.5,
+   "hist": [
+    [
+     "2026-11-21T14:24:00+00:00",
+     4.5,
+     "BetMGM",
+     3.45
+    ]
+   ],
+   "ko": "2026-11-21T15:00:00+00:00"
+  },
+  {
+   "id": 126,
+   "date": "2026-11-21",
+   "player": "Melker Widell",
+   "game": "Swansea v West Brom",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "William Hill",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Impact Sub",
+   "pids": null,
+   "lg": null,
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-21T14:24:00+00:00",
+     5.5,
+     "BetMGM",
+     4.33
+    ]
+   ],
+   "ko": "2026-11-21T15:00:00+00:00"
+  },
+  {
+   "id": 127,
+   "date": "2026-11-21",
+   "player": "Melker Widell + Rabby Nzingoula",
+   "game": "Swansea v West Brom",
+   "kind": "double",
+   "odds": 21.0,
+   "bookie": "William Hill",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder \u00b7 Impact Sub",
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 128,
+   "date": "2026-11-21",
+   "player": "Mohamed Amoura",
+   "game": "Nice v Paris Saint-Germain",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": null,
+   "lg": null,
+   "close": 7.5,
+   "hist": [
+    [
+     "2026-11-21T15:31:41+00:00",
+     7.5,
+     "Sky Bet",
+     5.11
+    ]
+   ],
+   "ko": "2026-11-21T16:15:00+00:00"
+  },
+  {
+   "id": 129,
+   "date": "2026-11-21",
+   "player": "Hicham Boudaoui",
+   "game": "Nice v Paris Saint-Germain",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": null,
+   "lg": null,
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-21T15:31:41+00:00",
+     5.0,
+     "Sky Bet",
+     4.3
+    ]
+   ],
+   "ko": "2026-11-21T16:15:00+00:00"
+  },
+  {
+   "id": 130,
+   "date": "2026-11-21",
+   "player": "Jon Guridi",
+   "game": "Sevilla v Real Betis",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": null,
+   "lg": null,
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-21T16:41:58+00:00",
+     5.5,
+     "Paddy Power",
+     3.75
+    ],
+    [
+     "2026-11-21T17:03:44+00:00",
+     5.5,
+     "Paddy Power",
+     3.87
+    ]
+   ],
+   "ko": "2026-11-21T17:30:00+00:00"
+  },
+  {
+   "id": 131,
+   "date": "2026-11-22",
+   "player": "Juan Jesus",
+   "game": "Juventus v Venezia",
+   "kind": "single",
+   "odds": 4.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 4.5,
+   "hist": [
+    [
+     "2026-11-22T11:00:49+00:00",
+     4.333,
+     "bet365",
+     3.44
+    ],
+    [
+     "2026-11-22T11:30:06+00:00",
+     4.5,
+     "bet365",
+     3.38
+    ]
+   ],
+   "ko": "2026-11-22T11:30:00+00:00"
+  },
+  {
+   "id": 132,
+   "date": "2026-11-22",
+   "player": "Mat\u00edas Moreno",
+   "game": "Juventus v Venezia",
+   "kind": "single",
+   "odds": 4.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 4.5,
+   "hist": [
+    [
+     "2026-11-22T11:00:49+00:00",
+     4.0,
+     "Paddy Power",
+     3.41
+    ],
+    [
+     "2026-11-22T11:30:06+00:00",
+     4.5,
+     "bet365",
+     3.41
+    ]
+   ],
+   "ko": "2026-11-22T11:30:00+00:00"
+  },
+  {
+   "id": 133,
+   "date": "2026-11-22",
+   "player": "Mat\u00edas Moreno + Juan Jesus",
+   "game": "Juventus v Venezia",
+   "kind": "double",
+   "odds": 17.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 134,
+   "date": "2026-11-22",
+   "player": "Redouane Halhal",
+   "game": "Juventus v Venezia",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Impact Sub",
+   "pids": null,
+   "lg": null,
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-21T18:22:12+00:00",
+     5.0,
+     "BetMGM",
+     4.19
+    ],
+    [
+     "2026-11-22T11:00:49+00:00",
+     5.0,
+     "BetMGM",
+     3.77
+    ]
+   ],
+   "ko": "2026-11-22T11:30:00+00:00"
+  },
+  {
+   "id": 135,
+   "date": "2026-11-22",
+   "player": "Douglas Luiz",
+   "game": "Juventus v Venezia",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Impact Sub",
+   "pids": null,
+   "lg": null,
+   "close": 6.0,
+   "hist": [
+    [
+     "2026-11-21T18:22:12+00:00",
+     5.5,
+     "Paddy Power",
+     4.08
+    ],
+    [
+     "2026-11-22T11:00:49+00:00",
+     6.0,
+     "Sky Bet",
+     3.79
+    ],
+    [
+     "2026-11-22T11:30:06+00:00",
+     6.0,
+     "Paddy Power",
+     3.79
+    ]
+   ],
+   "ko": "2026-11-22T11:30:00+00:00"
+  },
+  {
+   "id": 136,
+   "date": "2026-11-22",
+   "player": "Douglas Luiz + Redouane Halhal",
+   "game": "Juventus v Venezia",
+   "kind": "double",
+   "odds": 21.0,
+   "bookie": "William Hill",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder \u00b7 Impact Sub",
+   "pids": null,
+   "lg": null
+  },
+  {
+   "id": 137,
+   "date": "2026-11-22",
+   "player": "Nikolai Hopland",
+   "game": "Viborg v Randers FC",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-21T18:22:12+00:00",
+     5.5,
+     "bet365",
+     4.25
+    ],
+    [
+     "2026-11-22T12:20:57+00:00",
+     5.5,
+     "bet365",
+     4.15
+    ]
+   ],
+   "ko": "2026-11-22T13:00:00+00:00"
+  },
+  {
+   "id": 138,
+   "date": "2026-11-22",
+   "player": "Costinha",
+   "game": "Hull v Brighton",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-21T18:42:56+00:00",
+     5.4,
+     "BetMGM",
+     3.72
+    ],
+    [
+     "2026-11-22T10:40:53+00:00",
+     5.5,
+     "bet365",
+     3.87
+    ],
+    [
+     "2026-11-22T13:01:33+00:00",
+     5.0,
+     "bet365",
+     3.49
+    ],
+    [
+     "2026-11-22T13:50:09+00:00",
+     5.5,
+     "bet365",
+     3.49
+    ]
+   ],
+   "ko": "2026-11-22T14:00:00+00:00"
+  },
+  {
+   "id": 139,
+   "date": "2026-11-22",
+   "player": "Olivier Boscagli",
+   "game": "Hull v Brighton",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": null,
+   "lg": null,
+   "close": 6.0,
+   "hist": [
+    [
+     "2026-11-21T18:42:56+00:00",
+     6.25,
+     "BetMGM",
+     4.91
+    ],
+    [
+     "2026-11-22T10:40:53+00:00",
+     5.75,
+     "BetMGM",
+     4.91
+    ],
+    [
+     "2026-11-22T13:01:33+00:00",
+     5.75,
+     "BetMGM",
+     4.96
+    ],
+    [
+     "2026-11-22T13:50:09+00:00",
+     6.0,
+     "bet365",
+     4.96
+    ]
+   ],
+   "ko": "2026-11-22T14:00:00+00:00"
+  },
+  {
+   "id": 140,
+   "date": "2026-11-22",
+   "player": "Olivier Boscagli + Costinha",
+   "game": "Hull v Brighton",
+   "kind": "double",
+   "odds": 24.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": null,
+   "lg": null
   }
  ]
 }
