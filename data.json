@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T17:34:16.251779+00:00",
+ "updated": "2026-11-22T17:58:22.448657+00:00",
  "picks": [
   {
    "id": 4,
@@ -1302,11 +1302,13 @@
    "odds": 6.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1469770
+   ],
+   "lg": "A-League (AUS)",
    "close": 6.0,
    "hist": [
     [
@@ -1333,11 +1335,13 @@
    "odds": 7.5,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Golden Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1017151
+   ],
+   "lg": "A-League (AUS)",
    "close": 7.5,
    "hist": [
     [
@@ -1358,11 +1362,14 @@
    "odds": 51.0,
    "bookie": "William Hill",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
-   "pids": null,
-   "lg": null
+   "pids": [
+    1469770,
+    1017151
+   ],
+   "lg": "A-League (AUS)"
   },
   {
    "id": 112,
@@ -1373,11 +1380,13 @@
    "odds": 13.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    815006
+   ],
+   "lg": "Premier League (ENG)",
    "close": 12.0,
    "hist": [
     [
@@ -1404,11 +1413,13 @@
    "odds": 10.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    844425
+   ],
+   "lg": "Premier League (ENG)",
    "close": 10.0,
    "hist": [
     [
@@ -1435,11 +1446,14 @@
    "odds": 121.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
-   "pids": null,
-   "lg": null
+   "pids": [
+    815006,
+    844425
+   ],
+   "lg": "Premier League (ENG)"
   },
   {
    "id": 115,
@@ -1450,11 +1464,13 @@
    "odds": 6.0,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 5.0,
    "note": "Impact Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    688991
+   ],
+   "lg": "Championship (ENG)",
    "close": 6.5,
    "hist": [
     [
@@ -1475,11 +1491,13 @@
    "odds": 8.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    883079
+   ],
+   "lg": "Championship (ENG)",
    "close": 8.0,
    "hist": [
     [
@@ -1500,11 +1518,13 @@
    "odds": 7.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null
+   "pids": [
+    1296769
+   ],
+   "lg": "Championship (ENG)"
   },
   {
    "id": 118,
@@ -1515,11 +1535,14 @@
    "odds": 51.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
-   "pids": null,
-   "lg": null
+   "pids": [
+    883079,
+    1296769
+   ],
+   "lg": "Championship (ENG)"
   },
   {
    "id": 119,
@@ -1530,11 +1553,13 @@
    "odds": 5.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    957107
+   ],
+   "lg": "Serie A (ITA)",
    "close": 5.0,
    "hist": [
     [
@@ -1567,11 +1592,13 @@
    "odds": 7.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    970565
+   ],
+   "lg": "Serie A (ITA)",
    "close": 7.0,
    "hist": [
     [
@@ -1598,11 +1625,14 @@
    "odds": 35.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": null,
-   "pids": null,
-   "lg": null
+   "pids": [
+    957107,
+    970565
+   ],
+   "lg": "Serie A (ITA)"
   },
   {
    "id": 122,
@@ -1613,11 +1643,13 @@
    "odds": 7.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Super Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    173461
+   ],
+   "lg": "Bundesliga (GER)",
    "close": 7.0,
    "hist": [
     [
@@ -1644,11 +1676,13 @@
    "odds": 7.5,
    "bookie": "William Hill",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Impact Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1288195
+   ],
+   "lg": "Bundesliga (GER)",
    "close": 7.5,
    "hist": [
     [
@@ -1675,11 +1709,13 @@
    "odds": 4.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Super Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1709059
+   ],
+   "lg": "Premiership (SCO)",
    "close": 4.0,
    "hist": [
     [
@@ -1700,11 +1736,13 @@
    "odds": 4.5,
    "bookie": "William Hill",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 3.5,
    "note": "Impact Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1609064
+   ],
+   "lg": "Championship (ENG)",
    "close": 4.5,
    "hist": [
     [
@@ -1725,11 +1763,13 @@
    "odds": 5.0,
    "bookie": "William Hill",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Impact Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1351566
+   ],
+   "lg": "Championship (ENG)",
    "close": 5.5,
    "hist": [
     [
@@ -1750,11 +1790,14 @@
    "odds": 21.0,
    "bookie": "William Hill",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder \u00b7 Impact Sub",
-   "pids": null,
-   "lg": null
+   "pids": [
+    1351566,
+    1609064
+   ],
+   "lg": "Championship (ENG)"
   },
   {
    "id": 128,
@@ -1765,11 +1808,13 @@
    "odds": 7.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Super Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1134206
+   ],
+   "lg": "Ligue 1 (FRA)",
    "close": 7.5,
    "hist": [
     [
@@ -1790,11 +1835,13 @@
    "odds": 5.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 4.0,
    "note": "Super Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1033099
+   ],
+   "lg": "Ligue 1 (FRA)",
    "close": 5.0,
    "hist": [
     [
@@ -1815,11 +1862,13 @@
    "odds": 5.5,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Super Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    678192
+   ],
+   "lg": "LaLiga (ESP)",
    "close": 5.5,
    "hist": [
     [
@@ -1846,11 +1895,13 @@
    "odds": 4.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    197352
+   ],
+   "lg": "Serie A (ITA)",
    "close": 4.5,
    "hist": [
     [
@@ -1877,11 +1928,13 @@
    "odds": 4.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1605748
+   ],
+   "lg": "Serie A (ITA)",
    "close": 4.5,
    "hist": [
     [
@@ -1908,11 +1961,14 @@
    "odds": 17.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
-   "pids": null,
-   "lg": null
+   "pids": [
+    1605748,
+    197352
+   ],
+   "lg": "Serie A (ITA)"
   },
   {
    "id": 134,
@@ -1923,11 +1979,13 @@
    "odds": 5.0,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Impact Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1298186
+   ],
+   "lg": "Serie A (ITA)",
    "close": 5.0,
    "hist": [
     [
@@ -1954,11 +2012,13 @@
    "odds": 5.5,
    "bookie": "BetMGM",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Impact Sub",
-   "pids": null,
-   "lg": null,
+   "pids": [
+    787350
+   ],
+   "lg": "Serie A (ITA)",
    "close": 6.0,
    "hist": [
     [
@@ -1991,11 +2051,14 @@
    "odds": 21.0,
    "bookie": "William Hill",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder \u00b7 Impact Sub",
-   "pids": null,
-   "lg": null
+   "pids": [
+    787350,
+    1298186
+   ],
+   "lg": "Serie A (ITA)"
   },
   {
    "id": 137,
@@ -2006,11 +2069,13 @@
    "odds": 5.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1255796
+   ],
+   "lg": "Superligaen (DEN)",
    "close": 5.5,
    "hist": [
     [
@@ -2037,11 +2102,13 @@
    "odds": 5.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 4.0,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    1079456
+   ],
+   "lg": "Premier League (ENG)",
    "close": 5.5,
    "hist": [
     [
@@ -2080,11 +2147,13 @@
    "odds": 5.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
-   "pids": null,
-   "lg": null,
+   "pids": [
+    613715
+   ],
+   "lg": "Premier League (ENG)",
    "close": 6.0,
    "hist": [
     [
@@ -2123,11 +2192,14 @@
    "odds": 24.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
-   "pids": null,
-   "lg": null
+   "pids": [
+    613715,
+    1079456
+   ],
+   "lg": "Premier League (ENG)"
   }
  ]
 }
