@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-24T23:31:25.223817+00:00",
+ "updated": "2026-11-24T23:41:39.560700+00:00",
  "picks": [
   {
    "id": 4,
@@ -2200,6 +2200,405 @@
     1079456
    ],
    "lg": "Premier League (ENG)"
+  },
+  {
+   "id": 141,
+   "date": "2026-11-24",
+   "player": "Filip Kosti\u0107",
+   "game": "Real Madrid v PSV Eindhoven",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": "W",
+   "pl": 5.5,
+   "note": "Super Sub",
+   "pids": [
+    281012
+   ],
+   "lg": "Champions League (INT)",
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-23T10:31:05+00:00",
+     4.5,
+     "bet365",
+     3.8
+    ],
+    [
+     "2026-11-23T13:41:11+00:00",
+     6.0,
+     "Paddy Power",
+     4.23
+    ],
+    [
+     "2026-11-23T16:51:08+00:00",
+     6.0,
+     "Paddy Power",
+     4.18
+    ],
+    [
+     "2026-11-23T23:10:38+00:00",
+     6.5,
+     "Sky Bet",
+     4.18
+    ],
+    [
+     "2026-11-24T02:22:49+00:00",
+     6.5,
+     "Sky Bet",
+     4.09
+    ],
+    [
+     "2026-11-24T11:51:50+00:00",
+     7.0,
+     "Sky Bet",
+     4.09
+    ],
+    [
+     "2026-11-24T15:01:41+00:00",
+     6.5,
+     "Paddy Power",
+     4.09
+    ],
+    [
+     "2026-11-24T18:11:17+00:00",
+     7.0,
+     "Sky Bet",
+     4.09
+    ],
+    [
+     "2026-11-24T19:14:14+00:00",
+     7.0,
+     "Sky Bet",
+     4.11
+    ]
+   ],
+   "ko": "2026-11-24T20:00:00+00:00"
+  },
+  {
+   "id": 142,
+   "date": "2026-11-24",
+   "player": "Lovro Majer",
+   "game": "Como v AEK Athens",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 4.0,
+   "note": null,
+   "pids": [
+    762721
+   ],
+   "lg": "Champions League (INT)",
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-22T21:55:50+00:00",
+     4.5,
+     "bet365",
+     3.84
+    ],
+    [
+     "2026-11-23T10:31:05+00:00",
+     4.75,
+     "bet365",
+     3.84
+    ],
+    [
+     "2026-11-23T13:41:11+00:00",
+     4.75,
+     "bet365",
+     3.8
+    ],
+    [
+     "2026-11-23T16:51:08+00:00",
+     5.0,
+     "bet365",
+     3.8
+    ],
+    [
+     "2026-11-24T02:22:49+00:00",
+     5.0,
+     "bet365",
+     3.75
+    ],
+    [
+     "2026-11-24T18:11:17+00:00",
+     5.5,
+     "bet365",
+     3.75
+    ],
+    [
+     "2026-11-24T19:03:25+00:00",
+     5.5,
+     "bet365",
+     3.71
+    ]
+   ],
+   "ko": "2026-11-24T20:00:00+00:00"
+  },
+  {
+   "id": 143,
+   "date": "2026-11-24",
+   "player": "Camilo",
+   "game": "Chapecoense v Palmeiras",
+   "kind": "single",
+   "odds": 4.33,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 3.33,
+   "note": null,
+   "pids": [
+    1060636
+   ],
+   "lg": "S\u00e9rie A (BRA)"
+  },
+  {
+   "id": 144,
+   "date": "2026-11-24",
+   "player": "Saud Abdulhamid",
+   "game": "RB Leipzig v Lens",
+   "kind": "single",
+   "odds": 4.33,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 3.33,
+   "note": "Paid via sub: Micha\u0142 Sk\u00f3ra\u015b (on 73', booked 79')",
+   "pids": [
+    1002617
+   ],
+   "lg": "Champions League (INT)",
+   "close": 4.333,
+   "hist": [
+    [
+     "2026-11-24T15:01:41+00:00",
+     4.5,
+     "bet365",
+     3.83
+    ],
+    [
+     "2026-11-24T18:11:17+00:00",
+     4.333,
+     "bet365",
+     3.83
+    ],
+    [
+     "2026-11-24T19:03:41+00:00",
+     4.333,
+     "bet365",
+     3.98
+    ],
+    [
+     "2026-11-24T19:23:03+00:00",
+     4.333,
+     "bet365",
+     3.77
+    ]
+   ],
+   "ko": "2026-11-24T20:00:00+00:00"
+  },
+  {
+   "id": 145,
+   "date": "2026-11-24",
+   "player": "Julian Ryerson",
+   "game": "Arsenal v Borussia Dortmund",
+   "kind": "single",
+   "odds": 4.75,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    659272
+   ],
+   "lg": "Champions League (INT)",
+   "close": 4.0,
+   "hist": [
+    [
+     "2026-11-24T11:11:19+00:00",
+     4.75,
+     "bet365",
+     3.92
+    ],
+    [
+     "2026-11-24T17:22:44+00:00",
+     5.0,
+     "bet365",
+     3.92
+    ],
+    [
+     "2026-11-24T18:51:44+00:00",
+     5.0,
+     "bet365",
+     3.87
+    ],
+    [
+     "2026-11-24T19:13:28+00:00",
+     5.0,
+     "bet365",
+     4.27
+    ],
+    [
+     "2026-11-24T19:33:34+00:00",
+     4.0,
+     "bet365",
+     4.27
+    ],
+    [
+     "2026-11-24T19:42:31+00:00",
+     4.0,
+     "Sky Bet",
+     4.27
+    ]
+   ],
+   "ko": "2026-11-24T20:00:00+00:00"
+  },
+  {
+   "id": 146,
+   "date": "2026-11-24",
+   "player": "Joey Veerman",
+   "game": "Arsenal v Borussia Dortmund",
+   "kind": "single",
+   "odds": 6.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": "Super Sub",
+   "pids": [
+    792429
+   ],
+   "lg": "Champions League (INT)",
+   "close": 6.0,
+   "hist": [
+    [
+     "2026-11-24T11:11:19+00:00",
+     6.0,
+     "Sky Bet",
+     5.0
+    ],
+    [
+     "2026-11-24T17:22:44+00:00",
+     6.0,
+     "bet365",
+     5.0
+    ],
+    [
+     "2026-11-24T18:51:44+00:00",
+     6.0,
+     "bet365",
+     5.02
+    ],
+    [
+     "2026-11-24T19:13:28+00:00",
+     6.0,
+     "bet365",
+     5.48
+    ]
+   ],
+   "ko": "2026-11-24T20:00:00+00:00"
+  },
+  {
+   "id": 147,
+   "date": "2026-11-24",
+   "player": "Ben House",
+   "game": "Charlton Athletic v Lincoln City",
+   "kind": "single",
+   "odds": 4.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": "Super Sub",
+   "pids": [
+    877581
+   ],
+   "lg": "Championship (ENG)"
+  },
+  {
+   "id": 148,
+   "date": "2026-11-24",
+   "player": "Sebastian Berhalter",
+   "game": "Middlesbrough v Swansea City",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "V",
+   "pl": 0,
+   "note": "Benched, came on 62': bet365 voided",
+   "pids": null,
+   "lg": "Championship (ENG)",
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-23T18:21:23+00:00",
+     5.5,
+     "bet365",
+     4.21
+    ],
+    [
+     "2026-11-24T16:30:38+00:00",
+     5.0,
+     "bet365",
+     4.21
+    ]
+   ],
+   "ko": "2026-11-24T19:45:00+00:00"
+  },
+  {
+   "id": 149,
+   "date": "2026-11-24",
+   "player": "Yerson Mosquera",
+   "game": "Wolverhampton Wanderers v Derby County",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": "V",
+   "pl": 0,
+   "note": "Super Sub; unused sub",
+   "pids": null,
+   "lg": "Championship (ENG)",
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-23T13:41:11+00:00",
+     5.5,
+     "BetMGM",
+     4.39
+    ],
+    [
+     "2026-11-23T20:00:51+00:00",
+     5.5,
+     "Sky Bet",
+     4.39
+    ],
+    [
+     "2026-11-24T02:22:49+00:00",
+     5.5,
+     "Paddy Power",
+     4.39
+    ],
+    [
+     "2026-11-24T05:31:06+00:00",
+     5.5,
+     "Sky Bet",
+     4.39
+    ],
+    [
+     "2026-11-24T18:11:17+00:00",
+     5.5,
+     "Paddy Power",
+     4.39
+    ]
+   ],
+   "ko": "2026-11-24T20:00:00+00:00"
   }
  ]
 }
