@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-25T22:31:54.830425+00:00",
+ "updated": "2026-11-25T22:42:47.659417+00:00",
  "picks": [
   {
    "id": 4,
@@ -2599,6 +2599,526 @@
     ]
    ],
    "ko": "2026-11-24T20:00:00+00:00"
+  },
+  {
+   "id": 150,
+   "date": "2026-11-25",
+   "player": "Eduardo Quaresma",
+   "game": "Sporting CP v Manchester United",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "William Hill",
+   "stake": 1,
+   "result": "W",
+   "pl": 6.0,
+   "note": "Impact Sub",
+   "pids": [
+    1156380
+   ],
+   "lg": "Champions League (INT)",
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-24T14:21:20+00:00",
+     7.0,
+     "William Hill",
+     5.21
+    ],
+    [
+     "2026-11-25T19:02:41+00:00",
+     7.0,
+     "William Hill",
+     5.19
+    ]
+   ],
+   "ko": "2026-11-25T20:00:00+00:00"
+  },
+  {
+   "id": 151,
+   "date": "2026-11-25",
+   "player": "Mykola Matviyenko",
+   "game": "Shakhtar Donetsk v Fenerbah\u00e7e",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "William Hill",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": "Impact Sub",
+   "pids": [
+    656667
+   ],
+   "lg": "Champions League (INT)"
+  },
+  {
+   "id": 152,
+   "date": "2026-11-25",
+   "player": "Mykola Matviyenko + Eduardo Quaresma",
+   "game": "Shakhtar Donetsk v Fenerbah\u00e7e / Sporting CP v Manchester United",
+   "kind": "double",
+   "odds": 49.0,
+   "bookie": "William Hill",
+   "stake": 0.5,
+   "result": "L",
+   "pl": -0.5,
+   "note": "Double \u00b7 Impact Sub",
+   "pids": [
+    656667,
+    1156380
+   ],
+   "lg": "Champions League (INT)"
+  },
+  {
+   "id": 153,
+   "date": "2026-11-25",
+   "player": "Jorne Spileers",
+   "game": "Club Brugge v Liverpool",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    1233418
+   ],
+   "lg": "Champions League (INT)",
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-23T23:41:01+00:00",
+     6.5,
+     "bet365",
+     3.08
+    ],
+    [
+     "2026-11-24T02:52:09+00:00",
+     6.5,
+     "bet365",
+     3.0
+    ],
+    [
+     "2026-11-24T12:20:45+00:00",
+     6.5,
+     "bet365",
+     2.96
+    ],
+    [
+     "2026-11-24T21:40:42+00:00",
+     7.0,
+     "bet365",
+     2.96
+    ],
+    [
+     "2026-11-25T00:52:06+00:00",
+     6.5,
+     "bet365",
+     2.96
+    ],
+    [
+     "2026-11-25T10:02:03+00:00",
+     5.0,
+     "William Hill",
+     2.96
+    ],
+    [
+     "2026-11-25T13:10:35+00:00",
+     5.0,
+     "bet365",
+     2.96
+    ]
+   ],
+   "ko": "2026-11-25T20:00:00+00:00"
+  },
+  {
+   "id": 154,
+   "date": "2026-11-25",
+   "player": "Alexis Mac Allister",
+   "game": "Club Brugge v Liverpool",
+   "kind": "single",
+   "odds": 4.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "V",
+   "pl": 0,
+   "note": "Did not start: void",
+   "pids": null,
+   "lg": "Champions League (INT)",
+   "close": 4.5,
+   "hist": [
+    [
+     "2026-11-24T21:40:42+00:00",
+     4.333,
+     "bet365",
+     3.54
+    ],
+    [
+     "2026-11-25T00:52:06+00:00",
+     4.0,
+     "bet365",
+     3.54
+    ],
+    [
+     "2026-11-25T13:10:35+00:00",
+     4.5,
+     "bet365",
+     3.54
+    ]
+   ],
+   "ko": "2026-11-25T20:00:00+00:00"
+  },
+  {
+   "id": 155,
+   "date": "2026-11-25",
+   "player": "Alexis Mac Allister + Jorne Spileers",
+   "game": "Club Brugge v Liverpool",
+   "kind": "double",
+   "odds": 24.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": "V",
+   "pl": 0,
+   "note": "Bet builder \u00b7 Mac Allister did not start: void",
+   "pids": [
+    1233418
+   ],
+   "lg": "Champions League (INT)"
+  },
+  {
+   "id": 156,
+   "date": "2026-11-25",
+   "player": "\u00c1lex Baena",
+   "game": "Atl\u00e9tico Madrid v Viking",
+   "kind": "single",
+   "odds": 9.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    942372
+   ],
+   "lg": "Champions League (INT)",
+   "close": 8.0,
+   "hist": [
+    [
+     "2026-11-23T14:01:16+00:00",
+     7.5,
+     "bet365",
+     4.19
+    ],
+    [
+     "2026-11-23T23:31:17+00:00",
+     8.0,
+     "bet365",
+     4.19
+    ],
+    [
+     "2026-11-25T10:02:03+00:00",
+     9.0,
+     "bet365",
+     4.19
+    ],
+    [
+     "2026-11-25T16:20:34+00:00",
+     8.0,
+     "bet365",
+     4.19
+    ],
+    [
+     "2026-11-25T19:01:17+00:00",
+     8.0,
+     "bet365",
+     4.07
+    ]
+   ],
+   "ko": "2026-11-25T20:00:00+00:00"
+  },
+  {
+   "id": 157,
+   "date": "2026-11-25",
+   "player": "Johnny Cardoso",
+   "game": "Atl\u00e9tico Madrid v Viking",
+   "kind": "single",
+   "odds": 12.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    1173678
+   ],
+   "lg": "Champions League (INT)",
+   "close": 8.0,
+   "hist": [
+    [
+     "2026-11-23T14:01:16+00:00",
+     9.5,
+     "bet365",
+     4.6
+    ],
+    [
+     "2026-11-23T23:31:17+00:00",
+     10.0,
+     "bet365",
+     4.6
+    ],
+    [
+     "2026-11-24T12:02:01+00:00",
+     10.0,
+     "bet365",
+     4.76
+    ],
+    [
+     "2026-11-25T10:02:03+00:00",
+     12.0,
+     "bet365",
+     4.76
+    ],
+    [
+     "2026-11-25T13:10:35+00:00",
+     9.0,
+     "bet365",
+     4.76
+    ],
+    [
+     "2026-11-25T16:20:34+00:00",
+     8.0,
+     "bet365",
+     4.76
+    ],
+    [
+     "2026-11-25T19:01:17+00:00",
+     8.0,
+     "bet365",
+     4.81
+    ]
+   ],
+   "ko": "2026-11-25T20:00:00+00:00"
+  },
+  {
+   "id": 158,
+   "date": "2026-11-25",
+   "player": "Johnny Cardoso + \u00c1lex Baena",
+   "game": "Atl\u00e9tico Madrid v Viking",
+   "kind": "double",
+   "odds": 96.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": "L",
+   "pl": -0.5,
+   "note": "Bet builder",
+   "pids": [
+    1173678,
+    942372
+   ],
+   "lg": "Champions League (INT)"
+  },
+  {
+   "id": 159,
+   "date": "2026-11-25",
+   "player": "Brayann Pereira",
+   "game": "Bolton Wanderers v West Bromwich Albion",
+   "kind": "single",
+   "odds": 6.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 5.0,
+   "note": null,
+   "pids": [
+    1192053
+   ],
+   "lg": "Championship (ENG)",
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-25T19:00:55+00:00",
+     5.5,
+     "bet365",
+     3.89
+    ]
+   ],
+   "ko": "2026-11-25T19:45:00+00:00"
+  },
+  {
+   "id": 160,
+   "date": "2026-11-25",
+   "player": "Akin Famewo",
+   "game": "Bolton Wanderers v West Bromwich Albion",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 4.0,
+   "note": null,
+   "pids": [
+    780818
+   ],
+   "lg": "Championship (ENG)"
+  },
+  {
+   "id": 161,
+   "date": "2026-11-25",
+   "player": "Akin Famewo + Brayann Pereira",
+   "game": "Bolton Wanderers v West Bromwich Albion",
+   "kind": "double",
+   "odds": 26.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": "W",
+   "pl": 12.5,
+   "note": "Bet builder",
+   "pids": [
+    780818,
+    1192053
+   ],
+   "lg": "Championship (ENG)"
+  },
+  {
+   "id": 162,
+   "date": "2026-11-25",
+   "player": "Bosun Lawal",
+   "game": "Stoke City v Millwall",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": "Super Sub",
+   "pids": [
+    1276045
+   ],
+   "lg": "Championship (ENG)",
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-24T06:00:34+00:00",
+     5.5,
+     "Sky Bet",
+     4.47
+    ],
+    [
+     "2026-11-24T09:10:54+00:00",
+     5.0,
+     "Paddy Power",
+     4.47
+    ],
+    [
+     "2026-11-24T12:20:45+00:00",
+     5.5,
+     "Sky Bet",
+     4.47
+    ],
+    [
+     "2026-11-24T18:32:05+00:00",
+     5.0,
+     "Paddy Power",
+     4.81
+    ],
+    [
+     "2026-11-25T10:02:03+00:00",
+     5.5,
+     "Sky Bet",
+     4.81
+    ],
+    [
+     "2026-11-25T19:03:09+00:00",
+     5.5,
+     "Paddy Power",
+     5.17
+    ],
+    [
+     "2026-11-25T19:23:41+00:00",
+     5.5,
+     "Sky Bet",
+     5.17
+    ]
+   ],
+   "ko": "2026-11-25T20:00:00+00:00"
+  },
+  {
+   "id": 163,
+   "date": "2026-11-25",
+   "player": "Tom\u00e1s Hole\u0161",
+   "game": "Slavia Prague v Villarreal",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    306168
+   ],
+   "lg": "Champions League (INT)",
+   "close": 6.5,
+   "hist": [
+    [
+     "2026-11-23T14:01:16+00:00",
+     6.5,
+     "bet365",
+     5.04
+    ],
+    [
+     "2026-11-24T02:42:39+00:00",
+     6.5,
+     "bet365",
+     5.03
+    ],
+    [
+     "2026-11-24T12:02:01+00:00",
+     6.5,
+     "bet365",
+     5.6
+    ],
+    [
+     "2026-11-25T17:00:44+00:00",
+     6.5,
+     "bet365",
+     5.03
+    ]
+   ],
+   "ko": "2026-11-25T17:45:00+00:00"
+  },
+  {
+   "id": 164,
+   "date": "2026-11-25",
+   "player": "Kareem Tunde",
+   "game": "Bolton Wanderers v West Bromwich Albion",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": "Sub On Play On",
+   "pids": [
+    1875615
+   ],
+   "lg": "Championship (ENG)",
+   "close": 5.5,
+   "hist": [
+    [
+     "2026-11-25T18:51:58+00:00",
+     6.0,
+     "bet365",
+     4.25
+    ],
+    [
+     "2026-11-25T19:00:55+00:00",
+     5.5,
+     "bet365",
+     4.25
+    ]
+   ],
+   "ko": "2026-11-25T19:45:00+00:00"
   }
  ]
 }
