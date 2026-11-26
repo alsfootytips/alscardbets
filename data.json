@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T19:26:43.149619+00:00",
+ "updated": "2026-11-26T19:47:07.245538+00:00",
  "picks": [
   {
    "id": 4,
@@ -3162,8 +3162,8 @@
    "odds": 17.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     866686
@@ -3179,8 +3179,8 @@
    "odds": 4.33,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 3.33,
    "note": null,
    "pids": [
     890946
@@ -3196,8 +3196,8 @@
    "odds": 66.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
    "pids": [
     866686,
@@ -3213,9 +3213,9 @@
    "kind": "double",
    "odds": 451.0,
    "bookie": "bet365",
-   "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "stake": 0.25,
+   "result": "L",
+   "pl": -0.25,
    "note": "Bet builder (treble)",
    "pids": [
     866686,
@@ -3223,6 +3223,489 @@
     951921
    ],
    "lg": "Conference League"
+  },
+  {
+   "id": 170,
+   "date": "2026-11-26",
+   "player": "Matty Pearson",
+   "game": "Doncaster Rovers v Huddersfield Town",
+   "kind": "single",
+   "odds": 4.75,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    302785
+   ],
+   "lg": "League One"
+  },
+  {
+   "id": 171,
+   "date": "2026-11-26",
+   "player": "Joe Taylor",
+   "game": "Doncaster Rovers v Huddersfield Town",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    1336717
+   ],
+   "lg": "League One"
+  },
+  {
+   "id": 172,
+   "date": "2026-11-26",
+   "player": "Cameron Humphreys",
+   "game": "Doncaster Rovers v Huddersfield Town",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    1287056
+   ],
+   "lg": "League One",
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-26T17:46:23+00:00",
+     7.0,
+     "bet365",
+     5.48
+    ],
+    [
+     "2026-11-26T19:22:38+00:00",
+     7.0,
+     "bet365",
+     5.31
+    ]
+   ],
+   "ko": "2026-11-26T20:00:00+00:00"
+  },
+  {
+   "id": 173,
+   "date": "2026-11-26",
+   "player": "Matty Pearson + Cameron Humphreys",
+   "game": "Doncaster Rovers v Huddersfield Town",
+   "kind": "double",
+   "odds": 29.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": [
+    302785,
+    1287056
+   ],
+   "lg": "League One"
+  },
+  {
+   "id": 174,
+   "date": "2026-11-26",
+   "player": "Joe Taylor + Matty Pearson",
+   "game": "Doncaster Rovers v Huddersfield Town",
+   "kind": "double",
+   "odds": 24.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": [
+    1336717,
+    302785
+   ],
+   "lg": "League One"
+  },
+  {
+   "id": 175,
+   "date": "2026-11-26",
+   "player": "Joe Taylor + Matty Pearson + Cameron Humphreys",
+   "game": "Doncaster Rovers v Huddersfield Town",
+   "kind": "double",
+   "odds": 141.0,
+   "bookie": "bet365",
+   "stake": 0.25,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder (treble)",
+   "pids": [
+    1336717,
+    302785,
+    1287056
+   ],
+   "lg": "League One"
+  },
+  {
+   "id": 176,
+   "date": "2026-11-26",
+   "player": "Adrien Thomasson",
+   "game": "NEC Nijmegen v Rennes",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": [
+    317062
+   ],
+   "lg": "Europa League",
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-24T22:10:44+00:00",
+     4.5,
+     "bet365",
+     3.29
+    ],
+    [
+     "2026-11-25T10:30:18+00:00",
+     5.0,
+     "bet365",
+     3.29
+    ],
+    [
+     "2026-11-25T13:40:53+00:00",
+     4.33,
+     "bet365",
+     3.29
+    ],
+    [
+     "2026-11-26T11:40:13+00:00",
+     3.75,
+     "bet365",
+     3.29
+    ],
+    [
+     "2026-11-26T17:46:23+00:00",
+     5.0,
+     "Sky Bet",
+     3.29
+    ],
+    [
+     "2026-11-26T19:05:17+00:00",
+     5.0,
+     "Sky Bet",
+     3.01
+    ]
+   ],
+   "ko": "2026-11-26T20:00:00+00:00"
+  },
+  {
+   "id": 177,
+   "date": "2026-11-26",
+   "player": "Mateo Mari\u0107",
+   "game": "Juventus v Omonia Nicosia",
+   "kind": "single",
+   "odds": 4.75,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    857667
+   ],
+   "lg": "Europa League"
+  },
+  {
+   "id": 178,
+   "date": "2026-11-26",
+   "player": "Attila Osv\u00e1th",
+   "game": "Ferencv\u00e1ros v NK Celje",
+   "kind": "single",
+   "odds": 8.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    643975
+   ],
+   "lg": "Europa League",
+   "close": 8.5,
+   "hist": [
+    [
+     "2026-11-24T23:30:32+00:00",
+     9.0,
+     "bet365",
+     4.77
+    ],
+    [
+     "2026-11-25T02:40:35+00:00",
+     9.0,
+     "bet365",
+     4.76
+    ],
+    [
+     "2026-11-26T16:30:49+00:00",
+     8.5,
+     "bet365",
+     4.76
+    ],
+    [
+     "2026-11-26T17:46:23+00:00",
+     8.5,
+     "bet365",
+     5.09
+    ],
+    [
+     "2026-11-26T19:02:53+00:00",
+     8.5,
+     "bet365",
+     5.1
+    ],
+    [
+     "2026-11-26T19:20:41+00:00",
+     8.5,
+     "bet365",
+     5.2
+    ]
+   ],
+   "ko": "2026-11-26T20:00:00+00:00"
+  },
+  {
+   "id": 179,
+   "date": "2026-11-26",
+   "player": "Mamadou Sarr",
+   "game": "Crystal Palace v Real Sociedad",
+   "kind": "single",
+   "odds": 4.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": [
+    1426170
+   ],
+   "lg": "Europa League"
+  },
+  {
+   "id": 180,
+   "date": "2026-11-26",
+   "player": "Sivert Mannsverk",
+   "game": "Sparta Prague v AZ Alkmaar",
+   "kind": "single",
+   "odds": 4.33,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": [
+    849404
+   ],
+   "lg": "Europa League"
+  },
+  {
+   "id": 181,
+   "date": "2026-11-26",
+   "player": "Gustav Nyheim",
+   "game": "Lyon v Lillestr\u00f8m",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": [
+    1280665
+   ],
+   "lg": "Europa League"
+  },
+  {
+   "id": 182,
+   "date": "2026-11-26",
+   "player": "Michael Svoboda",
+   "game": "Brighton & Hove Albion v Universitatea Craiova",
+   "kind": "single",
+   "odds": 9.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    951921
+   ],
+   "lg": "Conference League",
+   "close": 9.0,
+   "hist": [
+    [
+     "2026-11-26T15:05:57+00:00",
+     9.0,
+     "bet365",
+     4.96
+    ],
+    [
+     "2026-11-26T16:53:10+00:00",
+     9.0,
+     "bet365",
+     4.55
+    ]
+   ],
+   "ko": "2026-11-26T17:45:00+00:00"
+  },
+  {
+   "id": 183,
+   "date": "2026-11-26",
+   "player": "Matt O'Riley + Michael Svoboda",
+   "game": "Brighton & Hove Albion v Universitatea Craiova",
+   "kind": "double",
+   "odds": 121.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": "L",
+   "pl": -0.5,
+   "note": "Bet builder",
+   "pids": [
+    866686,
+    951921
+   ],
+   "lg": "Conference League"
+  },
+  {
+   "id": 184,
+   "date": "2026-11-26",
+   "player": "Antoni Kozubal",
+   "game": "Union St.Gilloise v Lech Pozna\u0144",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    1227397
+   ],
+   "lg": "Europa League",
+   "close": 6.5,
+   "hist": [
+    [
+     "2026-11-25T16:10:29+00:00",
+     5.5,
+     "bet365",
+     4.71
+    ],
+    [
+     "2026-11-25T22:30:31+00:00",
+     6.0,
+     "bet365",
+     4.71
+    ],
+    [
+     "2026-11-26T04:50:17+00:00",
+     6.5,
+     "bet365",
+     4.71
+    ],
+    [
+     "2026-11-26T16:51:20+00:00",
+     6.5,
+     "bet365",
+     4.75
+    ]
+   ],
+   "ko": "2026-11-26T17:45:00+00:00"
+  },
+  {
+   "id": 185,
+   "date": "2026-11-26",
+   "player": "Robert Gumny",
+   "game": "Union St.Gilloise v Lech Pozna\u0144",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 5.5,
+   "note": null,
+   "pids": [],
+   "lg": "Europa League"
+  },
+  {
+   "id": 186,
+   "date": "2026-11-26",
+   "player": "Robert Gumny + Antoni Kozubal",
+   "game": "Union St.Gilloise v Lech Pozna\u0144",
+   "kind": "double",
+   "odds": 34.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": "L",
+   "pl": -0.5,
+   "note": "Bet builder",
+   "pids": [
+    731338,
+    1227397
+   ],
+   "lg": "Europa League"
+  },
+  {
+   "id": 187,
+   "date": "2026-11-26",
+   "player": "Djibril Diop",
+   "game": "Be\u015fikta\u015f v Hapoel Beer Sheva",
+   "kind": "single",
+   "odds": 3.1,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    1316534
+   ],
+   "lg": "Europa League"
+  },
+  {
+   "id": 188,
+   "date": "2026-11-26",
+   "player": "Tom\u00e1s Ara\u00fajo",
+   "game": "Viktoria Plze\u0148 v Benfica",
+   "kind": "single",
+   "odds": 7.5,
+   "bookie": "BetMGM",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [
+    1187283
+   ],
+   "lg": "Europa League",
+   "close": 7.5,
+   "hist": [
+    [
+     "2026-11-26T16:51:27+00:00",
+     7.5,
+     "BetMGM",
+     4.41
+    ],
+    [
+     "2026-11-26T17:43:37+00:00",
+     7.5,
+     "BetMGM",
+     4.06
+    ]
+   ],
+   "ko": "2026-11-26T17:45:00+00:00"
   }
  ]
 }
