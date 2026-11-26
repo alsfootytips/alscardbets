@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T17:09:30.583033+00:00",
+ "updated": "2026-11-26T17:26:14.551787+00:00",
  "picks": [
   {
    "id": 4,
@@ -3152,6 +3152,77 @@
     ]
    ],
    "ko": "2026-11-22T22:30:00+00:00"
+  },
+  {
+   "id": 166,
+   "date": "2026-11-26",
+   "player": "Matt O'Riley",
+   "game": "Brighton & Hove Albion v Universitatea Craiova",
+   "kind": "single",
+   "odds": 17.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    866686
+   ],
+   "lg": "Conference League"
+  },
+  {
+   "id": 167,
+   "date": "2026-11-26",
+   "player": "Oleksandr Romanchuk",
+   "game": "Brighton & Hove Albion v Universitatea Craiova",
+   "kind": "single",
+   "odds": 4.33,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    890946
+   ],
+   "lg": "Conference League"
+  },
+  {
+   "id": 168,
+   "date": "2026-11-26",
+   "player": "Matt O'Riley + Oleksandr Romanchuk",
+   "game": "Brighton & Hove Albion v Universitatea Craiova",
+   "kind": "double",
+   "odds": 66.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder",
+   "pids": [
+    866686,
+    890946
+   ],
+   "lg": "Conference League"
+  },
+  {
+   "id": 169,
+   "date": "2026-11-26",
+   "player": "Matt O'Riley + Oleksandr Romanchuk + Michael Svoboda",
+   "game": "Brighton & Hove Albion v Universitatea Craiova",
+   "kind": "double",
+   "odds": 451.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Bet builder (treble)",
+   "pids": [
+    866686,
+    890946,
+    951921
+   ],
+   "lg": "Conference League"
   }
  ]
 }
