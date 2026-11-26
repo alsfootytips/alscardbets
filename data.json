@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T21:51:34.456708+00:00",
+ "updated": "2026-11-26T22:03:50.283742+00:00",
  "picks": [
   {
    "id": 4,
@@ -3233,8 +3233,8 @@
    "odds": 4.75,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     302785
@@ -3250,8 +3250,8 @@
    "odds": 5.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     1336717
@@ -3267,8 +3267,8 @@
    "odds": 7.0,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     1287056
@@ -3300,8 +3300,8 @@
    "odds": 29.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
    "pids": [
     302785,
@@ -3318,8 +3318,8 @@
    "odds": 24.0,
    "bookie": "bet365",
    "stake": 0.5,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.5,
    "note": "Bet builder",
    "pids": [
     1336717,
@@ -3336,8 +3336,8 @@
    "odds": 141.0,
    "bookie": "bet365",
    "stake": 0.25,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -0.25,
    "note": "Bet builder (treble)",
    "pids": [
     1336717,
@@ -3355,8 +3355,8 @@
    "odds": 5.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 4.0,
    "note": "Super Sub",
    "pids": [
     317062
@@ -3412,8 +3412,8 @@
    "odds": 4.75,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     857667
@@ -3429,8 +3429,8 @@
    "odds": 8.5,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     643975
@@ -3486,8 +3486,8 @@
    "odds": 4.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Super Sub",
    "pids": [
     1426170
@@ -3503,8 +3503,8 @@
    "odds": 4.33,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": "Super Sub",
    "pids": [
     849404
@@ -3520,8 +3520,8 @@
    "odds": 5.0,
    "bookie": "Sky Bet",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "W",
+   "pl": 4.0,
    "note": "Super Sub",
    "pids": [
     1280665
