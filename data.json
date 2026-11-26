@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T20:08:00.045436+00:00",
+ "updated": "2026-11-26T20:21:58.162995+00:00",
  "picks": [
   {
    "id": 4,
@@ -3666,8 +3666,8 @@
    "odds": 3.1,
    "bookie": "bet365",
    "stake": 1,
-   "result": null,
-   "pl": null,
+   "result": "L",
+   "pl": -1,
    "note": null,
    "pids": [
     1316534
