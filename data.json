@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-28T14:43:43.952872+00:00",
+ "updated": "2026-11-28T15:04:28.557588+00:00",
  "picks": [
   {
    "id": 4,
@@ -3706,6 +3706,404 @@
     ]
    ],
    "ko": "2026-11-26T17:45:00+00:00"
+  },
+  {
+   "id": 189,
+   "date": "2026-11-28",
+   "player": "Vitaly Janelt + Ebou Adams",
+   "game": "Man Utd v Brentford / Wrexham v Portsmouth",
+   "kind": "double",
+   "odds": 11.2,
+   "bookie": "BetMGM",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Double (Golden Sub on Janelt)",
+   "pids": [
+    688273,
+    538329
+   ],
+   "lg": "Premier League / Championship"
+  },
+  {
+   "id": 190,
+   "date": "2026-11-28",
+   "player": "Branco van den Boomen",
+   "game": "Angers v Lens",
+   "kind": "single",
+   "odds": 6.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": [
+    505059
+   ],
+   "lg": "Ligue 1",
+   "close": 6.0,
+   "hist": [
+    [
+     "2026-11-28T13:03:28+00:00",
+     6.0,
+     "Paddy Power",
+     4.11
+    ]
+   ],
+   "ko": "2026-11-28T16:15:00+00:00"
+  },
+  {
+   "id": 191,
+   "date": "2026-11-28",
+   "player": "Ao Tanaka + Reo Hatate",
+   "game": "Leeds v Coventry / Millwall v Burnley",
+   "kind": "double",
+   "odds": 32.5,
+   "bookie": "BetMGM",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Double (Golden Sub on Tanaka)",
+   "pids": [
+    935728,
+    980792
+   ],
+   "lg": "Premier League / Championship"
+  },
+  {
+   "id": 192,
+   "date": "2026-11-27",
+   "player": "Nonato",
+   "game": "Fluminense v Cruzeiro",
+   "kind": "single",
+   "odds": 4.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [],
+   "lg": "Brasileir\u00e3o",
+   "close": 4.5,
+   "hist": [
+    [
+     "2026-11-27T20:00:58+00:00",
+     4.5,
+     "bet365",
+     3.54
+    ]
+   ],
+   "ko": "2026-11-27T23:00:00+00:00"
+  },
+  {
+   "id": 193,
+   "date": "2026-11-27",
+   "player": "Arthur",
+   "game": "Werder Bremen v Gladbach",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [],
+   "lg": "Bundesliga"
+  },
+  {
+   "id": 194,
+   "date": "2026-11-27",
+   "player": "Marcus Younis",
+   "game": "S\u00f8nderjyske v Br\u00f8ndby",
+   "kind": "single",
+   "odds": 4.75,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [],
+   "lg": "Superliga",
+   "close": 3.4,
+   "hist": [
+    [
+     "2026-11-26T18:21:59+00:00",
+     4.75,
+     "bet365",
+     3.89
+    ],
+    [
+     "2026-11-27T13:10:45+00:00",
+     3.4,
+     "bet365",
+     3.89
+    ],
+    [
+     "2026-11-27T17:01:05+00:00",
+     3.4,
+     "bet365",
+     3.8
+    ]
+   ],
+   "ko": "2026-11-27T18:00:00+00:00"
+  },
+  {
+   "id": 195,
+   "date": "2026-11-27",
+   "player": "Myles Peart-Harris",
+   "game": "Southampton v Middlesbrough",
+   "kind": "single",
+   "odds": 5.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "V",
+   "pl": 0,
+   "note": null,
+   "pids": [],
+   "lg": "Championship"
+  },
+  {
+   "id": 196,
+   "date": "2026-11-27",
+   "player": "Cameron Bragg",
+   "game": "Southampton v Middlesbrough",
+   "kind": "single",
+   "odds": 4.33,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "V",
+   "pl": 0,
+   "note": null,
+   "pids": [],
+   "lg": "Championship",
+   "close": 4.3333335,
+   "hist": [
+    [
+     "2026-11-27T01:02:07+00:00",
+     4.5,
+     "bet365",
+     3.79
+    ],
+    [
+     "2026-11-27T10:30:31+00:00",
+     4.3333335,
+     "Sky Bet",
+     3.79
+    ]
+   ],
+   "ko": "2026-11-27T20:00:00+00:00"
+  },
+  {
+   "id": 197,
+   "date": "2026-11-27",
+   "player": "Bradley Locko",
+   "game": "Brest v Paris FC",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": null,
+   "pids": [],
+   "lg": "Ligue 1",
+   "close": 7.0,
+   "hist": [
+    [
+     "2026-11-27T13:30:38+00:00",
+     7.0,
+     "bet365",
+     5.6
+    ],
+    [
+     "2026-11-27T19:01:40+00:00",
+     7.0,
+     "bet365",
+     6.24
+    ]
+   ],
+   "ko": "2026-11-27T19:45:00+00:00"
+  },
+  {
+   "id": 198,
+   "date": "2026-11-27",
+   "player": "Cameron Bragg + Myles Peart-Harris",
+   "game": "Southampton v Middlesbrough",
+   "kind": "double",
+   "odds": 21.0,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": "V",
+   "pl": 0,
+   "note": "Bet builder",
+   "pids": [],
+   "lg": "Championship"
+  },
+  {
+   "id": 199,
+   "date": "2026-11-28",
+   "player": "Stanley Mills",
+   "game": "Preston v Norwich",
+   "kind": "single",
+   "odds": 4.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": "W",
+   "pl": 3.5,
+   "note": null,
+   "pids": [],
+   "lg": "Championship",
+   "close": 4.5,
+   "hist": [
+    [
+     "2026-11-27T17:01:36+00:00",
+     4.5,
+     "bet365",
+     3.78
+    ],
+    [
+     "2026-11-28T11:52:08+00:00",
+     4.5,
+     "bet365",
+     3.77
+    ]
+   ],
+   "ko": "2026-11-28T12:30:00+00:00"
+  },
+  {
+   "id": 200,
+   "date": "2026-11-28",
+   "player": "Ben House",
+   "game": "Lincoln v Wolves",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": "L",
+   "pl": -1,
+   "note": "Super Sub",
+   "pids": [
+    877581
+   ],
+   "lg": "Championship",
+   "close": 3.75,
+   "hist": [
+    [
+     "2026-11-26T22:11:05+00:00",
+     5.0,
+     "Sky Bet",
+     4.02
+    ],
+    [
+     "2026-11-27T14:01:02+00:00",
+     4.5,
+     "Paddy Power",
+     4.02
+    ],
+    [
+     "2026-11-27T23:20:43+00:00",
+     5.0,
+     "Sky Bet",
+     4.02
+    ],
+    [
+     "2026-11-28T02:31:55+00:00",
+     4.5,
+     "Paddy Power",
+     4.02
+    ],
+    [
+     "2026-11-28T08:50:28+00:00",
+     5.0,
+     "Sky Bet",
+     4.02
+    ],
+    [
+     "2026-11-28T11:51:48+00:00",
+     5.0,
+     "Sky Bet",
+     4.74
+    ],
+    [
+     "2026-11-28T12:11:30+00:00",
+     3.75,
+     "Paddy Power",
+     4.09
+    ]
+   ],
+   "ko": "2026-11-28T12:30:00+00:00"
+  },
+  {
+   "id": 201,
+   "date": "2026-11-28",
+   "player": "Yuri Berchiche",
+   "game": "M\u00e1laga v Athletic Club",
+   "kind": "single",
+   "odds": 5.0,
+   "bookie": "Sky Bet",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": "Super Sub",
+   "pids": [
+    80295
+   ],
+   "lg": "LaLiga",
+   "close": 5.0,
+   "hist": [
+    [
+     "2026-11-28T13:54:03+00:00",
+     5.0,
+     "Sky Bet",
+     4.26
+    ]
+   ],
+   "ko": "2026-11-28T15:15:00+00:00"
+  },
+  {
+   "id": 202,
+   "date": "2026-11-28",
+   "player": "Matthieu Udol",
+   "game": "Angers v Lens",
+   "kind": "single",
+   "odds": 8.5,
+   "bookie": "William Hill",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    660326
+   ],
+   "lg": "Ligue 1",
+   "close": 8.5,
+   "hist": [
+    [
+     "2026-11-28T13:03:28+00:00",
+     8.5,
+     "William Hill",
+     5.54
+    ]
+   ],
+   "ko": "2026-11-28T16:15:00+00:00"
+  },
+  {
+   "id": 203,
+   "date": "2026-11-28",
+   "player": "Branco van den Boomen + Yuri Berchiche",
+   "game": "Angers v Lens / M\u00e1laga v Athletic Club",
+   "kind": "double",
+   "odds": 30.0,
+   "bookie": "Sky Bet",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Double (Super Sub)",
+   "pids": [
+    505059,
+    80295
+   ],
+   "lg": "Ligue 1 / LaLiga"
   }
  ]
 }
