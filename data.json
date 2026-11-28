@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-28T15:04:28.557588+00:00",
+ "updated": "2026-11-28T15:22:50.356442+00:00",
  "picks": [
   {
    "id": 4,
@@ -4056,6 +4056,12 @@
      5.0,
      "Sky Bet",
      4.26
+    ],
+    [
+     "2026-11-28T15:10:10+00:00",
+     5.0,
+     "Paddy Power",
+     4.24
     ]
    ],
    "ko": "2026-11-28T15:15:00+00:00"
@@ -4104,6 +4110,85 @@
     80295
    ],
    "lg": "Ligue 1 / LaLiga"
+  },
+  {
+   "id": 204,
+   "date": "2026-11-28",
+   "player": "Noah Cadiou",
+   "game": "PSG v Lorient",
+   "kind": "single",
+   "odds": 6.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    1097446
+   ],
+   "lg": "Ligue 1"
+  },
+  {
+   "id": 205,
+   "date": "2026-11-28",
+   "player": "Carlos Augusto",
+   "game": "Inter v Genoa",
+   "kind": "single",
+   "odds": 8.5,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    940829
+   ],
+   "lg": "Serie A",
+   "close": 8.0,
+   "hist": [
+    [
+     "2026-11-28T13:25:23+00:00",
+     8.0,
+     "bet365",
+     4.84
+    ]
+   ],
+   "ko": "2026-11-28T19:45:00+00:00"
+  },
+  {
+   "id": 206,
+   "date": "2026-11-28",
+   "player": "Kaito Mizuta",
+   "game": "Le Havre v Strasbourg",
+   "kind": "single",
+   "odds": 7.0,
+   "bookie": "bet365",
+   "stake": 1,
+   "result": null,
+   "pl": null,
+   "note": null,
+   "pids": [
+    1072117
+   ],
+   "lg": "Ligue 1"
+  },
+  {
+   "id": 207,
+   "date": "2026-11-28",
+   "player": "Kaito Mizuta + Noah Cadiou",
+   "game": "Le Havre v Strasbourg / PSG v Lorient",
+   "kind": "double",
+   "odds": 45.5,
+   "bookie": "bet365",
+   "stake": 0.5,
+   "result": null,
+   "pl": null,
+   "note": "Double",
+   "pids": [
+    1072117,
+    1097446
+   ],
+   "lg": "Ligue 1"
   }
  ]
 }
